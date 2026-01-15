@@ -383,6 +383,59 @@ def profile(username=None):
                          is_own_profile=(user.id == session['user_id']))
 
 
+@app.route('/edit_profile', methods=['GET', 'POST'])
+def edit_profile():
+    """Handle editing of user profile information"""
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    user = User.query.get_or_404(session['user_id'])
+    
+    if request.method == 'POST':
+        # Update basic fields
+        user.username = request.form.get('username')
+        user.email = request.form.get('email')
+        user.bio = request.form.get('bio')
+        
+        # Handle Checkboxes for Interests
+        # We join the list of checked boxes into a single string like "Music,Sports"
+        selected_interests = request.form.getlist('interests')
+        user.interests = ",".join(selected_interests)
+        
+        try:
+            db.session.commit()
+            flash('Profile updated successfully!', 'success')
+            return redirect(url_for('profile'))
+        except:
+            db.session.rollback()
+            flash('Username or Email already exists.', 'error')
+            
+    return render_template('edit_profile.html', user=user)
+
+
+@app.route('/delete_account', methods=['POST'])
+def delete_account():
+    """Handle user account deletion"""
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    user = User.query.get_or_404(session['user_id'])
+    
+    try:
+        # Delete the user and all related data (cascade delete handles posts/comments)
+        db.session.delete(user)
+        db.session.commit()
+        
+        # Clear session
+        session.clear()
+        flash('Your account has been deleted.', 'success')
+        return redirect(url_for('index'))
+    except:
+        db.session.rollback()
+        flash('Error deleting account.', 'error')
+        return redirect(url_for('edit_profile'))
+
+
 @app.route('/messages')
 def messages():
     """Messages page - list of conversations"""
@@ -678,9 +731,9 @@ def init_db():
         
         # Create sample communities and memberships
         communities_data = [
-            {'name': 'The Digital Ethics Forum', 'description': 'Discussing moral challenges'},
-            {'name': 'Budgeting & Beyond', 'description': 'Financial wisdom'},
-            {'name': 'The Green Thumb Collective', 'description': 'Gardening tips'}
+            {'name': 'The Digital Ethics Forum', 'description': 'Discussing moral challenges', 'image_url': 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=600&h=400&fit=crop'},
+            {'name': 'Budgeting & Beyond', 'description': 'Financial wisdom', 'image_url': 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=600&h=400&fit=crop'},
+            {'name': 'The Green Thumb Collective', 'description': 'Gardening tips', 'image_url': 'https://images.unsplash.com/photo-1416879741262-793b363d0309?w=600&h=400&fit=crop'}
         ]
         
         for comm_data in communities_data:
