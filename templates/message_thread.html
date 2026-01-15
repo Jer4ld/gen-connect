@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with {{ contact.username }} - GenConnect</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar matching home page */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+            height: 100vh;
+            background-color: white;
+            border-right: 1px solid #e5e7eb;
+            padding: 20px 0;
+            z-index: 100;
+        }
+
+        .sidebar-logo {
+            padding: 0 30px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            font-weight: 600;
+            color: #6366f1;
+            text-decoration: none;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .sidebar-nav li {
+            margin: 5px 0;
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 30px;
+            text-decoration: none;
+            color: #374151;
+            transition: all 0.2s;
+            font-size: 15px;
+        }
+
+        .sidebar-nav a:hover {
+            background-color: #f9fafb;
+        }
+
+        .sidebar-nav a.active {
+            background-color: #eff6ff;
+            color: #2563eb;
+            border-right: 3px solid #2563eb;
+        }
+
+        .sidebar-nav svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        /* Messages Container */
+        .messages-container {
+            margin-left: 250px;
+            flex: 1;
+            display: flex;
+            height: 100vh;
+            background-color: #f9fafb;
+        }
+
+        /* Conversations Sidebar */
+        .conversations-sidebar {
+            width: 300px;
+            background: white;
+            border-right: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .conversations-header {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .conversations-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 10px;
+        }
+
+        .conversations-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .conversation-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            border-bottom: 1px solid #f3f4f6;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .conversation-item:hover {
+            background-color: #f9fafb;
+        }
+
+        .conversation-item.active {
+            background-color: #eff6ff;
+        }
+
+        .conversation-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .conversation-name {
+            font-weight: 600;
+            color: #111827;
+            font-size: 15px;
+        }
+
+        /* Chat Area */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+
+        .chat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 30px;
+            border-bottom: 1px solid #e5e7eb;
+            background: white;
+        }
+
+        .chat-header-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .chat-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .chat-user-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 2px;
+        }
+
+        .chat-user-info p {
+            font-size: 13px;
+            color: #10b981;
+        }
+
+        .chat-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            color: #6b7280;
+        }
+
+        .action-icon:hover {
+            background-color: #f3f4f6;
+        }
+
+        /* Options Menu */
+        .options-menu {
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 8px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: none;
+            z-index: 100;
+            min-width: 180px;
+        }
+
+        .options-menu.active {
+            display: block;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .option-item:hover {
+            background-color: #f9fafb;
+        }
+
+        .option-item svg {
+            width: 18px;
+            height: 18px;
+            color: #6b7280;
+        }
+
+        .option-item span {
+            font-size: 14px;
+            color: #374151;
+        }
+
+        .option-item.report-option:hover {
+            background-color: #fef2f2;
+        }
+
+        .option-item.report-option:hover span {
+            color: #dc2626;
+        }
+
+        .option-item.report-option:hover svg {
+            color: #dc2626;
+        }
+
+        /* Messages Area */
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f9fafb;
+        }
+
+        .message {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.sent {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .message.sent .message-avatar {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .message-content {
+            max-width: 60%;
+        }
+
+        .message-bubble {
+            background: white;
+            padding: 10px 14px;
+            border-radius: 16px;
+            border-top-left-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            word-wrap: break-word;
+        }
+
+        .message.sent .message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-top-left-radius: 16px;
+            border-top-right-radius: 4px;
+        }
+
+        .message-text {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .message-meta {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 4px;
+        }
+
+        .message.sent .message-meta {
+            color: rgba(255, 255, 255, 0.8);
+            justify-content: flex-end;
+        }
+
+        .message-actions {
+            display: none;
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .message:hover .message-actions {
+            display: flex;
+        }
+
+        .message-action-btn {
+            padding: 3px 8px;
+            background: #f3f4f6;
+            border: none;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            color: #6b7280;
+        }
+
+        .message-action-btn:hover {
+            background: #e5e7eb;
+        }
+
+        .message.sent .message-action-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .date-divider {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .date-divider span {
+            background: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #6b7280;
+            border: 1px solid #e5e7eb;
+        }
+
+        /* Message Input */
+        .message-input-area {
+            padding: 15px 20px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            position: relative;
+        }
+
+        .message-input-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .attachment-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            border: 1px solid #e5e7eb;
+            color: #6b7280;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .attachment-button:hover {
+            background: #f9fafb;
+            color: #2563eb;
+        }
+
+        .file-preview {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .file-info svg {
+            color: #6b7280;
+        }
+
+        .file-info span {
+            font-size: 14px;
+            color: #374151;
+        }
+
+        .remove-file {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #ef4444;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .remove-file:hover {
+            background: #dc2626;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 24px;
+            padding: 8px 15px;
+        }
+
+        .input-wrapper textarea {
+            flex: 1;
+            border: none;
+            background: transparent;
+            resize: none;
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            max-height: 100px;
+            padding: 4px 0;
+        }
+
+        .send-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+
+        .send-button:hover {
+            transform: scale(1.05);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            width: 90%;
+            max-width: 450px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            cursor: pointer;
+            font-size: 24px;
+            color: #6b7280;
+        }
+
+        .edit-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .btn-cancel {
+            background: white;
+            border: 1px solid #d1d5db;
+            color: #374151;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <a href="/" class="logo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
+                </svg>
+                <span>GenConnect</span>
+            </a>
+        </div>
+        <ul class="sidebar-nav">
+            <li>
+                <a href="/home">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                    <span>Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <circle cx="12" cy="10" r="3"/>
+                        <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/>
+                    </svg>
+                    <span>Explore Activities</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <span>Community</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="16" x2="12" y2="12"/>
+                        <line x1="12" y1="8" x2="12.01" y2="8"/>
+                    </svg>
+                    <span>Create</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    <span>Notification</span>
+                </a>
+            </li>
+            <li>
+                <a href="/messages" class="active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    <span>Messages</span>
+                </a>
+            </li>
+            <li>
+                <a href="/profile">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <span>Profile</span>
+                </a>
+            </li>
+            <li>
+                <a href="/logout">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    <span>Logout</span>
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Messages Container -->
+    <div class="messages-container">
+        <!-- Conversations Sidebar -->
+        <div class="conversations-sidebar">
+            <div class="conversations-header">
+                <h2>Messages</h2>
+            </div>
+
+            <div class="conversations-list">
+                {% for c in contacts %}
+                <a href="/messages/{{ c.id }}" class="conversation-item {% if c.id == contact.id %}active{% endif %}">
+                    <div class="conversation-avatar">{{ c.username[0].upper() }}</div>
+                    <div class="conversation-name">{{ c.username }}</div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Chat Area -->
+        <div class="chat-area">
+            <!-- Chat Header -->
+            <div class="chat-header">
+                <div class="chat-header-info">
+                    <div class="chat-avatar">{{ contact.username[0].upper() }}</div>
+                    <div class="chat-user-info">
+                        <h3>{{ contact.username }}</h3>
+                        <p>● Active</p>
+                    </div>
+                </div>
+                <div class="chat-actions">
+                    <div class="action-icon" id="moreOptionsBtn" title="More Options">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="1"/>
+                            <circle cx="12" cy="5" r="1"/>
+                            <circle cx="12" cy="19" r="1"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Options Menu -->
+            <div class="options-menu" id="optionsMenu">
+                <div class="option-item" data-remove-contact="{{ contact.id }}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                    <span>Remove Contact</span>
+                </div>
+                <div class="option-item report-option" data-report-user="{{ contact.id }}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    <span>Report User</span>
+                </div>
+            </div>
+
+            <!-- Messages Area -->
+            <div class="messages-area" id="messagesArea">
+                {% if messages %}
+                    {% set ns = namespace(current_date='') %}
+                    {% for message in messages %}
+                        {% set msg_date = message.created_at.strftime('%Y-%m-%d') %}
+                        {% if msg_date != ns.current_date %}
+                            <div class="date-divider">
+                                <span>{{ message.created_at.strftime('%B %d, %Y') }}</span>
+                            </div>
+                            {% set ns.current_date = msg_date %}
+                        {% endif %}
+                        
+                        <div class="message {% if message.sender_id == current_user.id %}sent{% endif %}" data-message-id="{{ message.id }}">
+                            <div class="message-avatar">{{ message.sender.username[0].upper() }}</div>
+                            <div class="message-content">
+                                <div class="message-bubble">
+                                    <div class="message-text" data-content="{{ message.id }}">{{ message.content }}</div>
+                                </div>
+                                <div class="message-meta">
+                                    <span>{{ message.created_at.strftime('%H:%M') }}</span>
+                                </div>
+                                {% if message.sender_id == current_user.id %}
+                                <div class="message-actions">
+                                    <button class="message-action-btn" data-edit-btn="{{ message.id }}">Edit</button>
+                                    <button class="message-action-btn" data-delete-btn="{{ message.id }}">Delete</button>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="text-align: center; padding: 40px; color: #9ca3af;">
+                        No messages yet. Start the conversation!
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Message Input -->
+            <div class="message-input-area">
+                <form id="messageForm" class="message-input-container">
+                    <input type="file" id="fileInput" accept="image/*,.pdf,.doc,.docx" style="display: none;">
+                    <button type="button" class="attachment-button" onclick="document.getElementById('fileInput').click()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                    </button>
+                    <div class="input-wrapper">
+                        <textarea id="messageInput" name="content" placeholder="Type a message..." rows="1" required></textarea>
+                    </div>
+                    <input type="hidden" name="receiver_id" value="{{ contact.id }}">
+                    <button type="submit" class="send-button">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"/>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                        </svg>
+                    </button>
+                </form>
+                
+                <!-- Selected File Preview -->
+                <div class="file-preview" id="filePreview" style="display: none;">
+                    <div class="file-info">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+                            <polyline points="13 2 13 9 20 9"/>
+                        </svg>
+                        <span id="fileName"></span>
+                    </div>
+                    <button type="button" class="remove-file" onclick="removeFile()">×</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal" id="editModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Edit Message</h3>
+            <span class="modal-close" id="closeEditBtn">×</span>
+        </div>
+        <form id="editForm">
+            <textarea id="editTextarea" class="edit-textarea" required></textarea>
+            <input type="hidden" id="editMessageId">
+            <div class="modal-actions">
+                <button type="button" class="btn btn-cancel" id="cancelEditBtn">Cancel</button>
+                <button type="submit" class="btn btn-submit">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// File upload handling
+let selectedFile = null;
+
+document.getElementById('fileInput').addEventListener('change', function(e) {
+    selectedFile = e.target.files[0];
+    if (selectedFile) {
+        document.getElementById('fileName').textContent = selectedFile.name;
+        document.getElementById('filePreview').style.display = 'flex';
+    }
+});
+
+function removeFile() {
+    selectedFile = null;
+    document.getElementById('fileInput').value = '';
+    document.getElementById('filePreview').style.display = 'none';
+}
+
+// Options menu toggle
+document.getElementById('moreOptionsBtn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.getElementById('optionsMenu').classList.toggle('active');
+});
+
+// Close options menu when clicking outside
+document.addEventListener('click', function(e) {
+    const menu = document.getElementById('optionsMenu');
+    const button = document.getElementById('moreOptionsBtn');
+    if (!menu.contains(e.target) && !button.contains(e.target)) {
+        menu.classList.remove('active');
+    }
+});
+
+// Report user
+document.querySelector('[data-report-user]')?.addEventListener('click', function() {
+    const contactId = this.getAttribute('data-report-user');
+    const reason = prompt('Please provide a reason for reporting this user:');
+    if (reason) {
+        alert('User reported. Thank you for helping keep GenConnect safe.');
+        document.getElementById('optionsMenu').classList.remove('active');
+        // You can add actual reporting logic here
+    }
+});
+
+const messageInput = document.getElementById('messageInput');
+messageInput.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = this.scrollHeight + 'px';
+});
+
+document.getElementById('messageForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const content = formData.get('content').trim();
+    if (!content) return;
+    
+    try {
+        const response = await fetch('/send_message', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert(data.message);
+        }
+    } catch (error) {
+        alert('Error sending message');
+    }
+});
+
+document.addEventListener('click', async function(e) {
+    // Handle delete message
+    if (e.target.closest('[data-delete-btn]')) {
+        const btn = e.target.closest('[data-delete-btn]');
+        const messageId = btn.getAttribute('data-delete-btn');
+        if (!confirm('Delete this message?')) return;
+        
+        try {
+            const response = await fetch('/delete_message/' + messageId, { method: 'POST' });
+            const data = await response.json();
+            if (data.success) {
+                document.querySelector('[data-message-id="' + messageId + '"]').remove();
+            } else {
+                alert(data.message);
+            }
+        } catch (error) {
+            alert('Error deleting message');
+        }
+    }
+    
+    // Handle edit message
+    if (e.target.closest('[data-edit-btn]')) {
+        const btn = e.target.closest('[data-edit-btn]');
+        const messageId = btn.getAttribute('data-edit-btn');
+        const contentEl = document.querySelector('[data-content="' + messageId + '"]');
+        const content = contentEl.textContent;
+        document.getElementById('editMessageId').value = messageId;
+        document.getElementById('editTextarea').value = content;
+        document.getElementById('editModal').classList.add('active');
+    }
+    
+    // Handle remove contact
+    if (e.target.closest('[data-remove-contact]')) {
+        const btn = e.target.closest('[data-remove-contact]');
+        const contactId = btn.getAttribute('data-remove-contact');
+        if (!confirm('Remove this contact?')) return;
+        
+        try {
+            const response = await fetch('/remove_contact/' + contactId, { method: 'POST' });
+            const data = await response.json();
+            if (data.success) {
+                window.location.href = '/messages';
+            } else {
+                alert(data.message);
+            }
+        } catch (error) {
+            alert('Error removing contact');
+        }
+    }
+});
+
+document.getElementById('closeEditBtn').addEventListener('click', function() {
+    document.getElementById('editModal').classList.remove('active');
+});
+
+document.getElementById('cancelEditBtn').addEventListener('click', function() {
+    document.getElementById('editModal').classList.remove('active');
+});
+
+document.getElementById('editForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const messageId = document.getElementById('editMessageId').value;
+    const content = document.getElementById('editTextarea').value;
+    const formData = new FormData();
+    formData.append('content', content);
+    
+    try {
+        const response = await fetch('/edit_message/' + messageId, {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert(data.message);
+        }
+    } catch (error) {
+        alert('Error editing message');
+    }
+});
+
+document.getElementById('messagesArea').scrollTop = document.getElementById('messagesArea').scrollHeight;
+</script>
+</body>
+</html>

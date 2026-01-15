@@ -1,0 +1,472 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.username }} - GenConnect{% endblock %}
+
+{% block extra_css %}
+<style>
+    .container {
+        display: flex;
+        min-height: 100vh;
+        background-color: #f5f5f5;
+    }
+
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 250px;
+        height: 100vh;
+        background-color: white;
+        border-right: 1px solid #e5e7eb;
+        padding: 20px 0;
+    }
+
+    .sidebar-logo {
+        padding: 0 30px 20px;
+        border-bottom: 1px solid #e5e7eb;
+        margin-bottom: 20px;
+    }
+
+    .sidebar-nav {
+        list-style: none;
+    }
+
+    .sidebar-nav li {
+        margin: 5px 0;
+    }
+
+    .sidebar-nav a {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 12px 30px;
+        text-decoration: none;
+        color: #374151;
+        transition: all 0.2s;
+        font-size: 15px;
+    }
+
+    .sidebar-nav a:hover {
+        background-color: #f9fafb;
+    }
+
+    .sidebar-nav a.active {
+        background-color: #eff6ff;
+        color: #2563eb;
+        border-right: 3px solid #2563eb;
+    }
+
+    .profile-content {
+        margin-left: 250px;
+        flex: 1;
+        padding: 0;
+    }
+
+    .profile-header {
+        background: white;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .profile-banner {
+        height: 250px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        position: relative;
+    }
+
+    .profile-info {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 30px;
+        position: relative;
+    }
+
+    .profile-avatar-section {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        margin-top: -80px;
+        padding-bottom: 20px;
+    }
+
+    .profile-avatar-wrapper {
+        display: flex;
+        align-items: end;
+        gap: 20px;
+    }
+
+    .profile-avatar {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        border: 5px solid white;
+        background: white;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .profile-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .profile-names {
+        margin-bottom: 15px;
+    }
+
+    .profile-names h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 5px;
+    }
+
+    .profile-stats {
+        display: flex;
+        gap: 25px;
+        font-size: 14px;
+    }
+
+    .stat-item {
+        display: flex;
+        gap: 5px;
+    }
+
+    .stat-number {
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .stat-label {
+        color: #6b7280;
+    }
+
+    .profile-tabs {
+        display: flex;
+        gap: 10px;
+        border-bottom: 1px solid #e5e7eb;
+        padding: 0 30px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .tab-item {
+        padding: 15px 20px;
+        color: #6b7280;
+        text-decoration: none;
+        border-bottom: 2px solid transparent;
+        transition: all 0.2s;
+        font-weight: 500;
+    }
+
+    .tab-item:hover {
+        color: #111827;
+    }
+
+    .tab-item.active {
+        color: #2563eb;
+        border-bottom-color: #2563eb;
+    }
+
+    .profile-body {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 30px;
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 20px;
+    }
+
+    .profile-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .info-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .info-card h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 15px;
+    }
+
+    .info-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 0;
+        color: #374151;
+        font-size: 14px;
+    }
+
+    .info-row svg {
+        width: 18px;
+        height: 18px;
+        color: #9ca3af;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 4px 12px;
+        background-color: #eff6ff;
+        color: #2563eb;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .communities-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .community-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: transform 0.2s;
+        cursor: pointer;
+    }
+
+    .community-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .community-image {
+        width: 100%;
+        height: 100px;
+        object-fit: cover;
+    }
+
+    .community-name {
+        padding: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #111827;
+        text-align: center;
+    }
+
+    .community-desc {
+        padding: 0 10px 10px;
+        font-size: 11px;
+        color: #6b7280;
+        text-align: center;
+    }
+
+    .profile-main {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    @media (max-width: 1024px) {
+        .profile-body {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <a href="/" class="logo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
+                </svg>
+                <span>GenConnect</span>
+            </a>
+        </div>
+        <ul class="sidebar-nav">
+            <li>
+                <a href="{{ url_for('home') }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                    <span>Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <circle cx="12" cy="10" r="3"/>
+                        <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/>
+                    </svg>
+                    <span>Explore Activities</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <span>Community</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="16" x2="12" y2="12"/>
+                        <line x1="12" y1="8" x2="12.01" y2="8"/>
+                    </svg>
+                    <span>Create</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    <span>Notification</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('messages') }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    <span>Messages</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('profile') }}" class="active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <span>Profile</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('logout') }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    <span>Logout</span>
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Profile Content -->
+    <div class="profile-content">
+        <div class="profile-header">
+            <div class="profile-banner"></div>
+            
+            <div class="profile-info">
+                <div class="profile-avatar-section">
+                    <div class="profile-avatar-wrapper">
+                        <div class="profile-avatar">
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&h=300&fit=crop" alt="{{ user.username }}">
+                        </div>
+                        <div class="profile-names">
+                            <h1>{{ user.username }}</h1>
+                            <div class="profile-stats">
+                                <div class="stat-item">
+                                    <span class="stat-number">{{ user.get_post_count() }}</span>
+                                    <span class="stat-label">post</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number">{{ user.get_follower_count() }}</span>
+                                    <span class="stat-label">followers</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number">{{ user.get_following_count() }}</span>
+                                    <span class="stat-label">following</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% if is_own_profile %}
+                    <button class="btn btn-primary">Edit Profile</button>
+                    {% else %}
+                    <button class="btn btn-primary">Follow</button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="profile-tabs">
+                <a href="#" class="tab-item active">Overview</a>
+                <a href="#" class="tab-item">Your Post</a>
+                <a href="#" class="tab-item">Comments</a>
+                <a href="#" class="tab-item">Saved post</a>
+            </div>
+        </div>
+
+        <div class="profile-body">
+            <div class="profile-sidebar">
+                <!-- User Info Card -->
+                <div class="info-card">
+                    <h3>
+                        <svg style="display: inline; width: 18px; height: 18px; margin-right: 5px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        IU
+                    </h3>
+                    <span class="badge">{{ user.member_type }}</span>
+                    
+                    <div style="margin-top: 15px;">
+                        <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Bio</h4>
+                        <p style="font-size: 14px; color: #6b7280; line-height: 1.5;">
+                            {{ user.bio or "University student pursuing computer science. I'm fascinated by old technologies and life before the internet. Looking for mentors and guidance on balancing work and passion." }}
+                        </p>
+                    </div>
+
+                    <div style="margin-top: 15px;">
+                        <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Interests</h4>
+                        <p style="font-size: 14px; color: #6b7280;">
+                            {{ user.interests or "Coding, Vintage Gaming, Future Trends, Personal Finance/gardening, fishing" }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Communities Card -->
+                <div class="info-card">
+                    <h3>Joined Communities</h3>
+                    <div class="communities-grid">
+                        {% for community in communities %}
+                        <div class="community-card">
+                            <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=300&h=200&fit=crop" alt="{{ community.name }}" class="community-image">
+                            <div class="community-name">{{ community.name }}</div>
+                            <div class="community-desc">{{ community.description[:50] }}...</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-main">
+                <div class="info-card">
+                    <p style="color: #9ca3af; text-align: center; padding: 40px 20px;">
+                        No posts yet. Start sharing your thoughts!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

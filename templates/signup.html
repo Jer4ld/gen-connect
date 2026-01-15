@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+
+{% block title %}Sign Up - GenConnect{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: #f0f4ff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 20px 0;
+    }
+
+    .signup-container {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        padding: 50px;
+        width: 100%;
+        max-width: 450px;
+        margin: 20px;
+    }
+
+    .logo-section {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .logo-section svg {
+        width: 50px;
+        height: 50px;
+        color: #6366f1;
+        margin-bottom: 15px;
+    }
+
+    .logo-section h1 {
+        font-size: 32px;
+        color: #111827;
+        margin-bottom: 8px;
+    }
+
+    .logo-section p {
+        color: #6b7280;
+        font-size: 15px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #374151;
+        font-weight: 500;
+        font-size: 14px;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 15px;
+        transition: all 0.2s;
+    }
+
+    .form-group input:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .password-strength {
+        margin-top: 5px;
+        font-size: 12px;
+        color: #6b7280;
+    }
+
+    .strength-bar {
+        height: 4px;
+        background-color: #e5e7eb;
+        border-radius: 2px;
+        margin-top: 5px;
+        overflow: hidden;
+    }
+
+    .strength-bar-fill {
+        height: 100%;
+        width: 0;
+        transition: all 0.3s;
+        border-radius: 2px;
+    }
+
+    .strength-weak { width: 33%; background-color: #ef4444; }
+    .strength-medium { width: 66%; background-color: #f59e0b; }
+    .strength-strong { width: 100%; background-color: #10b981; }
+
+    .terms-check {
+        display: flex;
+        align-items: start;
+        gap: 10px;
+        margin-bottom: 25px;
+        font-size: 14px;
+        color: #6b7280;
+    }
+
+    .terms-check input[type="checkbox"] {
+        margin-top: 2px;
+        cursor: pointer;
+    }
+
+    .terms-check a {
+        color: #6366f1;
+        text-decoration: none;
+    }
+
+    .terms-check a:hover {
+        text-decoration: underline;
+    }
+
+    .btn-signup {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .btn-signup:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-signup:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .divider {
+        text-align: center;
+        margin: 30px 0;
+        position: relative;
+        color: #9ca3af;
+        font-size: 14px;
+    }
+
+    .divider::before,
+    .divider::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        width: 45%;
+        height: 1px;
+        background-color: #e5e7eb;
+    }
+
+    .divider::before {
+        left: 0;
+    }
+
+    .divider::after {
+        right: 0;
+    }
+
+    .login-link {
+        text-align: center;
+        margin-top: 25px;
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .login-link a {
+        color: #6366f1;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .login-link a:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="signup-container">
+    <div class="logo-section">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+        </svg>
+        <h1>Create Account</h1>
+        <p>Join GenConnect and start connecting</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('signup') }}" id="signupForm">
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" placeholder="Choose a unique username" required minlength="3">
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" placeholder="you@example.com" required>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Create a strong password" required minlength="8">
+            <div class="strength-bar">
+                <div class="strength-bar-fill" id="strengthBar"></div>
+            </div>
+            <div class="password-strength" id="strengthText">Password strength: -</div>
+        </div>
+
+        <div class="form-group">
+            <label for="confirm_password">Confirm Password</label>
+            <input type="password" id="confirm_password" name="confirm_password" placeholder="Re-enter your password" required>
+        </div>
+
+        <div class="terms-check">
+            <input type="checkbox" id="terms" name="terms" required>
+            <label for="terms">
+                I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+            </label>
+        </div>
+
+        <button type="submit" class="btn-signup" id="submitBtn">Create Account</button>
+    </form>
+
+    <div class="divider">OR</div>
+
+    <div class="login-link">
+        Already have an account? <a href="{{ url_for('login') }}">Login</a>
+    </div>
+</div>
+
+<script>
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirm_password');
+    const strengthBar = document.getElementById('strengthBar');
+    const strengthText = document.getElementById('strengthText');
+    const submitBtn = document.getElementById('submitBtn');
+    const form = document.getElementById('signupForm');
+
+    // Password strength checker
+    passwordInput.addEventListener('input', function() {
+        const password = this.value;
+        let strength = 0;
+
+        if (password.length >= 8) strength++;
+        if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
+        if (password.match(/[0-9]/)) strength++;
+        if (password.match(/[^a-zA-Z0-9]/)) strength++;
+
+        strengthBar.className = 'strength-bar-fill';
+        
+        if (strength <= 1) {
+            strengthBar.classList.add('strength-weak');
+            strengthText.textContent = 'Password strength: Weak';
+            strengthText.style.color = '#ef4444';
+        } else if (strength <= 3) {
+            strengthBar.classList.add('strength-medium');
+            strengthText.textContent = 'Password strength: Medium';
+            strengthText.style.color = '#f59e0b';
+        } else {
+            strengthBar.classList.add('strength-strong');
+            strengthText.textContent = 'Password strength: Strong';
+            strengthText.style.color = '#10b981';
+        }
+    });
+
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+
+        if (password !== confirmPassword) {
+            e.preventDefault();
+            alert('Passwords do not match!');
+            confirmPasswordInput.focus();
+        }
+    });
+</script>
+{% endblock %}
