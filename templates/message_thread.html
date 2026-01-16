@@ -789,11 +789,86 @@
             color: white;
             border: none;
         }
+
+        /* Custom Notification Toast */
+        .notification-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 16px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: none;
+            align-items: center;
+            gap: 12px;
+            z-index: 3000;
+            min-width: 300px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .notification-toast.active {
+            display: flex;
+        }
+
+        .notification-toast.success {
+            border-left: 4px solid #10b981;
+        }
+
+        .notification-toast.error {
+            border-left: 4px solid #ef4444;
+        }
+
+        .notification-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .notification-toast.success .notification-icon {
+            background: #d1fae5;
+            color: #10b981;
+        }
+
+        .notification-toast.error .notification-icon {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: #111827;
+            margin-bottom: 2px;
+        }
+
+        .notification-message {
+            font-size: 13px;
+            color: #6b7280;
+        }
     </style>
 </head>
 <body>
 <div class="container">
-    <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-logo">
             <a href="/" class="logo">
@@ -885,9 +960,7 @@
         </ul>
     </aside>
 
-    <!-- Messages Container -->
     <div class="messages-container">
-        <!-- Conversations Sidebar -->
         <div class="conversations-sidebar">
             <div class="conversations-header">
                 <h2>Messages</h2>
@@ -902,7 +975,6 @@
                 </div>
             </div>
 
-            <!-- Conversation Menu -->
             <div class="conversation-menu" id="conversationMenu">
                 <div class="menu-item" onclick="openAddContactModal()">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -934,9 +1006,7 @@
             </div>
         </div>
 
-        <!-- Chat Area -->
         <div class="chat-area">
-            <!-- Chat Header -->
             <div class="chat-header">
                 <div class="chat-header-info">
                     <div class="chat-avatar">{{ contact.username[0].upper() }}</div>
@@ -956,7 +1026,6 @@
                 </div>
             </div>
 
-            <!-- Options Menu -->
             <div class="options-menu" id="optionsMenu">
                 <div class="option-item" data-remove-contact="{{ contact.id }}">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -975,7 +1044,6 @@
                 </div>
             </div>
 
-            <!-- Messages Area -->
             <div class="messages-area" id="messagesArea">
                 {% if messages %}
                     {% set ns = namespace(current_date='') %}
@@ -1013,7 +1081,6 @@
                 {% endif %}
             </div>
 
-            <!-- Message Input -->
             <div class="message-input-area">
                 <form id="messageForm" class="message-input-container" enctype="multipart/form-data">
                     <input type="file" id="fileInput" name="file" accept="image/*,.pdf,.doc,.docx" style="display: none;">
@@ -1035,7 +1102,6 @@
                     </button>
                 </form>
                 
-                <!-- Selected File Preview -->
                 <div class="file-preview" id="filePreview" style="display: none;">
                     <div class="file-info">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1051,7 +1117,18 @@
     </div>
 </div>
 
-<!-- Edit Modal -->
+<div class="notification-toast" id="notificationToast">
+    <div class="notification-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"/>
+        </svg>
+    </div>
+    <div class="notification-content">
+        <div class="notification-title" id="notificationTitle">Success</div>
+        <div class="notification-message" id="notificationMessage">Action successful!</div>
+    </div>
+</div>
+
 <div class="modal" id="editModal">
     <div class="modal-content">
         <div class="modal-header">
@@ -1068,7 +1145,7 @@
         </form>
     </div>
 </div>
-<!-- Add Contact Modal -->
+
 <div class="modal" id="addContactModal">
     <div class="modal-content">
         <div class="modal-header">
@@ -1082,13 +1159,12 @@
             </div>
             <div class="modal-actions">
                 <button type="button" class="btn btn-cancel" onclick="closeAddContactModal()">Cancel</button>
-                <button type="submit" class="btn btn-submit">Add Contact</button>
+                <button type="submit" class="btn btn-submit" id="addContactBtn">Add Contact</button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- New Group Modal -->
 <div class="modal" id="newGroupModal">
     <div class="modal-content">
         <div class="modal-header">
@@ -1098,7 +1174,7 @@
         <form id="newGroupForm">
             <div class="form-group">
                 <label for="groupName">Group Name</label>
-                <input type="text" id="groupName" name="groupName" placeholder="Enter group name" required>
+                <input type="text" id="groupName" name="group_name" placeholder="Enter group name" required>
             </div>
             <div class="form-group">
                 <label>Select Members</label>
@@ -1114,12 +1190,34 @@
             </div>
             <div class="modal-actions">
                 <button type="button" class="btn btn-cancel" onclick="closeNewGroupModal()">Cancel</button>
-                <button type="submit" class="btn btn-submit">Create Group</button>
+                <button type="submit" class="btn btn-submit" id="createGroupBtn">Create Group</button>
             </div>
         </form>
     </div>
 </div>
+
 <script>
+// Show notification function
+function showNotification(type, title, message) {
+    const toast = document.getElementById('notificationToast');
+    const titleEl = document.getElementById('notificationTitle');
+    const messageEl = document.getElementById('notificationMessage');
+    
+    toast.classList.remove('success', 'error', 'active');
+    titleEl.textContent = title;
+    messageEl.textContent = message;
+    toast.classList.add(type, 'active');
+    
+    const icon = toast.querySelector('.notification-icon svg');
+    if (type === 'success') {
+        icon.innerHTML = '<polyline points="20 6 9 17 4 12"/>';
+    } else {
+        icon.innerHTML = '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>';
+    }
+    
+    setTimeout(() => { toast.classList.remove('active'); }, 3000);
+}
+
 // File upload handling
 let selectedFile = null;
 
@@ -1149,16 +1247,21 @@ document.getElementById('conversationMenuBtn')?.addEventListener('click', functi
     document.getElementById('conversationMenu').classList.toggle('active');
 });
 
-// Close conversation menu when clicking outside
+// Close menus when clicking outside
 document.addEventListener('click', function(e) {
     const menu = document.getElementById('conversationMenu');
-    const button = document.getElementById('conversationMenuBtn');
-    if (menu && !menu.contains(e.target) && !button?.contains(e.target)) {
+    const menuBtn = document.getElementById('conversationMenuBtn');
+    if (menu && !menu.contains(e.target) && !menuBtn?.contains(e.target)) {
         menu.classList.remove('active');
     }
+    const optMenu = document.getElementById('optionsMenu');
+    const optBtn = document.getElementById('moreOptionsBtn');
+    if (optMenu && !optMenu.contains(e.target) && !optBtn?.contains(e.target)) {
+        optMenu.classList.remove('active');
+    }
 });
 
-// Add Contact Modal
+// Modals
 function openAddContactModal() {
     document.getElementById('addContactModal').classList.add('active');
     document.getElementById('conversationMenu').classList.remove('active');
@@ -1179,117 +1282,89 @@ function closeNewGroupModal() {
     document.getElementById('newGroupForm').reset();
 }
 
-// Handle Add Contact Form
+// Single block for Add Contact
 document.getElementById('addContactForm')?.addEventListener('submit', async function(e) {
     e.preventDefault();
-    
     const email = document.getElementById('contactEmail').value.trim();
+    const submitBtn = document.getElementById('addContactBtn');
+    
     if (!email) {
-        alert('Please enter an email address');
+        showNotification('error', 'Error', 'Please enter an email address');
         return;
     }
+    
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Adding...';
     
     const formData = new FormData();
     formData.append('email', email);
     
     try {
-        const response = await fetch('/add_contact', {
-            method: 'POST',
-            body: formData
-        });
-        
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        
+        const response = await fetch('/add_contact', { method: 'POST', body: formData });
         const data = await response.json();
         
         if (data.success) {
             closeAddContactModal();
-            alert('Contact added successfully!');
-            window.location.reload();
+            showNotification('success', 'Success', 'Contact added successfully!');
+            setTimeout(() => { window.location.reload(); }, 1000);
         } else {
-            alert(data.message || 'Failed to add contact');
+            showNotification('error', 'Error', data.message || 'Failed to add contact');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Add Contact';
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Error adding contact. Please try again.');
+        showNotification('error', 'Error', 'Error adding contact. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Add Contact';
     }
 });
 
-function openAddContactModal() {
-    document.getElementById('addContactModal').classList.add('active');
-    document.getElementById('conversationMenu').classList.remove('active');
-}
-
-function closeAddContactModal() {
-    document.getElementById('addContactModal').classList.remove('active');
-    document.getElementById('addContactForm').reset();
-}
-
-function openNewGroupModal() {
-    document.getElementById('newGroupModal').classList.add('active');
-    document.getElementById('conversationMenu').classList.remove('active');
-}
-
-function closeNewGroupModal() {
-    document.getElementById('newGroupModal').classList.remove('active');
-    document.getElementById('newGroupForm').reset();
-}
-
-// Handle Add Contact Form
-document.getElementById('addContactForm')?.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const email = document.getElementById('contactEmail').value.trim();
-    if (!email) {
-        alert('Please enter an email address');
-        return;
-    }
-    
-    const formData = new FormData();
-    formData.append('email', email);
-    
-    try {
-        const response = await fetch('/add_contact', {
-            method: 'POST',
-            body: formData
-        });
-        
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            closeAddContactModal();
-            alert('Contact added successfully!');
-            window.location.reload();
-        } else {
-            alert(data.message || 'Failed to add contact');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Error adding contact. Please try again.');
-    }
-});
-
-// Handle New Group Form
+// FIXED: Working Create Group Form
 document.getElementById('newGroupForm')?.addEventListener('submit', async function(e) {
     e.preventDefault();
     
-    const groupName = document.getElementById('groupName').value;
+    const groupName = document.getElementById('groupName').value.trim();
     const checkedBoxes = document.querySelectorAll('input[name="members"]:checked');
     const memberIds = Array.from(checkedBoxes).map(cb => cb.value);
+    const submitBtn = document.getElementById('createGroupBtn');
     
-    if (memberIds.length < 2) {
-        alert('Please select at least 2 members for the group');
+    if (!groupName) {
+        showNotification('error', 'Error', 'Please enter a group name');
         return;
     }
     
-    alert(`Group "${groupName}" will be created with ${memberIds.length} members. This feature will be fully implemented soon!`);
-    closeNewGroupModal();
+    if (memberIds.length < 1) {
+        showNotification('error', 'Error', 'Please select at least 1 member');
+        return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Creating...';
+    
+    const formData = new FormData(this);
+
+    try {
+        const response = await fetch('/create_group', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            closeNewGroupModal();
+            showNotification('success', 'Success', 'Group created successfully!');
+            setTimeout(() => { window.location.reload(); }, 1000);
+        } else {
+            showNotification('error', 'Error', data.message || 'Failed to create group');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Create Group';
+        }
+    } catch (error) {
+        showNotification('error', 'Error', 'Server error while creating group.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create Group';
+    }
 });
 
 // Options menu toggle
@@ -1298,31 +1373,19 @@ document.getElementById('moreOptionsBtn')?.addEventListener('click', function(e)
     document.getElementById('optionsMenu').classList.toggle('active');
 });
 
-// Close options menu when clicking outside
-document.addEventListener('click', function(e) {
-    const menu = document.getElementById('optionsMenu');
-    const button = document.getElementById('moreOptionsBtn');
-    if (menu && !menu.contains(e.target) && !button?.contains(e.target)) {
-        menu.classList.remove('active');
-    }
-});
-
 // Report and block user
 document.querySelector('[data-report-user]')?.addEventListener('click', async function() {
     const contactId = this.getAttribute('data-report-user');
-    const reason = prompt('Please provide a reason for reporting this user:');
+    const reason = prompt('Please provide a reason for reporting:');
     if (reason && reason.trim()) {
-        if (confirm('This will block the user and prevent them from contacting you. Continue?')) {
+        if (confirm('This will block the user. Continue?')) {
             try {
                 const formData = new FormData();
                 formData.append('reason', reason);
-                
-                // First block/remove the contact
                 const response = await fetch('/remove_contact/' + contactId, { method: 'POST' });
                 const data = await response.json();
-                
                 if (data.success) {
-                    alert('User has been reported and blocked. You will no longer receive messages from them.');
+                    alert('User blocked.');
                     window.location.href = '/messages';
                 } else {
                     alert(data.message);
@@ -1335,106 +1398,83 @@ document.querySelector('[data-report-user]')?.addEventListener('click', async fu
     document.getElementById('optionsMenu').classList.remove('active');
 });
 
+// Message Input resize
 const messageInput = document.getElementById('messageInput');
 messageInput.addEventListener('input', function() {
     this.style.height = 'auto';
     this.style.height = this.scrollHeight + 'px';
 });
 
+// Send Message
 document.getElementById('messageForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
     const content = document.getElementById('messageInput').value.trim();
     const fileInput = document.getElementById('fileInput');
     const file = fileInput.files[0];
     
-    // Allow sending if there's either content or a file
     if (!content && !file) {
-        alert('Please type a message or attach a file');
+        showNotification('error', 'Empty Message', 'Please type something or attach a file');
         return;
     }
     
     const formData = new FormData(this);
-    
-    // If there's a file but no content, add a placeholder
-    if (file && !content) {
-        formData.set('content', '[File attachment]');
-    }
+    if (file && !content) formData.set('content', '[File attachment]');
     
     try {
-        const response = await fetch('/send_message', {
-            method: 'POST',
-            body: formData
-        });
+        const response = await fetch('/send_message', { method: 'POST', body: formData });
         const data = await response.json();
-        if (data.success) {
-            window.location.reload();
-        } else {
-            alert(data.message);
-        }
+        if (data.success) window.location.reload();
+        else showNotification('error', 'Error', data.message);
     } catch (error) {
-        alert('Error sending message');
+        showNotification('error', 'Error', 'Error sending message');
     }
 });
 
+// Global click handler for message actions
 document.addEventListener('click', async function(e) {
-    // Handle delete message
+    // Delete message
     if (e.target.closest('[data-delete-btn]')) {
         const btn = e.target.closest('[data-delete-btn]');
         const messageId = btn.getAttribute('data-delete-btn');
-        if (!confirm('Delete this message?')) return;
-        
+        if (!confirm('Delete message?')) return;
         try {
             const response = await fetch('/delete_message/' + messageId, { method: 'POST' });
             const data = await response.json();
-            if (data.success) {
-                document.querySelector('[data-message-id="' + messageId + '"]').remove();
-            } else {
-                alert(data.message);
-            }
+            if (data.success) document.querySelector('[data-message-id="' + messageId + '"]').remove();
+            else showNotification('error', 'Error', data.message);
         } catch (error) {
-            alert('Error deleting message');
+            showNotification('error', 'Error', 'Error deleting message');
         }
     }
     
-    // Handle edit message
+    // Edit message
     if (e.target.closest('[data-edit-btn]')) {
         const btn = e.target.closest('[data-edit-btn]');
         const messageId = btn.getAttribute('data-edit-btn');
         const contentEl = document.querySelector('[data-content="' + messageId + '"]');
-        const content = contentEl.textContent;
         document.getElementById('editMessageId').value = messageId;
-        document.getElementById('editTextarea').value = content;
+        document.getElementById('editTextarea').value = contentEl.textContent;
         document.getElementById('editModal').classList.add('active');
     }
     
-    // Handle remove contact
+    // Remove contact
     if (e.target.closest('[data-remove-contact]')) {
         const btn = e.target.closest('[data-remove-contact]');
         const contactId = btn.getAttribute('data-remove-contact');
-        if (!confirm('Remove this contact?')) return;
-        
+        if (!confirm('Remove contact?')) return;
         try {
             const response = await fetch('/remove_contact/' + contactId, { method: 'POST' });
             const data = await response.json();
-            if (data.success) {
-                window.location.href = '/messages';
-            } else {
-                alert(data.message);
-            }
+            if (data.success) window.location.href = '/messages';
+            else showNotification('error', 'Error', data.message);
         } catch (error) {
-            alert('Error removing contact');
+            showNotification('error', 'Error', 'Error removing contact');
         }
     }
 });
 
-document.getElementById('closeEditBtn').addEventListener('click', function() {
-    document.getElementById('editModal').classList.remove('active');
-});
-
-document.getElementById('cancelEditBtn').addEventListener('click', function() {
-    document.getElementById('editModal').classList.remove('active');
-});
+document.getElementById('closeEditBtn').addEventListener('click', () => document.getElementById('editModal').classList.remove('active'));
+document.getElementById('cancelEditBtn').addEventListener('click', () => document.getElementById('editModal').classList.remove('active'));
 
 document.getElementById('editForm').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -1442,20 +1482,13 @@ document.getElementById('editForm').addEventListener('submit', async function(e)
     const content = document.getElementById('editTextarea').value;
     const formData = new FormData();
     formData.append('content', content);
-    
     try {
-        const response = await fetch('/edit_message/' + messageId, {
-            method: 'POST',
-            body: formData
-        });
+        const response = await fetch('/edit_message/' + messageId, { method: 'POST', body: formData });
         const data = await response.json();
-        if (data.success) {
-            window.location.reload();
-        } else {
-            alert(data.message);
-        }
+        if (data.success) window.location.reload();
+        else showNotification('error', 'Error', data.message);
     } catch (error) {
-        alert('Error editing message');
+        showNotification('error', 'Error', 'Error editing message');
     }
 });
 
