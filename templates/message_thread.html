@@ -1068,7 +1068,57 @@
         </form>
     </div>
 </div>
+<!-- Add Contact Modal -->
+<div class="modal" id="addContactModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Add New Contact</h3>
+            <span class="modal-close" onclick="closeAddContactModal()">×</span>
+        </div>
+        <form id="addContactForm">
+            <div class="form-group">
+                <label for="contactEmail">Email Address</label>
+                <input type="email" id="contactEmail" name="email" placeholder="user@example.com" required>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-cancel" onclick="closeAddContactModal()">Cancel</button>
+                <button type="submit" class="btn btn-submit">Add Contact</button>
+            </div>
+        </form>
+    </div>
+</div>
 
+<!-- New Group Modal -->
+<div class="modal" id="newGroupModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Create New Group</h3>
+            <span class="modal-close" onclick="closeNewGroupModal()">×</span>
+        </div>
+        <form id="newGroupForm">
+            <div class="form-group">
+                <label for="groupName">Group Name</label>
+                <input type="text" id="groupName" name="groupName" placeholder="Enter group name" required>
+            </div>
+            <div class="form-group">
+                <label>Select Members</label>
+                <div class="contact-list">
+                    {% for c in contacts %}
+                    <label class="contact-item">
+                        <input type="checkbox" class="contact-checkbox" name="members" value="{{ c.id }}">
+                        <div class="contact-avatar-small">{{ c.username[0].upper() }}</div>
+                        <span class="contact-name">{{ c.username }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-cancel" onclick="closeNewGroupModal()">Cancel</button>
+                <button type="submit" class="btn btn-submit">Create Group</button>
+            </div>
+        </form>
+    </div>
+</div>
 <script>
 // File upload handling
 let selectedFile = null;
@@ -1109,6 +1159,64 @@ document.addEventListener('click', function(e) {
 });
 
 // Add Contact Modal
+function openAddContactModal() {
+    document.getElementById('addContactModal').classList.add('active');
+    document.getElementById('conversationMenu').classList.remove('active');
+}
+
+function closeAddContactModal() {
+    document.getElementById('addContactModal').classList.remove('active');
+    document.getElementById('addContactForm').reset();
+}
+
+function openNewGroupModal() {
+    document.getElementById('newGroupModal').classList.add('active');
+    document.getElementById('conversationMenu').classList.remove('active');
+}
+
+function closeNewGroupModal() {
+    document.getElementById('newGroupModal').classList.remove('active');
+    document.getElementById('newGroupForm').reset();
+}
+
+// Handle Add Contact Form
+document.getElementById('addContactForm')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('contactEmail').value.trim();
+    if (!email) {
+        alert('Please enter an email address');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('email', email);
+    
+    try {
+        const response = await fetch('/add_contact', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            closeAddContactModal();
+            alert('Contact added successfully!');
+            window.location.reload();
+        } else {
+            alert(data.message || 'Failed to add contact');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error adding contact. Please try again.');
+    }
+});
+
 function openAddContactModal() {
     document.getElementById('addContactModal').classList.add('active');
     document.getElementById('conversationMenu').classList.remove('active');

@@ -93,6 +93,7 @@
             width: 350px;
             background: white;
             border-right: 1px solid #e5e7eb;
+            position: relative;
         }
 
         .conversations-header {
@@ -123,11 +124,6 @@
 
         .header-icon:hover {
             background-color: #f3f4f6;
-        }
-
-        /* Conversation Menu */
-        .conversations-sidebar {
-            position: relative;
         }
 
         .conversation-menu {
@@ -172,7 +168,6 @@
             color: #374151;
         }
 
-        /* Modal Styles */
         .modal {
             display: none;
             position: fixed;
@@ -289,7 +284,6 @@
             opacity: 0.9;
         }
 
-        /* Contact Selection */
         .contact-list {
             max-height: 300px;
             overflow-y: auto;
@@ -338,19 +332,6 @@
         .contact-name {
             font-size: 14px;
             color: #374151;
-        }
-
-        .add-contact-btn {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 15px;
         }
 
         .conversations-list {
@@ -416,92 +397,80 @@
             color: #6b7280;
         }
 
-        .modal {
-            display: none;
+        /* Custom Notification Toast */
+        .notification-toast {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 16px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: none;
+            align-items: center;
+            gap: 12px;
+            z-index: 3000;
+            min-width: 300px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .notification-toast.active {
+            display: flex;
+        }
+
+        .notification-toast.success {
+            border-left: 4px solid #10b981;
+        }
+
+        .notification-toast.error {
+            border-left: 4px solid #ef4444;
+        }
+
+        .notification-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
 
-        .modal.active {
-            display: flex;
+        .notification-toast.success .notification-icon {
+            background: #d1fae5;
+            color: #10b981;
         }
 
-        .modal-content {
-            background: white;
-            border-radius: 12px;
-            padding: 30px;
-            width: 90%;
-            max-width: 450px;
+        .notification-toast.error .notification-icon {
+            background: #fee2e2;
+            color: #ef4444;
         }
 
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
+        .notification-content {
+            flex: 1;
         }
 
-        .modal-header h3 {
-            font-size: 20px;
-            font-weight: 700;
+        .notification-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: #111827;
+            margin-bottom: 2px;
         }
 
-        .modal-close {
-            cursor: pointer;
-            font-size: 24px;
+        .notification-message {
+            font-size: 13px;
             color: #6b7280;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            font-size: 14px;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            font-size: 15px;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .btn-cancel {
-            background: white;
-            border: 1px solid #d1d5db;
-            color: #374151;
-        }
-
-        .btn-submit {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
         }
     </style>
 </head>
@@ -510,18 +479,18 @@
     <aside class="sidebar">
         <div class="sidebar-logo">
             <a href="/" class="logo">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px; height: 24px;">
-                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                <path d="M2 17l10 5 10-5"/>
-                <path d="M2 12l10 5 10-5"/>
-            </svg>
-                            <span>GenConnect</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
+                </svg>
+                <span>GenConnect</span>
             </a>
         </div>
         <ul class="sidebar-nav">
             <li>
                 <a href="/home">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 22px; height: 22px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                         <polyline points="9 22 9 12 15 12 15 22"/>
                     </svg>
@@ -530,7 +499,7 @@
             </li>
             <li>
                 <a href="#">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 22px; height: 22px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="10"/>
                         <circle cx="12" cy="10" r="3"/>
                         <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/>
@@ -540,7 +509,7 @@
             </li>
             <li>
                 <a href="#">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 22px; height: 22px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                         <circle cx="9" cy="7" r="4"/>
                         <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
@@ -551,7 +520,7 @@
             </li>
             <li>
                 <a href="#">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 22px; height: 22px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="10"/>
                         <line x1="12" y1="16" x2="12" y2="12"/>
                         <line x1="12" y1="8" x2="12.01" y2="8"/>
@@ -561,7 +530,7 @@
             </li>
             <li>
                 <a href="#">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 22px; height: 22px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                         <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
                     </svg>
@@ -570,7 +539,7 @@
             </li>
             <li>
                 <a href="/messages" class="active">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 22px; height: 22px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                     </svg>
                     <span>Messages</span>
@@ -578,7 +547,7 @@
             </li>
             <li>
                 <a href="/profile">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 22px; height: 22px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                         <circle cx="12" cy="7" r="4"/>
                     </svg>
@@ -587,7 +556,7 @@
             </li>
             <li>
                 <a href="/logout">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 22px; height: 22px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                         <polyline points="16 17 21 12 16 7"/>
                         <line x1="21" y1="12" x2="9" y2="12"/>
@@ -611,7 +580,6 @@
                 </div>
             </div>
 
-            <!-- Conversation Menu -->
             <div class="conversation-menu" id="conversationMenu">
                 <div class="menu-item" onclick="openAddContactModal()">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -665,22 +633,16 @@
     </div>
 </div>
 
-<div class="modal" id="addContactModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Add New Contact</h3>
-            <span class="modal-close" onclick="closeAddContactModal()">×</span>
-        </div>
-        <form id="addContactForm">
-            <div class="form-group">
-                <label for="contactEmail">Email Address</label>
-                <input type="email" id="contactEmail" name="email" placeholder="user@example.com" required>
-            </div>
-            <div class="modal-actions">
-                <button type="button" class="btn btn-cancel" onclick="closeAddContactModal()">Cancel</button>
-                <button type="submit" class="btn btn-submit">Add Contact</button>
-            </div>
-        </form>
+<!-- Notification Toast -->
+<div class="notification-toast" id="notificationToast">
+    <div class="notification-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"/>
+        </svg>
+    </div>
+    <div class="notification-content">
+        <div class="notification-title" id="notificationTitle">Success</div>
+        <div class="notification-message" id="notificationMessage">Contact added successfully!</div>
     </div>
 </div>
 
@@ -699,7 +661,7 @@
             </div>
             <div class="modal-actions">
                 <button type="button" class="btn btn-cancel" onclick="closeAddContactModal()">Cancel</button>
-                <button type="submit" class="btn btn-submit">Add Contact</button>
+                <button type="submit" class="btn btn-submit" id="addContactBtn">Add Contact</button>
             </div>
         </form>
     </div>
@@ -742,6 +704,36 @@
 </div>
 
 <script>
+// Show notification function
+function showNotification(type, title, message) {
+    const toast = document.getElementById('notificationToast');
+    const titleEl = document.getElementById('notificationTitle');
+    const messageEl = document.getElementById('notificationMessage');
+    
+    // Remove previous classes
+    toast.classList.remove('success', 'error', 'active');
+    
+    // Set content
+    titleEl.textContent = title;
+    messageEl.textContent = message;
+    
+    // Add appropriate class
+    toast.classList.add(type, 'active');
+    
+    // Update icon based on type
+    const icon = toast.querySelector('.notification-icon svg');
+    if (type === 'success') {
+        icon.innerHTML = '<polyline points="20 6 9 17 4 12"/>';
+    } else {
+        icon.innerHTML = '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>';
+    }
+    
+    // Auto hide after 3 seconds
+    setTimeout(() => {
+        toast.classList.remove('active');
+    }, 3000);
+}
+
 // Conversation menu toggle
 document.getElementById('conversationMenuBtn')?.addEventListener('click', function(e) {
     e.stopPropagation();
@@ -781,10 +773,16 @@ document.getElementById('addContactForm').addEventListener('submit', async funct
     e.preventDefault();
     
     const email = document.getElementById('contactEmail').value.trim();
+    const submitBtn = document.getElementById('addContactBtn');
+    
     if (!email) {
-        alert('Please enter an email address');
+        showNotification('error', 'Error', 'Please enter an email address');
         return;
     }
+    
+    // Disable button during submission
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Adding...';
     
     const formData = new FormData();
     formData.append('email', email);
@@ -795,22 +793,26 @@ document.getElementById('addContactForm').addEventListener('submit', async funct
             body: formData
         });
         
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        
         const data = await response.json();
         
         if (data.success) {
             closeAddContactModal();
-            alert('Contact added successfully!');
-            window.location.reload();
+            showNotification('success', 'Success', 'Contact added successfully!');
+            
+            // Reload page after showing notification
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
         } else {
-            alert(data.message || 'Failed to add contact');
+            showNotification('error', 'Error', data.message || 'Failed to add contact');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Add Contact';
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Error adding contact. Please try again.');
+        showNotification('error', 'Error', 'Error adding contact. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Add Contact';
     }
 });
 
@@ -822,38 +824,12 @@ document.getElementById('newGroupForm')?.addEventListener('submit', async functi
     const memberIds = Array.from(checkedBoxes).map(cb => cb.value);
     
     if (memberIds.length < 2) {
-        alert('Please select at least 2 members for the group');
+        showNotification('error', 'Error', 'Please select at least 2 members for the group');
         return;
     }
     
-    alert(`Group "${groupName}" will be created with ${memberIds.length} members. This feature will be fully implemented soon!`);
+    showNotification('success', 'Coming Soon', `Group "${groupName}" feature will be fully implemented soon!`);
     closeNewGroupModal();
-    
-    // Future implementation: Send to backend
-    // const formData = new FormData();
-    // formData.append('groupName', groupName);
-    // formData.append('members', JSON.stringify(memberIds));
-    // const response = await fetch('/create_group', { method: 'POST', body: formData });
-});
-    e.preventDefault();
-    const email = document.getElementById('contactEmail').value;
-    const formData = new FormData();
-    formData.append('email', email);
-    
-    try {
-        const response = await fetch('/add_contact', {
-            method: 'POST',
-            body: formData
-        });
-        const data = await response.json();
-        if (data.success) {
-            window.location.reload();
-        } else {
-            alert(data.message);
-        }
-    } catch (error) {
-        alert('Error adding contact');
-    }
 });
 </script>
 </body>
