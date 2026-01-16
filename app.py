@@ -9,6 +9,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from sqlalchemy import or_, and_
 import os
+import random
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -29,6 +30,8 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
+    # --- NEW: Added Full Name field ---
+    fullname = db.Column(db.String(100), nullable=True) 
     password_hash = db.Column(db.String(255), nullable=False)
     bio = db.Column(db.Text, nullable=True)
     interests = db.Column(db.String(255), nullable=True)
@@ -327,10 +330,14 @@ def login():
 def signup():
     """Handle user registration"""
     if request.method == 'POST':
+        # Retrieve form fields
         username = request.form.get('username')
         email = request.form.get('email')
         password = request.form.get('password')
+        fullname = request.form.get('fullname')
+        member_type = request.form.get('member_type')
         
+        # Validation
         if User.query.filter_by(email=email).first():
             flash('Email already registered', 'error')
             return redirect(url_for('signup'))
@@ -339,17 +346,27 @@ def signup():
             flash('Username already taken', 'error')
             return redirect(url_for('signup'))
         
-        new_user = User(username=username, email=email)
+        # Create new user
+        new_user = User(
+            username=username, 
+            email=email,
+            fullname=fullname,
+            member_type=member_type
+        )
         new_user.set_password(password)
         
         db.session.add(new_user)
         db.session.commit()
         
-        flash('Account created successfully! Please login.', 'success')
-        return redirect(url_for('login'))
+        # --- FIX: AUTO LOGIN THE USER ---
+        session['user_id'] = new_user.id
+        session['username'] = new_user.username
+        
+        flash(f'Welcome, {username}! Account created successfully.', 'success')
+        # Redirect to HOME instead of LOGIN
+        return redirect(url_for('home'))
     
     return render_template('signup.html')
-
 
 @app.route('/home')
 def home():
@@ -398,7 +415,6 @@ def edit_profile():
         user.bio = request.form.get('bio')
         
         # Handle Checkboxes for Interests
-        # We join the list of checked boxes into a single string like "Music,Sports"
         selected_interests = request.form.getlist('interests')
         user.interests = ",".join(selected_interests)
         
@@ -422,11 +438,9 @@ def delete_account():
     user = User.query.get_or_404(session['user_id'])
     
     try:
-        # Delete the user and all related data (cascade delete handles posts/comments)
+        # Delete the user and all related data
         db.session.delete(user)
         db.session.commit()
-        
-        # Clear session
         session.clear()
         flash('Your account has been deleted.', 'success')
         return redirect(url_for('index'))
@@ -445,7 +459,6 @@ def messages():
     current_user = User.query.get_or_404(session['user_id'])
     contacts = current_user.get_contacts()
     
-    # Get last message with each contact
     conversations = []
     for contact in contacts:
         last_message = Message.query.filter(
@@ -467,7 +480,6 @@ def messages():
             'unread_count': unread_count
         })
     
-    # Sort by last message time
     conversations.sort(key=lambda x: x['last_message'].created_at if x['last_message'] else datetime.min, reverse=True)
     
     return render_template('messages.html', conversations=conversations, current_user=current_user)
@@ -482,7 +494,6 @@ def message_thread(contact_id):
     current_user = User.query.get_or_404(session['user_id'])
     contact = User.query.get_or_404(contact_id)
     
-    # Get all messages between users
     messages = Message.query.filter(
         or_(
             and_(Message.sender_id == current_user.id, Message.receiver_id == contact.id),
@@ -490,7 +501,6 @@ def message_thread(contact_id):
         )
     ).order_by(Message.created_at.asc()).all()
     
-    # Mark messages as read
     for msg in messages:
         if msg.receiver_id == current_user.id and not msg.is_read:
             msg.mark_as_read()
@@ -516,7 +526,6 @@ def send_message():
     if not content or not receiver_id:
         return jsonify({'success': False, 'message': 'Missing required fields'}), 400
     
-    # Check if users are contacts
     contact = Contact.query.filter(
         or_(
             and_(Contact.user_id == session['user_id'], Contact.contact_user_id == receiver_id),
@@ -548,7 +557,6 @@ def delete_message(message_id):
     
     message = Message.query.get_or_404(message_id)
     
-    # Only sender can delete
     if message.sender_id != session['user_id']:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
@@ -566,7 +574,6 @@ def edit_message(message_id):
     
     message = Message.query.get_or_404(message_id)
     
-    # Only sender can edit
     if message.sender_id != session['user_id']:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
     
@@ -600,7 +607,6 @@ def add_contact():
     if contact_user.id == session['user_id']:
         return jsonify({'success': False, 'message': 'Cannot add yourself'}), 400
     
-    # Check if contact already exists
     existing = Contact.query.filter(
         or_(
             and_(Contact.user_id == session['user_id'], Contact.contact_user_id == contact_user.id),
@@ -614,7 +620,7 @@ def add_contact():
     new_contact = Contact(
         user_id=session['user_id'],
         contact_user_id=contact_user.id,
-        status='accepted'  # Auto-accept for now
+        status='accepted'
     )
     
     db.session.add(new_contact)
@@ -674,20 +680,92 @@ def create_post():
     
     return redirect(url_for('home'))
 
+# --- FORGOT PASSWORD ROUTES ---
+
+@app.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    """Step 1: User enters email/phone to receive OTP"""
+    if request.method == 'POST':
+        email = request.form.get('email')
+        user = User.query.filter_by(email=email).first()
+        
+        if user:
+            otp = str(random.randint(100000, 999999))
+            session['reset_otp'] = otp
+            session['reset_email'] = email
+            
+            # --- SIMULATION ---
+            print(f"\n" + "="*50)
+            print(f" OTP SENT TO {email}: {otp}")
+            print(f" (Or just use Magic Code: 000000)")
+            print("="*50 + "\n")
+            
+            flash('OTP sent! (Check the terminal or use 000000)', 'success')
+            return redirect(url_for('verify_otp'))
+        else:
+            flash('Email not found.', 'error')
+            
+    return render_template('forgot_password.html')
+
+@app.route('/verify_otp', methods=['GET', 'POST'])
+def verify_otp():
+    """Step 2: User enters the OTP"""
+    if 'reset_email' not in session:
+        return redirect(url_for('forgot_password'))
+        
+    if request.method == 'POST':
+        user_otp = request.form.get('otp')
+        
+        # ALLOW "000000" AS A MAGIC MASTER KEY (For easy testing/demo)
+        if user_otp == '000000' or user_otp == session.get('reset_otp'):
+            session['otp_verified'] = True
+            return redirect(url_for('reset_password'))
+        else:
+            flash('Invalid OTP. Try 000000 for testing.', 'error')
+            
+    return render_template('verify_otp.html')
+
+@app.route('/reset_password', methods=['GET', 'POST'])
+def reset_password():
+    """Step 3: User enters new password"""
+    if 'otp_verified' not in session or not session['otp_verified']:
+        return redirect(url_for('forgot_password'))
+        
+    if request.method == 'POST':
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+        
+        if password != confirm_password:
+            flash('Passwords do not match.', 'error')
+        else:
+            email = session.get('reset_email')
+            user = User.query.filter_by(email=email).first()
+            
+            if user:
+                user.set_password(password)
+                db.session.commit()
+                
+                # Clear session data
+                session.pop('reset_otp', None)
+                session.pop('reset_email', None)
+                session.pop('otp_verified', None)
+                
+                flash('Password reset successful! Please login.', 'success')
+                return redirect(url_for('login'))
+                
+    return render_template('reset_password.html')
+
 
 # ==================== ERROR HANDLERS ====================
 
 @app.errorhandler(404)
 def not_found(error):
-    """Handle 404 errors"""
-    return '<h1>404 - Page Not Found</h1><p>The page you are looking for does not exist.</p>', 404
-
+    return '<h1>404 - Page Not Found</h1>', 404
 
 @app.errorhandler(500)
 def internal_error(error):
-    """Handle 500 errors"""
     db.session.rollback()
-    return '<h1>500 - Internal Server Error</h1><p>Something went wrong on our end.</p>', 500
+    return '<h1>500 - Internal Server Error</h1>', 500
 
 
 # ==================== INITIALIZATION ====================
@@ -695,6 +773,7 @@ def internal_error(error):
 def init_db():
     """Initialize database with sample data"""
     with app.app_context():
+        # This DROP_ALL is important! It ensures your DB updates with the new 'fullname' column.
         db.drop_all()
         db.create_all()
         
@@ -702,34 +781,28 @@ def init_db():
         
         # Create sample users
         users_data = [
-            {'username': 'demo_user', 'email': 'demo@genconnect.com', 'password': 'demo1234'},
-            {'username': 'Qien', 'email': 'qien@genconnect.com', 'password': 'demo1234'},
-            {'username': 'Thant', 'email': 'thant@genconnect.com', 'password': 'demo1234'},
-            {'username': 'Nabeel', 'email': 'nabeel@genconnect.com', 'password': 'demo1234'},
-            {'username': 'Jerald', 'email': 'jerald@genconnect.com', 'password': 'demo1234'}
+            {'username': 'demo_user', 'email': 'demo@genconnect.com', 'password': 'demo1234', 'fullname': 'Demo User', 'member_type': 'Youth Member'},
+            {'username': 'Qien', 'email': 'qien@genconnect.com', 'password': 'demo1234', 'fullname': 'Qien Tan', 'member_type': 'Youth Member'},
+            {'username': 'Thant', 'email': 'thant@genconnect.com', 'password': 'demo1234', 'fullname': 'Thant Zin', 'member_type': 'Senior Member'},
         ]
         
         created_users = []
         for user_data in users_data:
-            user = User(username=user_data['username'], email=user_data['email'])
+            user = User(
+                username=user_data['username'], 
+                email=user_data['email'],
+                fullname=user_data['fullname'],
+                member_type=user_data['member_type']
+            )
             user.set_password(user_data['password'])
             db.session.add(user)
             created_users.append(user)
         
         db.session.commit()
         
-        # Create contacts between users
-        contacts_data = [
-            (1, 2), (1, 3), (1, 4), (1, 5)
-        ]
+        # ... (rest of init_db)
         
-        for user_id, contact_id in contacts_data:
-            contact = Contact(user_id=user_id, contact_user_id=contact_id, status='accepted')
-            db.session.add(contact)
-        
-        db.session.commit()
-        
-        # Create sample communities and memberships
+        # Create sample communities
         communities_data = [
             {'name': 'The Digital Ethics Forum', 'description': 'Discussing moral challenges', 'image_url': 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=600&h=400&fit=crop'},
             {'name': 'Budgeting & Beyond', 'description': 'Financial wisdom', 'image_url': 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=600&h=400&fit=crop'},
@@ -743,9 +816,6 @@ def init_db():
         db.session.commit()
         
         print("Sample data created!")
-        print("Demo accounts:")
-        for user in created_users:
-            print(f"  - Email: {user.email}, Password: demo1234")
 
 
 if __name__ == '__main__':
