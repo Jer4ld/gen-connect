@@ -95,7 +95,7 @@
 
         /* Conversations Sidebar */
         .conversations-sidebar {
-            width: 300px;
+            width: 280px;
             background: white;
             border-right: 1px solid #e5e7eb;
             display: flex;
@@ -105,13 +105,36 @@
         .conversations-header {
             padding: 20px;
             border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .conversations-header h2 {
             font-size: 20px;
             font-weight: 700;
             color: #111827;
-            margin-bottom: 10px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .header-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            color: #6b7280;
+        }
+
+        .header-icon:hover {
+            background-color: #f3f4f6;
         }
 
         .conversations-list {
@@ -281,6 +304,167 @@
 
         .option-item.report-option:hover svg {
             color: #dc2626;
+        }
+
+        /* Conversation Menu */
+        .conversations-sidebar {
+            position: relative;
+        }
+
+        .conversation-menu {
+            position: absolute;
+            top: 60px;
+            right: 15px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 8px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: none;
+            z-index: 1000;
+            min-width: 180px;
+        }
+
+        .conversation-menu.active {
+            display: block;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .menu-item:hover {
+            background-color: #f9fafb;
+        }
+
+        .menu-item svg {
+            width: 18px;
+            height: 18px;
+            color: #6b7280;
+        }
+
+        .menu-item span {
+            font-size: 14px;
+            color: #374151;
+        }
+
+        /* Add Contact Modal */
+        .add-contact-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .add-contact-modal.active {
+            display: flex;
+        }
+
+        .add-contact-content {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .add-contact-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .add-contact-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        /* Contact Selection */
+        .contact-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-bottom: 1px solid #f3f4f6;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .contact-item:hover {
+            background-color: #f9fafb;
+        }
+
+        .contact-item:last-child {
+            border-bottom: none;
+        }
+
+        .contact-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .contact-avatar-small {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .contact-name {
+            font-size: 14px;
+            color: #374151;
         }
 
         /* Messages Area */
@@ -707,6 +891,37 @@
         <div class="conversations-sidebar">
             <div class="conversations-header">
                 <h2>Messages</h2>
+                <div class="header-actions">
+                    <div class="header-icon" id="conversationMenuBtn" title="More Options">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="1"/>
+                            <circle cx="12" cy="5" r="1"/>
+                            <circle cx="12" cy="19" r="1"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conversation Menu -->
+            <div class="conversation-menu" id="conversationMenu">
+                <div class="menu-item" onclick="openAddContactModal()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="8.5" cy="7" r="4"/>
+                        <line x1="20" y1="8" x2="20" y2="14"/>
+                        <line x1="23" y1="11" x2="17" y2="11"/>
+                    </svg>
+                    <span>Add Contact</span>
+                </div>
+                <div class="menu-item" onclick="openNewGroupModal()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <span>New Group</span>
+                </div>
             </div>
 
             <div class="conversations-list">
@@ -800,8 +1015,8 @@
 
             <!-- Message Input -->
             <div class="message-input-area">
-                <form id="messageForm" class="message-input-container">
-                    <input type="file" id="fileInput" accept="image/*,.pdf,.doc,.docx" style="display: none;">
+                <form id="messageForm" class="message-input-container" enctype="multipart/form-data">
+                    <input type="file" id="fileInput" name="file" accept="image/*,.pdf,.doc,.docx" style="display: none;">
                     <button type="button" class="attachment-button" onclick="document.getElementById('fileInput').click()">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <line x1="12" y1="5" x2="12" y2="19"/>
@@ -809,7 +1024,7 @@
                         </svg>
                     </button>
                     <div class="input-wrapper">
-                        <textarea id="messageInput" name="content" placeholder="Type a message..." rows="1" required></textarea>
+                        <textarea id="messageInput" name="content" placeholder="Type a message..." rows="1"></textarea>
                     </div>
                     <input type="hidden" name="receiver_id" value="{{ contact.id }}">
                     <button type="submit" class="send-button">
@@ -861,19 +1076,116 @@ let selectedFile = null;
 document.getElementById('fileInput').addEventListener('change', function(e) {
     selectedFile = e.target.files[0];
     if (selectedFile) {
-        document.getElementById('fileName').textContent = selectedFile.name;
-        document.getElementById('filePreview').style.display = 'flex';
+        const preview = document.getElementById('filePreview');
+        if (preview) {
+            document.getElementById('fileName').textContent = selectedFile.name;
+            preview.style.display = 'flex';
+        }
     }
 });
 
 function removeFile() {
     selectedFile = null;
     document.getElementById('fileInput').value = '';
-    document.getElementById('filePreview').style.display = 'none';
+    const preview = document.getElementById('filePreview');
+    if (preview) {
+        preview.style.display = 'none';
+    }
 }
 
+// Conversation menu toggle
+document.getElementById('conversationMenuBtn')?.addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.getElementById('conversationMenu').classList.toggle('active');
+});
+
+// Close conversation menu when clicking outside
+document.addEventListener('click', function(e) {
+    const menu = document.getElementById('conversationMenu');
+    const button = document.getElementById('conversationMenuBtn');
+    if (menu && !menu.contains(e.target) && !button?.contains(e.target)) {
+        menu.classList.remove('active');
+    }
+});
+
+// Add Contact Modal
+function openAddContactModal() {
+    document.getElementById('addContactModal').classList.add('active');
+    document.getElementById('conversationMenu').classList.remove('active');
+}
+
+function closeAddContactModal() {
+    document.getElementById('addContactModal').classList.remove('active');
+    document.getElementById('addContactForm').reset();
+}
+
+function openNewGroupModal() {
+    document.getElementById('newGroupModal').classList.add('active');
+    document.getElementById('conversationMenu').classList.remove('active');
+}
+
+function closeNewGroupModal() {
+    document.getElementById('newGroupModal').classList.remove('active');
+    document.getElementById('newGroupForm').reset();
+}
+
+// Handle Add Contact Form
+document.getElementById('addContactForm')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('contactEmail').value.trim();
+    if (!email) {
+        alert('Please enter an email address');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('email', email);
+    
+    try {
+        const response = await fetch('/add_contact', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            closeAddContactModal();
+            alert('Contact added successfully!');
+            window.location.reload();
+        } else {
+            alert(data.message || 'Failed to add contact');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error adding contact. Please try again.');
+    }
+});
+
+// Handle New Group Form
+document.getElementById('newGroupForm')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const groupName = document.getElementById('groupName').value;
+    const checkedBoxes = document.querySelectorAll('input[name="members"]:checked');
+    const memberIds = Array.from(checkedBoxes).map(cb => cb.value);
+    
+    if (memberIds.length < 2) {
+        alert('Please select at least 2 members for the group');
+        return;
+    }
+    
+    alert(`Group "${groupName}" will be created with ${memberIds.length} members. This feature will be fully implemented soon!`);
+    closeNewGroupModal();
+});
+
 // Options menu toggle
-document.getElementById('moreOptionsBtn').addEventListener('click', function(e) {
+document.getElementById('moreOptionsBtn')?.addEventListener('click', function(e) {
     e.stopPropagation();
     document.getElementById('optionsMenu').classList.toggle('active');
 });
@@ -882,20 +1194,37 @@ document.getElementById('moreOptionsBtn').addEventListener('click', function(e) 
 document.addEventListener('click', function(e) {
     const menu = document.getElementById('optionsMenu');
     const button = document.getElementById('moreOptionsBtn');
-    if (!menu.contains(e.target) && !button.contains(e.target)) {
+    if (menu && !menu.contains(e.target) && !button?.contains(e.target)) {
         menu.classList.remove('active');
     }
 });
 
-// Report user
-document.querySelector('[data-report-user]')?.addEventListener('click', function() {
+// Report and block user
+document.querySelector('[data-report-user]')?.addEventListener('click', async function() {
     const contactId = this.getAttribute('data-report-user');
     const reason = prompt('Please provide a reason for reporting this user:');
-    if (reason) {
-        alert('User reported. Thank you for helping keep GenConnect safe.');
-        document.getElementById('optionsMenu').classList.remove('active');
-        // You can add actual reporting logic here
+    if (reason && reason.trim()) {
+        if (confirm('This will block the user and prevent them from contacting you. Continue?')) {
+            try {
+                const formData = new FormData();
+                formData.append('reason', reason);
+                
+                // First block/remove the contact
+                const response = await fetch('/remove_contact/' + contactId, { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('User has been reported and blocked. You will no longer receive messages from them.');
+                    window.location.href = '/messages';
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                alert('Error reporting user');
+            }
+        }
     }
+    document.getElementById('optionsMenu').classList.remove('active');
 });
 
 const messageInput = document.getElementById('messageInput');
@@ -906,9 +1235,23 @@ messageInput.addEventListener('input', function() {
 
 document.getElementById('messageForm').addEventListener('submit', async function(e) {
     e.preventDefault();
+    
+    const content = document.getElementById('messageInput').value.trim();
+    const fileInput = document.getElementById('fileInput');
+    const file = fileInput.files[0];
+    
+    // Allow sending if there's either content or a file
+    if (!content && !file) {
+        alert('Please type a message or attach a file');
+        return;
+    }
+    
     const formData = new FormData(this);
-    const content = formData.get('content').trim();
-    if (!content) return;
+    
+    // If there's a file but no content, add a placeholder
+    if (file && !content) {
+        formData.set('content', '[File attachment]');
+    }
     
     try {
         const response = await fetch('/send_message', {

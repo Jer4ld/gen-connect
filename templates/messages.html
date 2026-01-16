@@ -98,13 +98,246 @@
         .conversations-header {
             padding: 20px;
             border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .conversations-header h2 {
             font-size: 24px;
             font-weight: 700;
             color: #111827;
-            margin-bottom: 15px;
+        }
+
+        .header-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            color: #6b7280;
+        }
+
+        .header-icon:hover {
+            background-color: #f3f4f6;
+        }
+
+        /* Conversation Menu */
+        .conversations-sidebar {
+            position: relative;
+        }
+
+        .conversation-menu {
+            position: absolute;
+            top: 60px;
+            right: 15px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 8px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: none;
+            z-index: 1000;
+            min-width: 180px;
+        }
+
+        .conversation-menu.active {
+            display: block;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .menu-item:hover {
+            background-color: #f9fafb;
+        }
+
+        .menu-item svg {
+            width: 18px;
+            height: 18px;
+            color: #6b7280;
+        }
+
+        .menu-item span {
+            font-size: 14px;
+            color: #374151;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .modal-close {
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+            font-size: 24px;
+            color: #6b7280;
+        }
+
+        .modal-close:hover {
+            background-color: #f3f4f6;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #374151;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .btn-cancel {
+            background: white;
+            border: 1px solid #d1d5db;
+            color: #374151;
+        }
+
+        .btn-cancel:hover {
+            background: #f9fafb;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-submit:hover {
+            opacity: 0.9;
+        }
+
+        /* Contact Selection */
+        .contact-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-bottom: 1px solid #f3f4f6;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .contact-item:hover {
+            background-color: #f9fafb;
+        }
+
+        .contact-item:last-child {
+            border-bottom: none;
+        }
+
+        .contact-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .contact-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .contact-name {
+            font-size: 14px;
+            color: #374151;
         }
 
         .add-contact-btn {
@@ -369,9 +602,35 @@
         <div class="conversations-sidebar">
             <div class="conversations-header">
                 <h2>Messages</h2>
-                <button class="add-contact-btn" onclick="openAddContactModal()">
-                    + Add New Contact
-                </button>
+                <div class="header-icon" id="conversationMenuBtn" title="More Options">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="1"/>
+                        <circle cx="12" cy="5" r="1"/>
+                        <circle cx="12" cy="19" r="1"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Conversation Menu -->
+            <div class="conversation-menu" id="conversationMenu">
+                <div class="menu-item" onclick="openAddContactModal()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="8.5" cy="7" r="4"/>
+                        <line x1="20" y1="8" x2="20" y2="14"/>
+                        <line x1="23" y1="11" x2="17" y2="11"/>
+                    </svg>
+                    <span>Add Contact</span>
+                </div>
+                <div class="menu-item" onclick="openNewGroupModal()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <span>New Group</span>
+                </div>
             </div>
 
             <div class="conversations-list">
@@ -425,16 +684,157 @@
     </div>
 </div>
 
+<!-- Add Contact Modal -->
+<div class="modal" id="addContactModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Add New Contact</h3>
+            <span class="modal-close" onclick="closeAddContactModal()">×</span>
+        </div>
+        <form id="addContactForm">
+            <div class="form-group">
+                <label for="contactEmail">Email Address</label>
+                <input type="email" id="contactEmail" name="email" placeholder="user@example.com" required>
+                <p style="font-size: 12px; color: #6b7280; margin-top: 5px;">Enter the email address of the person you want to add</p>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-cancel" onclick="closeAddContactModal()">Cancel</button>
+                <button type="submit" class="btn btn-submit">Add Contact</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- New Group Modal -->
+<div class="modal" id="newGroupModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Create New Group</h3>
+            <span class="modal-close" onclick="closeNewGroupModal()">×</span>
+        </div>
+        <form id="newGroupForm">
+            <div class="form-group">
+                <label for="groupName">Group Name</label>
+                <input type="text" id="groupName" name="groupName" placeholder="Enter group name" required>
+            </div>
+            <div class="form-group">
+                <label>Select Members</label>
+                <div class="contact-list" id="contactList">
+                    {% if conversations %}
+                        {% for conv in conversations %}
+                        <label class="contact-item">
+                            <input type="checkbox" class="contact-checkbox" name="members" value="{{ conv.contact.id }}">
+                            <div class="contact-avatar">{{ conv.contact.username[0].upper() }}</div>
+                            <span class="contact-name">{{ conv.contact.username }}</span>
+                        </label>
+                        {% endfor %}
+                    {% else %}
+                        <p style="padding: 20px; text-align: center; color: #9ca3af;">No contacts available. Add contacts first!</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-cancel" onclick="closeNewGroupModal()">Cancel</button>
+                <button type="submit" class="btn btn-submit">Create Group</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
+// Conversation menu toggle
+document.getElementById('conversationMenuBtn')?.addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.getElementById('conversationMenu').classList.toggle('active');
+});
+
+// Close conversation menu when clicking outside
+document.addEventListener('click', function(e) {
+    const menu = document.getElementById('conversationMenu');
+    const button = document.getElementById('conversationMenuBtn');
+    if (menu && !menu.contains(e.target) && !button?.contains(e.target)) {
+        menu.classList.remove('active');
+    }
+});
+
 function openAddContactModal() {
     document.getElementById('addContactModal').classList.add('active');
+    document.getElementById('conversationMenu').classList.remove('active');
 }
 
 function closeAddContactModal() {
     document.getElementById('addContactModal').classList.remove('active');
+    document.getElementById('addContactForm').reset();
+}
+
+function openNewGroupModal() {
+    document.getElementById('newGroupModal').classList.add('active');
+    document.getElementById('conversationMenu').classList.remove('active');
+}
+
+function closeNewGroupModal() {
+    document.getElementById('newGroupModal').classList.remove('active');
+    document.getElementById('newGroupForm').reset();
 }
 
 document.getElementById('addContactForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('contactEmail').value.trim();
+    if (!email) {
+        alert('Please enter an email address');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('email', email);
+    
+    try {
+        const response = await fetch('/add_contact', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            closeAddContactModal();
+            alert('Contact added successfully!');
+            window.location.reload();
+        } else {
+            alert(data.message || 'Failed to add contact');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error adding contact. Please try again.');
+    }
+});
+
+document.getElementById('newGroupForm')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const groupName = document.getElementById('groupName').value;
+    const checkedBoxes = document.querySelectorAll('input[name="members"]:checked');
+    const memberIds = Array.from(checkedBoxes).map(cb => cb.value);
+    
+    if (memberIds.length < 2) {
+        alert('Please select at least 2 members for the group');
+        return;
+    }
+    
+    alert(`Group "${groupName}" will be created with ${memberIds.length} members. This feature will be fully implemented soon!`);
+    closeNewGroupModal();
+    
+    // Future implementation: Send to backend
+    // const formData = new FormData();
+    // formData.append('groupName', groupName);
+    // formData.append('members', JSON.stringify(memberIds));
+    // const response = await fetch('/create_group', { method: 'POST', body: formData });
+});
     e.preventDefault();
     const email = document.getElementById('contactEmail').value;
     const formData = new FormData();
