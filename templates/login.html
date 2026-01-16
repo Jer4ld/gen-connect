@@ -4,72 +4,143 @@
 
 {% block extra_css %}
 <style>
+    /* Page Layout */
     body {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background-color: white;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* 1. Custom Header (Logo Left, Sign Up Right) */
+    .auth-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 40px;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .header-logo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        color: #2563eb;
+        font-weight: 700;
+        font-size: 20px;
+    }
+
+    .header-btn {
+        background-color: #2563eb;
+        color: white;
+        text-decoration: none;
+        padding: 10px 24px;
+        border-radius: 4px;
+        font-weight: 500;
+        font-size: 14px;
+        transition: background-color 0.2s;
+    }
+
+    .header-btn:hover {
+        background-color: #1d4ed8;
+    }
+
+    /* 2. Main Content Wrapper */
+    .auth-container {
+        flex: 1;
         display: flex;
         align-items: center;
         justify-content: center;
-        min-height: 100vh;
-    }
-
-    .login-container {
-        background: white;
-        border-radius: 16px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        padding: 50px;
+        padding: 40px;
+        max-width: 1200px;
+        margin: 0 auto;
         width: 100%;
-        max-width: 450px;
-        margin: 20px;
     }
 
-    .logo-section {
+    .split-layout {
+        display: flex;
+        width: 100%;
+        gap: 80px; /* Space between image and form */
+        align-items: center;
+    }
+
+    /* Left Side - Graphic */
+    .left-panel {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f8fafc; /* Very light grey background */
+        height: 400px;
+        border-radius: 12px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Simulating the logo graphic from your image */
+    .graphic-placeholder {
         text-align: center;
-        margin-bottom: 40px;
+    }
+    
+    .graphic-logo {
+        font-size: 60px;
+        font-weight: 800;
+        line-height: 1;
+        margin-bottom: 10px;
+        background: linear-gradient(135deg, #2563eb, #db2777, #f59e0b);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
 
-    .logo-section svg {
-        width: 50px;
-        height: 50px;
-        color: #6366f1;
-        margin-bottom: 15px;
+    .graphic-text {
+        font-size: 24px;
+        color: #1e293b;
+        font-weight: 600;
     }
 
-    .logo-section h1 {
-        font-size: 32px;
-        color: #111827;
-        margin-bottom: 8px;
+    /* Right Side - Form */
+    .right-panel {
+        flex: 1;
+        max-width: 450px;
     }
 
-    .logo-section p {
-        color: #6b7280;
-        font-size: 15px;
+    .form-header {
+        margin-bottom: 30px;
+    }
+
+    .form-logo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #2563eb;
+        font-weight: 700;
+        font-size: 22px;
+        margin-bottom: 20px;
     }
 
     .form-group {
         margin-bottom: 20px;
     }
 
-    .form-group label {
-        display: block;
-        margin-bottom: 8px;
-        color: #374151;
-        font-weight: 500;
-        font-size: 14px;
-    }
-
-    .form-group input {
+    /* Grey Input Fields */
+    .form-input {
         width: 100%;
-        padding: 12px 15px;
-        border: 1px solid #d1d5db;
-        border-radius: 8px;
-        font-size: 15px;
+        padding: 15px;
+        background-color: #f1f5f9; /* Light grey background */
+        border: 1px solid transparent;
+        border-radius: 4px;
+        font-size: 14px;
+        color: #334155;
         transition: all 0.2s;
     }
 
-    .form-group input:focus {
+    .form-input:focus {
         outline: none;
-        border-color: #6366f1;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        background-color: white;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
     }
 
     .form-actions {
@@ -77,132 +148,130 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 25px;
+        font-size: 13px;
+        color: #64748b;
     }
 
     .remember-me {
         display: flex;
         align-items: center;
         gap: 8px;
-        font-size: 14px;
-        color: #6b7280;
-    }
-
-    .remember-me input[type="checkbox"] {
-        width: auto;
         cursor: pointer;
     }
 
-    .forgot-password {
-        font-size: 14px;
-        color: #6366f1;
+    .forgot-link {
+        color: #2563eb;
         text-decoration: none;
+        font-weight: 500;
     }
 
-    .forgot-password:hover {
-        text-decoration: underline;
-    }
-
-    .btn-login {
+    .btn-submit {
         width: 100%;
         padding: 14px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background-color: #2563eb; /* Solid Blue */
         color: white;
         border: none;
-        border-radius: 8px;
-        font-size: 16px;
+        border-radius: 4px;
+        font-size: 15px;
         font-weight: 600;
         cursor: pointer;
-        transition: transform 0.2s;
+        transition: background-color 0.2s;
     }
 
-    .btn-login:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+    .btn-submit:hover {
+        background-color: #1d4ed8;
     }
 
-    .divider {
-        text-align: center;
-        margin: 30px 0;
-        position: relative;
-        color: #9ca3af;
-        font-size: 14px;
+    .signup-text {
+        margin-top: 20px;
+        font-size: 13px;
+        color: #64748b;
     }
 
-    .divider::before,
-    .divider::after {
-        content: '';
-        position: absolute;
-        top: 50%;
-        width: 45%;
-        height: 1px;
-        background-color: #e5e7eb;
-    }
-
-    .divider::before {
-        left: 0;
-    }
-
-    .divider::after {
-        right: 0;
-    }
-
-    .signup-link {
-        text-align: center;
-        margin-top: 25px;
-        color: #6b7280;
-        font-size: 14px;
-    }
-
-    .signup-link a {
-        color: #6366f1;
-        font-weight: 600;
+    .signup-text a {
+        color: #2563eb;
         text-decoration: none;
+        font-weight: 600;
     }
 
-    .signup-link a:hover {
-        text-decoration: underline;
+    /* Responsive */
+    @media (max-width: 900px) {
+        .split-layout {
+            flex-direction: column;
+            gap: 40px;
+        }
+        
+        .left-panel {
+            width: 100%;
+            height: 200px;
+        }
+
+        .right-panel {
+            width: 100%;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="login-container">
-    <div class="logo-section">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-            <path d="M2 17l10 5 10-5"/>
-            <path d="M2 12l10 5 10-5"/>
+<header class="auth-header">
+    <a href="/" class="header-logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="3" y1="9" x2="21" y2="9"></line>
+            <line x1="9" y1="21" x2="9" y2="9"></line>
         </svg>
-        <h1>Welcome Back</h1>
-        <p>Login to continue to GenConnect</p>
-    </div>
+        GenConnect
+    </a>
+    <a href="{{ url_for('signup') }}" class="header-btn">Sign up</a>
+</header>
 
-    <form method="POST" action="{{ url_for('login') }}">
-        <div class="form-group">
-            <label for="email">Email Address</label>
-            <input type="email" id="email" name="email" placeholder="you@example.com" required>
+<div class="auth-container">
+    <div class="split-layout">
+        
+        <div class="left-panel">
+            <div class="graphic-placeholder">
+                <div class="graphic-logo">GC</div>
+                <div class="graphic-text">gen <span style="color:#2563eb">connect</span></div>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" placeholder="Enter your password" required>
+        <div class="right-panel">
+            <div class="form-header">
+                <div class="form-logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="3" y1="9" x2="21" y2="9"></line>
+                        <line x1="9" y1="21" x2="9" y2="9"></line>
+                    </svg>
+                    GenConnect
+                </div>
+            </div>
+
+            <form method="POST" action="{{ url_for('login') }}">
+                <div class="form-group">
+                    <input type="email" name="email" class="form-input" placeholder="Email Address" required>
+                </div>
+
+                <div class="form-group">
+                    <input type="password" name="password" class="form-input" placeholder="Password" required>
+                </div>
+
+                <div class="form-actions">
+                    <label class="remember-me">
+                        <input type="checkbox" name="remember">
+                        <span>Remember me</span>
+                    </label>
+                    <a href="#" class="forgot-link">Forgot Password?</a>
+                </div>
+
+                <button type="submit" class="btn-submit">Log In</button>
+            </form>
+
+            <div class="signup-text">
+                Don't have an account? <a href="{{ url_for('signup') }}">Sign up</a>
+            </div>
         </div>
-
-        <div class="form-actions">
-            <label class="remember-me">
-                <input type="checkbox" name="remember">
-                <span>Remember me</span>
-            </label>
-            <a href="#" class="forgot-password">Forgot password?</a>
-        </div>
-
-        <button type="submit" class="btn-login">Login</button>
-    </form>
-
-    <div class="divider">OR</div>
-
-    <div class="signup-link">
-        Don't have an account? <a href="{{ url_for('signup') }}">Sign up</a>
     </div>
 </div>
 {% endblock %}
