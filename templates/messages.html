@@ -633,6 +633,7 @@
     </div>
 </div>
 
+<!-- Notification Toast -->
 <div class="notification-toast" id="notificationToast">
     <div class="notification-icon">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -645,6 +646,7 @@
     </div>
 </div>
 
+<!-- Add Contact Modal -->
 <div class="modal" id="addContactModal">
     <div class="modal-content">
         <div class="modal-header">
@@ -665,6 +667,7 @@
     </div>
 </div>
 
+<!-- New Group Modal -->
 <div class="modal" id="newGroupModal">
     <div class="modal-content">
         <div class="modal-header">
@@ -674,7 +677,7 @@
         <form id="newGroupForm">
             <div class="form-group">
                 <label for="groupName">Group Name</label>
-                <input type="text" id="groupName" name="group_name" placeholder="Enter group name" required>
+                <input type="text" id="groupName" name="groupName" placeholder="Enter group name" required>
             </div>
             <div class="form-group">
                 <label>Select Members</label>
@@ -694,95 +697,121 @@
             </div>
             <div class="modal-actions">
                 <button type="button" class="btn btn-cancel" onclick="closeNewGroupModal()">Cancel</button>
-                <button type="submit" class="btn btn-submit" id="createGroupBtn">Create Group</button>
+                <button type="submit" class="btn btn-submit">Create Group</button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
-// Helper for Notifications
+// Show notification function
 function showNotification(type, title, message) {
     const toast = document.getElementById('notificationToast');
+    const titleEl = document.getElementById('notificationTitle');
+    const messageEl = document.getElementById('notificationMessage');
+    
+    // Remove previous classes
     toast.classList.remove('success', 'error', 'active');
-    document.getElementById('notificationTitle').textContent = title;
-    document.getElementById('notificationMessage').textContent = message;
+    
+    // Set content
+    titleEl.textContent = title;
+    messageEl.textContent = message;
+    
+    // Add appropriate class
     toast.classList.add(type, 'active');
-    setTimeout(() => { toast.classList.remove('active'); }, 3000);
+    
+    // Update icon based on type
+    const icon = toast.querySelector('.notification-icon svg');
+    if (type === 'success') {
+        icon.innerHTML = '<polyline points="20 6 9 17 4 12"/>';
+    } else {
+        icon.innerHTML = '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>';
+    }
+    
+    // Auto hide after 3 seconds
+    setTimeout(() => {
+        toast.classList.remove('active');
+    }, 3000);
 }
 
-// UI Toggles
-document.getElementById('conversationMenuBtn')?.addEventListener('click', (e) => {
+// Conversation menu toggle
+document.getElementById('conversationMenuBtn')?.addEventListener('click', function(e) {
     e.stopPropagation();
     document.getElementById('conversationMenu').classList.toggle('active');
 });
 
-document.addEventListener('click', () => {
-    document.getElementById('conversationMenu').classList.remove('active');
+// Close conversation menu when clicking outside
+document.addEventListener('click', function(e) {
+    const menu = document.getElementById('conversationMenu');
+    const button = document.getElementById('conversationMenuBtn');
+    if (menu && !menu.contains(e.target) && !button?.contains(e.target)) {
+        menu.classList.remove('active');
+    }
 });
 
-function openAddContactModal() { document.getElementById('addContactModal').classList.add('active'); }
-function closeAddContactModal() { document.getElementById('addContactModal').classList.remove('active'); }
-function openNewGroupModal() { document.getElementById('newGroupModal').classList.add('active'); }
-function closeNewGroupModal() { document.getElementById('newGroupModal').classList.remove('active'); }
+function openAddContactModal() {
+    document.getElementById('addContactModal').classList.add('active');
+    document.getElementById('conversationMenu').classList.remove('active');
+}
 
-// HANDLE ADD CONTACT
+function closeAddContactModal() {
+    document.getElementById('addContactModal').classList.remove('active');
+    document.getElementById('addContactForm').reset();
+}
+
+function openNewGroupModal() {
+    document.getElementById('newGroupModal').classList.add('active');
+    document.getElementById('conversationMenu').classList.remove('active');
+}
+
+function closeNewGroupModal() {
+    document.getElementById('newGroupModal').classList.remove('active');
+    document.getElementById('newGroupForm').reset();
+}
+
+// Replace the existing addContactForm submit listener with this:
 document.getElementById('addContactForm').addEventListener('submit', async function(e) {
     e.preventDefault();
+    
     const email = document.getElementById('contactEmail').value.trim();
     const submitBtn = document.getElementById('addContactBtn');
+    
+    if (!email) {
+        showNotification('error', 'Error', 'Please enter an email address');
+        return;
+    }
+    
     submitBtn.disabled = true;
+    submitBtn.textContent = 'Adding...';
     
     const formData = new FormData();
     formData.append('email', email);
     
     try {
-        const response = await fetch('/add_contact', { method: 'POST', body: formData });
+        const response = await fetch('/add_contact', {
+            method: 'POST',
+            body: formData
+        });
+        
         const data = await response.json();
+        
         if (data.success) {
             closeAddContactModal();
-            showNotification('success', 'Success', 'Contact added!');
-            setTimeout(() => { window.location.reload(); }, 1000);
+            showNotification('success', 'Success', data.message || 'Contact added!');
+            
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
         } else {
-            showNotification('error', 'Error', data.message);
+            showNotification('error', 'Error', data.message || 'Failed to add contact');
             submitBtn.disabled = false;
+            submitBtn.textContent = 'Add Contact';
         }
     } catch (error) {
-        showNotification('error', 'Error', 'Server Error');
+        console.error('Error:', error);
+        showNotification('error', 'Error', 'Server error. Please try again.');
         submitBtn.disabled = false;
-    }
-});
-
-// FIXED: HANDLE NEW GROUP FORM
-document.getElementById('newGroupForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const btn = document.getElementById('createGroupBtn');
-    const groupName = document.getElementById('groupName').value.trim();
-    const checked = document.querySelectorAll('input[name="members"]:checked');
-    
-    if (!groupName) { showNotification('error', 'Error', 'Enter a group name'); return; }
-    if (checked.length < 1) { showNotification('error', 'Error', 'Select at least 1 member'); return; }
-
-    btn.disabled = true;
-    btn.textContent = 'Creating...';
-    const formData = new FormData(this);
-
-    try {
-        const response = await fetch('/create_group', { method: 'POST', body: formData });
-        const data = await response.json();
-        if (data.success) {
-            closeNewGroupModal();
-            showNotification('success', 'Success', data.message || 'Group created!');
-            setTimeout(() => { window.location.reload(); }, 1000);
-        } else {
-            showNotification('error', 'Error', data.message);
-            btn.disabled = false;
-            btn.textContent = 'Create Group';
-        }
-    } catch (err) {
-        showNotification('error', 'Error', 'Server error');
-        btn.disabled = false;
-        btn.textContent = 'Create Group';
+        submitBtn.textContent = 'Add Contact';
     }
 });
 </script>

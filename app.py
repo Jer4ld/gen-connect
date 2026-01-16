@@ -255,8 +255,7 @@ class Message(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    receiver_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
-    community_id = db.Column(db.Integer, db.ForeignKey('communities.id'), nullable=True)
+    receiver_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     content = db.Column(db.Text, nullable=False)
     is_read = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -461,13 +460,7 @@ def messages():
     current_user = User.query.get_or_404(session['user_id'])
     contacts = current_user.get_contacts()
     
-    # NEW: Fetch groups current user belongs to
-    groups = Community.query.join(CommunityMember).filter(
-        CommunityMember.user_id == current_user.id
-    ).all()
-    
     conversations = []
-    # Individual Contacts
     for contact in contacts:
         last_message = Message.query.filter(
             or_(
@@ -476,20 +469,19 @@ def messages():
             )
         ).order_by(Message.created_at.desc()).first()
         
+        unread_count = Message.query.filter_by(
+            sender_id=contact.id,
+            receiver_id=current_user.id,
+            is_read=False
+        ).count()
+        
         conversations.append({
             'contact': contact,
             'last_message': last_message,
-            'is_group': False
+            'unread_count': unread_count
         })
     
-    # Groups
-    for group in groups:
-        last_message = Message.query.filter_by(community_id=group.id).order_by(Message.created_at.desc()).first()
-        conversations.append({
-            'group': group,
-            'last_message': last_message,
-            'is_group': True
-        })
+    conversations.sort(key=lambda x: x['last_message'].created_at if x['last_message'] else datetime.min, reverse=True)
     
     return render_template('messages.html', conversations=conversations, current_user=current_user)
 
@@ -689,7 +681,6 @@ def create_post():
     
     return redirect(url_for('home'))
 
-# --- NEW: ADD GROUP FUNCTIONALITY ---
 @app.route('/create_group', methods=['POST'])
 def create_group():
     """Create a new group (Community) and add members"""
@@ -703,30 +694,35 @@ def create_group():
         return jsonify({'success': False, 'message': 'Group name required'}), 400
         
     try:
-        # 1. Create the new community
+        # Create new group
         new_group = Community(
             name=group_name,
-            creator_id=session['user_id'],
-            description=f"Group created by {session['username']}"
+            creator_id=session['user_id']
         )
         db.session.add(new_group)
-        db.session.flush() # Assigns ID before commit
+        db.session.flush()  # Get ID before commit
         
-        # 2. Add the creator
-        creator_member = CommunityMember(user_id=session['user_id'], community_id=new_group.id)
+        # Add creator as member
+        creator_member = CommunityMember(
+            user_id=session['user_id'],
+            community_id=new_group.id
+        )
         db.session.add(creator_member)
         
-        # 3. Add selected members
+        # Add other members
         for m_id in member_ids:
-            if int(m_id) != session['user_id']: # Prevent duplicate creator
-                new_member = CommunityMember(user_id=int(m_id), community_id=new_group.id)
-                db.session.add(new_member)
+            new_member = CommunityMember(
+                user_id=int(m_id),
+                community_id=new_group.id
+            )
+            db.session.add(new_member)
             
         db.session.commit()
-        return jsonify({'success': True, 'message': 'Group formed successfully!'})
+        return jsonify({'success': True, 'message': f'Group "{group_name}" created successfully!'})
     except Exception as e:
         db.session.rollback()
-        return jsonify({'success': False, 'message': 'Server error: Group creation failed'}), 500
+        print(f"Error creating group: {e}")
+        return jsonify({'success': False, 'message': 'Server error while creating group'}), 500
 
 # --- FORGOT PASSWORD ROUTES ---
 
@@ -867,5 +863,5 @@ def init_db():
 
 
 if __name__ == '__main__':
-    # init_db() # Run once to set up
+    init_db()
     app.run(debug=True)
