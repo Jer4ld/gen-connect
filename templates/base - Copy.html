@@ -156,41 +156,33 @@
             min-height: calc(100vh - 60px);
         }
 
-        /* --- UPDATED FLASH MESSAGES (CENTERED PILL) --- */
+        /* Flash Messages */
         .flash-messages {
             position: fixed;
-            top: 100px; /* Positioned slightly down from top */
-            left: 50%;
-            transform: translateX(-50%); /* Centers the element */
+            top: 80px;
+            right: 30px;
             z-index: 2000;
-            width: 90%;
-            max-width: 500px; /* Wider max-width for readability */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            max-width: 400px;
         }
 
         .alert {
-            padding: 16px 32px;
-            border-radius: 50px; /* Pill shape */
+            padding: 15px 20px;
+            border-radius: 8px;
             margin-bottom: 10px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 12px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Nice shadow */
-            font-weight: 600; /* Bolder text */
-            font-size: 16px; /* Larger text */
-            animation: slideDownFade 0.4s ease;
+            gap: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.3s ease;
         }
 
-        @keyframes slideDownFade {
+        @keyframes slideIn {
             from {
-                transform: translateY(-20px);
+                transform: translateX(100%);
                 opacity: 0;
             }
             to {
-                transform: translateY(0);
+                transform: translateX(0);
                 opacity: 1;
             }
         }
@@ -227,14 +219,12 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+    <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             <div class="flash-messages">
                 {% for category, message in messages %}
                     <div class="alert alert-{{ category }}">
-                        {% if category == 'success' %}
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                        {% endif %}
                         {{ message }}
                     </div>
                 {% endfor %}
@@ -245,17 +235,16 @@
     {% block content %}{% endblock %}
 
     <script>
-        // Auto-dismiss flash messages after 4 seconds
+        // Auto-dismiss flash messages after 5 seconds
         setTimeout(() => {
             const alerts = document.querySelectorAll('.alert');
             alerts.forEach(alert => {
-                alert.style.transition = 'all 0.5s ease';
                 alert.style.opacity = '0';
-                alert.style.transform = 'translateY(-20px)';
-                setTimeout(() => alert.remove(), 500);
+                alert.style.transform = 'translateX(100%)';
+                setTimeout(() => alert.remove(), 300);
             });
-        }, 4000);
+        }, 5000);
     </script>
     {% block extra_js %}{% endblock %}
 </body>
-</html> 
+</html>
