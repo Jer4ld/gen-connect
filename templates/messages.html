@@ -5,473 +5,88 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Messages - GenConnect</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: #f5f5f5;
-        }
-
-        .container {
-            display: flex;
-            height: 100vh;
-        }
-
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 250px;
-            height: 100vh;
-            background-color: white;
-            border-right: 1px solid #e5e7eb;
-            padding: 20px 0;
-        }
-
-        .sidebar-logo {
-            padding: 0 30px 20px;
-            border-bottom: 1px solid #e5e7eb;
-            margin-bottom: 20px;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 20px;
-            font-weight: 600;
-            color: #6366f1;
-            text-decoration: none;
-        }
-
-        .logo svg {
-            width: 24px;
-            height: 24px;
-        }
-
-        .sidebar-nav {
-            list-style: none;
-        }
-
-        .sidebar-nav a {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 12px 30px;
-            text-decoration: none;
-            color: #374151;
-            transition: background-color 0.2s;
-        }
-
-        .sidebar-nav a:hover {
-            background-color: #f9fafb;
-        }
-
-        .sidebar-nav a.active {
-            background-color: #eff6ff;
-            color: #2563eb;
-            border-right: 3px solid #2563eb;
-        }
-
-        .sidebar-nav svg {
-            width: 22px;
-            height: 22px;
-        }
-
-        .messages-container {
-            margin-left: 250px;
-            flex: 1;
-            display: flex;
-            background-color: #f9fafb;
-        }
-
-        .conversations-sidebar {
-            width: 350px;
-            background: white;
-            border-right: 1px solid #e5e7eb;
-            position: relative;
-        }
-
-        .conversations-header {
-            padding: 20px;
-            border-bottom: 1px solid #e5e7eb;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .conversations-header h2 {
-            font-size: 24px;
-            font-weight: 700;
-            color: #111827;
-        }
-
-        .header-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            color: #6b7280;
-        }
-
-        .header-icon:hover {
-            background-color: #f3f4f6;
-        }
-
-        .conversation-menu {
-            position: absolute;
-            top: 60px;
-            right: 15px;
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 8px 0;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            display: none;
-            z-index: 1000;
-            min-width: 180px;
-        }
-
-        .conversation-menu.active {
-            display: block;
-        }
-
-        .menu-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 16px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .menu-item:hover {
-            background-color: #f9fafb;
-        }
-
-        .menu-item svg {
-            width: 18px;
-            height: 18px;
-            color: #6b7280;
-        }
-
-        .menu-item span {
-            font-size: 14px;
-            color: #374151;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 12px;
-            padding: 30px;
-            width: 90%;
-            max-width: 450px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .modal-header h3 {
-            font-size: 20px;
-            font-weight: 700;
-            color: #111827;
-        }
-
-        .modal-close {
-            cursor: pointer;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.2s;
-            font-size: 24px;
-            color: #6b7280;
-        }
-
-        .modal-close:hover {
-            background-color: #f3f4f6;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #374151;
-            font-weight: 500;
-            font-size: 14px;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            font-size: 15px;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #6366f1;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .btn-cancel {
-            background: white;
-            border: 1px solid #d1d5db;
-            color: #374151;
-        }
-
-        .btn-cancel:hover {
-            background: #f9fafb;
-        }
-
-        .btn-submit {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .btn-submit:hover {
-            opacity: 0.9;
-        }
-
-        .contact-list {
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            margin-top: 10px;
-        }
-
-        .contact-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px;
-            border-bottom: 1px solid #f3f4f6;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .contact-item:hover {
-            background-color: #f9fafb;
-        }
-
-        .contact-item:last-child {
-            border-bottom: none;
-        }
-
-        .contact-checkbox {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-
-        .contact-avatar {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .contact-name {
-            font-size: 14px;
-            color: #374151;
-        }
-
-        .conversations-list {
-            overflow-y: auto;
-        }
-
-        .conversation-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 15px 20px;
-            border-bottom: 1px solid #f3f4f6;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .conversation-item:hover {
-            background-color: #f9fafb;
-        }
-
-        .conversation-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 18px;
-        }
-
-        .conversation-info {
-            flex: 1;
-        }
-
-        .conversation-name {
-            font-weight: 600;
-            color: #111827;
-            font-size: 15px;
-        }
-
-        .empty-state {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-            text-align: center;
-        }
-
-        .empty-state h3 {
-            font-size: 20px;
-            color: #111827;
-            margin-bottom: 10px;
-        }
-
-        .empty-state p {
-            color: #6b7280;
-        }
-
-        /* Custom Notification Toast */
-        .notification-toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: white;
-            padding: 16px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            display: none;
-            align-items: center;
-            gap: 12px;
-            z-index: 3000;
-            min-width: 300px;
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        .notification-toast.active {
-            display: flex;
-        }
-
-        .notification-toast.success {
-            border-left: 4px solid #10b981;
-        }
-
-        .notification-toast.error {
-            border-left: 4px solid #ef4444;
-        }
-
-        .notification-icon {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .notification-toast.success .notification-icon {
-            background: #d1fae5;
-            color: #10b981;
-        }
-
-        .notification-toast.error .notification-icon {
-            background: #fee2e2;
-            color: #ef4444;
-        }
-
-        .notification-content {
-            flex: 1;
-        }
-
-        .notification-title {
-            font-weight: 600;
-            font-size: 14px;
-            color: #111827;
-            margin-bottom: 2px;
-        }
-
-        .notification-message {
-            font-size: 13px;
-            color: #6b7280;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f5; }
+        .container { display: flex; height: 100vh; }
+
+        /* --- 1. SIDEBAR --- */
+        .sidebar { position: fixed; left: 0; top: 0; width: 250px; height: 100vh; background-color: white; border-right: 1px solid #e5e7eb; padding: 20px 0; z-index: 100; }
+        .sidebar-logo { padding: 0 30px 20px; border-bottom: 1px solid #e5e7eb; margin-bottom: 20px; }
+        .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 600; color: #6366f1; text-decoration: none; }
+        .sidebar-nav { list-style: none; }
+        .sidebar-nav li { margin: 5px 0; }
+        .sidebar-nav a { display: flex; align-items: center; gap: 15px; padding: 12px 30px; text-decoration: none; color: #374151; transition: all 0.2s; font-size: 15px; }
+        .sidebar-nav a:hover { background-color: #f9fafb; }
+        .sidebar-nav a.active { background-color: #eff6ff; color: #2563eb; border-right: 3px solid #2563eb; }
+        .sidebar-nav svg { width: 22px; height: 22px; }
+
+        /* --- 2. LAYOUT --- */
+        .messages-container { margin-left: 250px; flex: 1; display: flex; height: 100vh; background-color: #f9fafb; }
+        
+        .conversations-sidebar { width: 280px; background: white; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column; position: relative; }
+        .conversations-header { padding: 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
+        .conversations-header h2 { font-size: 20px; font-weight: 700; color: #111827; }
+        .header-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #6b7280; transition: background 0.2s; }
+        .header-icon:hover { background: #f3f4f6; }
+        
+        .conversations-list { flex: 1; overflow-y: auto; }
+        .conversation-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid #f3f4f6; text-decoration: none; color: inherit; cursor: pointer; }
+        .conversation-item:hover { background-color: #f9fafb; }
+        .conversation-item.active { background-color: #eff6ff; }
+        .conversation-avatar { width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 16px; flex-shrink: 0; }
+        .conversation-name { font-weight: 600; color: #111827; font-size: 15px; }
+
+        .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; }
+        .empty-state h3 { font-size: 20px; color: #111827; margin-bottom: 10px; }
+        .empty-state p { color: #6b7280; }
+
+        /* Menus */
+        .conversation-menu { position: absolute; top: 60px; right: 15px; background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px 0; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); display: none; z-index: 1000; min-width: 180px; }
+        .conversation-menu.active { display: block; }
+        .menu-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; cursor: pointer; transition: background-color 0.2s; }
+        .menu-item:hover { background-color: #f9fafb; }
+        .menu-item svg { width: 18px; height: 18px; color: #6b7280; }
+        .menu-item span { font-size: 14px; color: #374151; }
+
+        /* Notification Toast */
+        .notification-toast { position: fixed; top: 20px; right: 20px; background: white; padding: 16px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); display: none; align-items: center; gap: 12px; z-index: 3000; min-width: 300px; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .notification-toast.active { display: flex; }
+        .notification-toast.success { border-left: 4px solid #10b981; }
+        .notification-toast.error { border-left: 4px solid #ef4444; }
+        .notification-icon svg { width: 20px; height: 20px; color: #10b981; }
+        .notification-content { flex: 1; }
+        .notification-title { font-weight: 600; font-size: 14px; color: #111827; margin-bottom: 2px; }
+        .notification-message { font-size: 13px; color: #6b7280; }
+
+        /* Modals */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 450px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-header h3 { font-size: 20px; font-weight: 700; color: #111827; }
+        .modal-close { cursor: pointer; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s; font-size: 24px; color: #6b7280; }
+        .modal-close:hover { background-color: #f3f4f6; }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #374151; font-weight: 500; font-size: 14px; }
+        .form-group input { width: 100%; padding: 12px 15px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 15px; }
+        .form-group input:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
+        
+        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+        .btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; font-weight: 500; }
+        .btn-cancel { background: white; border: 1px solid #d1d5db; color: #374151; }
+        .btn-cancel:hover { background: #f9fafb; }
+        .btn-submit { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-submit:hover { opacity: 0.9; }
+
+        .contact-list { max-height: 300px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px; margin-top: 10px; }
+        .contact-item { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid #f3f4f6; cursor: pointer; transition: background-color 0.2s; }
+        .contact-item:hover { background-color: #f9fafb; }
+        .contact-item:last-child { border-bottom: none; }
+        .contact-checkbox { width: 18px; height: 18px; cursor: pointer; }
+        .contact-avatar { width: 35px; height: 35px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 14px; }
+        .contact-name { font-size: 14px; color: #374151; }
     </style>
 </head>
 <body>
@@ -479,91 +94,18 @@
     <aside class="sidebar">
         <div class="sidebar-logo">
             <a href="/" class="logo">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                    <path d="M2 17l10 5 10-5"/>
-                    <path d="M2 12l10 5 10-5"/>
-                </svg>
-                <span>GenConnect</span>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg><span>GenConnect</span>
             </a>
         </div>
         <ul class="sidebar-nav">
-            <li>
-                <a href="/home">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                        <polyline points="9 22 9 12 15 12 15 22"/>
-                    </svg>
-                    <span>Home</span>
-                </a>
-            </li>
-            <li>
-                <a href="#">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <circle cx="12" cy="10" r="3"/>
-                        <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/>
-                    </svg>
-                    <span>Explore Activities</span>
-                </a>
-            </li>
-            <li>
-                <a href="#">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                        <circle cx="9" cy="7" r="4"/>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                    </svg>
-                    <span>Community</span>
-                </a>
-            </li>
-            <li>
-                <a href="#">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <line x1="12" y1="16" x2="12" y2="12"/>
-                        <line x1="12" y1="8" x2="12.01" y2="8"/>
-                    </svg>
-                    <span>Create</span>
-                </a>
-            </li>
-            <li>
-                <a href="#">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                    </svg>
-                    <span>Notification</span>
-                </a>
-            </li>
-            <li>
-                <a href="/messages" class="active">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                    </svg>
-                    <span>Messages</span>
-                </a>
-            </li>
-            <li>
-                <a href="/profile">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                        <circle cx="12" cy="7" r="4"/>
-                    </svg>
-                    <span>Profile</span>
-                </a>
-            </li>
-            <li>
-                <a href="/logout">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                        <polyline points="16 17 21 12 16 7"/>
-                        <line x1="21" y1="12" x2="9" y2="12"/>
-                    </svg>
-                    <span>Logout</span>
-                </a>
-            </li>
+            <li><a href="/home"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a></li>
+            <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg><span>Explore Activities</span></a></li>
+            <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Community</span></a></li>
+            <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>Create</span></a></li>
+            <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Notification</span></a></li>
+            <li><a href="/messages" class="active"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Messages</span></a></li>
+            <li><a href="/profile"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a></li>
+            <li><a href="/logout"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></a></li>
         </ul>
     </aside>
 
@@ -571,48 +113,24 @@
         <div class="conversations-sidebar">
             <div class="conversations-header">
                 <h2>Messages</h2>
-                <div class="header-icon" id="conversationMenuBtn" title="More Options">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="1"/>
-                        <circle cx="12" cy="5" r="1"/>
-                        <circle cx="12" cy="19" r="1"/>
-                    </svg>
-                </div>
+                <div class="header-icon" id="conversationMenuBtn" title="More Options"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg></div>
             </div>
-
+            
             <div class="conversation-menu" id="conversationMenu">
-                <div class="menu-item" onclick="openAddContactModal()">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                        <circle cx="8.5" cy="7" r="4"/>
-                        <line x1="20" y1="8" x2="20" y2="14"/>
-                        <line x1="23" y1="11" x2="17" y2="11"/>
-                    </svg>
-                    <span>Add Contact</span>
-                </div>
-                <div class="menu-item" onclick="openNewGroupModal()">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                        <circle cx="9" cy="7" r="4"/>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                    </svg>
-                    <span>New Group</span>
-                </div>
+                <div class="menu-item" onclick="openAddContactModal()">Add Contact</div>
+                <div class="menu-item" onclick="openNewGroupModal()">New Group</div>
             </div>
 
             <div class="conversations-list">
                 {% if conversations %}
                     {% for conv in conversations %}
-                    <a href="/messages/{{ conv.contact.id }}" class="conversation-item">
-                        <div class="conversation-avatar">
-                            {{ conv.contact.username[0].upper() }}
-                        </div>
+                    <a href="/messages/{{ conv.id }}?is_group={{ 'true' if conv.is_group else 'false' }}" class="conversation-item">
+                        <div class="conversation-avatar">{{ conv.name[0].upper() }}</div>
                         <div class="conversation-info">
-                            <div class="conversation-name">{{ conv.contact.username }}</div>
+                            <div class="conversation-name">{{ conv.name }}</div>
                             {% if conv.last_message %}
                             <div style="font-size: 13px; color: #6b7280;">
-                                {{ conv.last_message.content[:30] }}...
+                                {{ conv.last_message.content[:30] | striptags }}...
                             </div>
                             {% endif %}
                         </div>
@@ -620,7 +138,7 @@
                     {% endfor %}
                 {% else %}
                     <div style="padding: 20px; text-align: center; color: #9ca3af;">
-                        No contacts yet. Add a contact to start messaging!
+                        No conversations yet.
                     </div>
                 {% endif %}
             </div>
@@ -633,12 +151,9 @@
     </div>
 </div>
 
-<!-- Notification Toast -->
 <div class="notification-toast" id="notificationToast">
     <div class="notification-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="20 6 9 17 4 12"/>
-        </svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
     </div>
     <div class="notification-content">
         <div class="notification-title" id="notificationTitle">Success</div>
@@ -646,7 +161,6 @@
     </div>
 </div>
 
-<!-- Add Contact Modal -->
 <div class="modal" id="addContactModal">
     <div class="modal-content">
         <div class="modal-header">
@@ -667,7 +181,6 @@
     </div>
 </div>
 
-<!-- New Group Modal -->
 <div class="modal" id="newGroupModal">
     <div class="modal-content">
         <div class="modal-header">
@@ -677,18 +190,20 @@
         <form id="newGroupForm">
             <div class="form-group">
                 <label for="groupName">Group Name</label>
-                <input type="text" id="groupName" name="groupName" placeholder="Enter group name" required>
+                <input type="text" id="groupName" name="group_name" placeholder="Enter group name" required>
             </div>
             <div class="form-group">
                 <label>Select Members</label>
                 <div class="contact-list" id="contactList">
                     {% if conversations %}
                         {% for conv in conversations %}
-                        <label class="contact-item">
-                            <input type="checkbox" class="contact-checkbox" name="members" value="{{ conv.contact.id }}">
-                            <div class="contact-avatar">{{ conv.contact.username[0].upper() }}</div>
-                            <span class="contact-name">{{ conv.contact.username }}</span>
-                        </label>
+                            {% if not conv.is_group %}
+                            <label class="contact-item">
+                                <input type="checkbox" class="contact-checkbox" name="members" value="{{ conv.id }}">
+                                <div class="contact-avatar" style="width:30px; height:30px; font-size:12px;">{{ conv.name[0].upper() }}</div>
+                                <span class="contact-name">{{ conv.name }}</span>
+                            </label>
+                            {% endif %}
                         {% endfor %}
                     {% else %}
                         <p style="padding: 20px; text-align: center; color: #9ca3af;">No contacts available. Add contacts first!</p>
@@ -697,30 +212,23 @@
             </div>
             <div class="modal-actions">
                 <button type="button" class="btn btn-cancel" onclick="closeNewGroupModal()">Cancel</button>
-                <button type="submit" class="btn btn-submit">Create Group</button>
+                <button type="submit" class="btn btn-submit" id="createGroupBtn">Create Group</button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
-// Show notification function
 function showNotification(type, title, message) {
     const toast = document.getElementById('notificationToast');
     const titleEl = document.getElementById('notificationTitle');
     const messageEl = document.getElementById('notificationMessage');
     
-    // Remove previous classes
     toast.classList.remove('success', 'error', 'active');
-    
-    // Set content
     titleEl.textContent = title;
     messageEl.textContent = message;
-    
-    // Add appropriate class
     toast.classList.add(type, 'active');
     
-    // Update icon based on type
     const icon = toast.querySelector('.notification-icon svg');
     if (type === 'success') {
         icon.innerHTML = '<polyline points="20 6 9 17 4 12"/>';
@@ -728,19 +236,14 @@ function showNotification(type, title, message) {
         icon.innerHTML = '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>';
     }
     
-    // Auto hide after 3 seconds
-    setTimeout(() => {
-        toast.classList.remove('active');
-    }, 3000);
+    setTimeout(() => { toast.classList.remove('active'); }, 3000);
 }
 
-// Conversation menu toggle
 document.getElementById('conversationMenuBtn')?.addEventListener('click', function(e) {
     e.stopPropagation();
     document.getElementById('conversationMenu').classList.toggle('active');
 });
 
-// Close conversation menu when clicking outside
 document.addEventListener('click', function(e) {
     const menu = document.getElementById('conversationMenu');
     const button = document.getElementById('conversationMenuBtn');
@@ -769,17 +272,12 @@ function closeNewGroupModal() {
     document.getElementById('newGroupForm').reset();
 }
 
-// Replace the existing addContactForm submit listener with this:
 document.getElementById('addContactForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
     const email = document.getElementById('contactEmail').value.trim();
     const submitBtn = document.getElementById('addContactBtn');
     
-    if (!email) {
-        showNotification('error', 'Error', 'Please enter an email address');
-        return;
-    }
+    if (!email) { showNotification('error', 'Error', 'Please enter an email address'); return; }
     
     submitBtn.disabled = true;
     submitBtn.textContent = 'Adding...';
@@ -788,30 +286,53 @@ document.getElementById('addContactForm').addEventListener('submit', async funct
     formData.append('email', email);
     
     try {
-        const response = await fetch('/add_contact', {
-            method: 'POST',
-            body: formData
-        });
-        
+        const response = await fetch('/add_contact', { method: 'POST', body: formData });
         const data = await response.json();
         
         if (data.success) {
             closeAddContactModal();
             showNotification('success', 'Success', data.message || 'Contact added!');
-            
-            setTimeout(() => {
-                window.location.reload();
-            }, 1500);
+            setTimeout(() => { window.location.reload(); }, 1500);
         } else {
             showNotification('error', 'Error', data.message || 'Failed to add contact');
             submitBtn.disabled = false;
             submitBtn.textContent = 'Add Contact';
         }
     } catch (error) {
-        console.error('Error:', error);
         showNotification('error', 'Error', 'Server error. Please try again.');
         submitBtn.disabled = false;
         submitBtn.textContent = 'Add Contact';
+    }
+});
+
+// NEW GROUP HANDLER
+document.getElementById('newGroupForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('createGroupBtn');
+    
+    // Check if at least 1 member is selected
+    const selected = document.querySelectorAll('input[name="members"]:checked');
+    if (selected.length === 0) {
+        showNotification('error', 'Error', 'Please select at least 1 member');
+        return;
+    }
+
+    btn.disabled = true;
+    try {
+        const res = await fetch('/create_group', { method: 'POST', body: new FormData(this) });
+        const data = await res.json();
+        
+        if (data.success) {
+            closeNewGroupModal();
+            showNotification('success', 'Success', 'Group created!');
+            setTimeout(() => { window.location.reload(); }, 1000);
+        } else {
+            showNotification('error', 'Error', data.message);
+            btn.disabled = false;
+        }
+    } catch (err) {
+        showNotification('error', 'Error', 'Failed to create group');
+        btn.disabled = false;
     }
 });
 </script>

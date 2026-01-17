@@ -6,6 +6,7 @@ Main Application File (app.py)
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename 
 from datetime import datetime
 from sqlalchemy import or_, and_
 import os
@@ -16,6 +17,10 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-change-in-production'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///genconnect.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['UPLOAD_FOLDER'] = 'static/uploads' 
+
+# Ensure upload directory exists
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # Initialize database
 db = SQLAlchemy(app)
@@ -24,13 +29,10 @@ db = SQLAlchemy(app)
 # ==================== MODELS ====================
 
 class User(db.Model):
-    """User model for authentication and profile management"""
     __tablename__ = 'users'
-    
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    # --- NEW: Added Full Name field ---
     fullname = db.Column(db.String(100), nullable=True) 
     password_hash = db.Column(db.String(255), nullable=False)
     bio = db.Column(db.Text, nullable=True)
@@ -46,822 +48,392 @@ class User(db.Model):
     likes = db.relationship('Like', backref='user', lazy=True, cascade='all, delete-orphan')
     
     # Follow relationships
-    followers = db.relationship(
-        'Follow',
-        foreign_keys='Follow.followed_id',
-        backref='followed_user',
-        lazy='dynamic',
-        cascade='all, delete-orphan'
-    )
-    following = db.relationship(
-        'Follow',
-        foreign_keys='Follow.follower_id',
-        backref='follower_user',
-        lazy='dynamic',
-        cascade='all, delete-orphan'
-    )
+    followers = db.relationship('Follow', foreign_keys='Follow.followed_id', backref='followed_user', lazy='dynamic', cascade='all, delete-orphan')
+    following = db.relationship('Follow', foreign_keys='Follow.follower_id', backref='follower_user', lazy='dynamic', cascade='all, delete-orphan')
     
     # Community memberships
     community_memberships = db.relationship('CommunityMember', backref='user', lazy=True, cascade='all, delete-orphan')
     
     # Messaging relationships
-    sent_messages = db.relationship(
-        'Message',
-        foreign_keys='Message.sender_id',
-        backref='sender',
-        lazy='dynamic',
-        cascade='all, delete-orphan'
-    )
-    received_messages = db.relationship(
-        'Message',
-        foreign_keys='Message.receiver_id',
-        backref='receiver',
-        lazy='dynamic',
-        cascade='all, delete-orphan'
-    )
+    sent_messages = db.relationship('Message', foreign_keys='Message.sender_id', backref='sender', lazy='dynamic', cascade='all, delete-orphan')
+    received_messages = db.relationship('Message', foreign_keys='Message.receiver_id', backref='receiver', lazy='dynamic', cascade='all, delete-orphan')
     
     # Contacts
-    contacts_initiated = db.relationship(
-        'Contact',
-        foreign_keys='Contact.user_id',
-        backref='user',
-        lazy='dynamic',
-        cascade='all, delete-orphan'
-    )
-    contacts_received = db.relationship(
-        'Contact',
-        foreign_keys='Contact.contact_user_id',
-        backref='contact_user',
-        lazy='dynamic',
-        cascade='all, delete-orphan'
-    )
+    contacts_initiated = db.relationship('Contact', foreign_keys='Contact.user_id', backref='user', lazy='dynamic', cascade='all, delete-orphan')
+    contacts_received = db.relationship('Contact', foreign_keys='Contact.contact_user_id', backref='contact_user', lazy='dynamic', cascade='all, delete-orphan')
     
     def set_password(self, password):
-        """Hash and set user password"""
         self.password_hash = generate_password_hash(password)
-    
     def check_password(self, password):
-        """Verify user password"""
         return check_password_hash(self.password_hash, password)
     
-    def get_follower_count(self):
-        """Get number of followers"""
-        return Follow.query.filter_by(followed_id=self.id).count()
-    
-    def get_following_count(self):
-        """Get number of users being followed"""
-        return Follow.query.filter_by(follower_id=self.id).count()
-    
-    def get_post_count(self):
-        """Get number of posts"""
-        return Post.query.filter_by(user_id=self.id).count()
+    def get_follower_count(self): return Follow.query.filter_by(followed_id=self.id).count()
+    def get_following_count(self): return Follow.query.filter_by(follower_id=self.id).count()
+    def get_post_count(self): return Post.query.filter_by(user_id=self.id).count()
     
     def get_contacts(self):
-        """Get all accepted contacts for this user"""
-        contacts = Contact.query.filter(
-            or_(
-                and_(Contact.user_id == self.id, Contact.status == 'accepted'),
-                and_(Contact.contact_user_id == self.id, Contact.status == 'accepted')
-            )
-        ).all()
-        
+        contacts = Contact.query.filter(or_(and_(Contact.user_id == self.id, Contact.status == 'accepted'), and_(Contact.contact_user_id == self.id, Contact.status == 'accepted'))).all()
         contact_users = []
         for contact in contacts:
-            if contact.user_id == self.id:
-                contact_users.append(contact.contact_user)
-            else:
-                contact_users.append(contact.user)
-        
+            if contact.user_id == self.id: contact_users.append(contact.contact_user)
+            else: contact_users.append(contact.user)
         return contact_users
     
     def get_unread_message_count(self):
-        """Get count of unread messages"""
         return Message.query.filter_by(receiver_id=self.id, is_read=False).count()
-    
-    def __repr__(self):
-        return f'<User {self.username}>'
-
 
 class Post(db.Model):
-    """Post model for user content"""
     __tablename__ = 'posts'
-    
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
     image_url = db.Column(db.String(255), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    # Relationships
     comments = db.relationship('Comment', backref='post', lazy=True, cascade='all, delete-orphan')
     likes = db.relationship('Like', backref='post', lazy=True, cascade='all, delete-orphan')
     
-    def get_like_count(self):
-        """Get number of likes"""
-        return Like.query.filter_by(post_id=self.id).count()
-    
-    def get_comment_count(self):
-        """Get number of comments"""
-        return Comment.query.filter_by(post_id=self.id).count()
-    
-    def __repr__(self):
-        return f'<Post {self.id}>'
-
+    def get_like_count(self): return Like.query.filter_by(post_id=self.id).count()
+    def get_comment_count(self): return Comment.query.filter_by(post_id=self.id).count()
 
 class Comment(db.Model):
-    """Comment model for post interactions"""
     __tablename__ = 'comments'
-    
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    def __repr__(self):
-        return f'<Comment {self.id}>'
-
 
 class Like(db.Model):
-    """Like model for post reactions"""
     __tablename__ = 'likes'
-    
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    __table_args__ = (db.UniqueConstraint('user_id', 'post_id', name='unique_user_post_like'),)
-    
-    def __repr__(self):
-        return f'<Like {self.id}>'
-
 
 class Follow(db.Model):
-    """Follow model for user relationships"""
     __tablename__ = 'follows'
-    
     id = db.Column(db.Integer, primary_key=True)
     follower_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     followed_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    __table_args__ = (db.UniqueConstraint('follower_id', 'followed_id', name='unique_follow'),)
-    
-    def __repr__(self):
-        return f'<Follow {self.follower_id} -> {self.followed_id}>'
-
 
 class Community(db.Model):
-    """Community model for group interactions"""
     __tablename__ = 'communities'
-    
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=True)
     image_url = db.Column(db.String(255), nullable=True)
     creator_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    # Relationships
     memberships = db.relationship('CommunityMember', backref='community', lazy=True, cascade='all, delete-orphan')
-    
-    def get_member_count(self):
-        """Get number of community members"""
-        return CommunityMember.query.filter_by(community_id=self.id).count()
-    
-    def __repr__(self):
-        return f'<Community {self.name}>'
-
 
 class CommunityMember(db.Model):
-    """CommunityMember model for user-community relationships"""
     __tablename__ = 'community_members'
-    
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     community_id = db.Column(db.Integer, db.ForeignKey('communities.id'), nullable=False)
     joined_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    __table_args__ = (db.UniqueConstraint('user_id', 'community_id', name='unique_membership'),)
-    
-    def __repr__(self):
-        return f'<CommunityMember {self.user_id} in {self.community_id}>'
-
 
 class Message(db.Model):
-    """Message model for direct messaging between users"""
     __tablename__ = 'messages'
-    
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    receiver_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    receiver_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    community_id = db.Column(db.Integer, db.ForeignKey('communities.id'), nullable=True)
     content = db.Column(db.Text, nullable=False)
+    file_path = db.Column(db.String(255), nullable=True) 
     is_read = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     def mark_as_read(self):
-        """Mark message as read"""
         self.is_read = True
         db.session.commit()
-    
-    def __repr__(self):
-        return f'<Message {self.id} from {self.sender_id} to {self.receiver_id}>'
-
 
 class Contact(db.Model):
-    """Contact model for managing user connections"""
     __tablename__ = 'contacts'
-    
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     contact_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    status = db.Column(db.String(20), default='pending')  # pending, accepted, blocked
+    status = db.Column(db.String(20), default='accepted')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    __table_args__ = (db.UniqueConstraint('user_id', 'contact_user_id', name='unique_contact'),)
-    
-    def accept(self):
-        """Accept contact request"""
-        self.status = 'accepted'
-        db.session.commit()
-    
-    def block(self):
-        """Block contact"""
-        self.status = 'blocked'
-        db.session.commit()
-    
-    def __repr__(self):
-        return f'<Contact {self.user_id} -> {self.contact_user_id} ({self.status})>'
-
 
 # ==================== ROUTES ====================
 
 @app.route('/')
 def index():
-    """Landing page"""
-    if 'user_id' in session:
-        return redirect(url_for('home'))
+    if 'user_id' in session: return redirect(url_for('home'))
     return render_template('index.html')
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    """Handle user login"""
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
-        
         user = User.query.filter_by(email=email).first()
-        
         if user and user.check_password(password):
             session['user_id'] = user.id
             session['username'] = user.username
-            flash('Login successful!', 'success')
             return redirect(url_for('home'))
         else:
             flash('Invalid email or password', 'error')
-    
     return render_template('login.html')
-
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
-    """Handle user registration"""
     if request.method == 'POST':
-        # Retrieve form fields
-        username = request.form.get('username')
-        email = request.form.get('email')
-        password = request.form.get('password')
-        fullname = request.form.get('fullname')
-        member_type = request.form.get('member_type')
-        
-        # Validation
-        if User.query.filter_by(email=email).first():
-            flash('Email already registered', 'error')
-            return redirect(url_for('signup'))
-        
-        if User.query.filter_by(username=username).first():
-            flash('Username already taken', 'error')
-            return redirect(url_for('signup'))
-        
-        # Create new user
-        new_user = User(
-            username=username, 
-            email=email,
-            fullname=fullname,
-            member_type=member_type
-        )
-        new_user.set_password(password)
-        
+        new_user = User(username=request.form.get('username'), email=request.form.get('email'), fullname=request.form.get('fullname'), member_type=request.form.get('member_type'))
+        new_user.set_password(request.form.get('password'))
         db.session.add(new_user)
         db.session.commit()
-        
-        # --- FIX: AUTO LOGIN THE USER ---
         session['user_id'] = new_user.id
         session['username'] = new_user.username
-        
-        flash(f'Welcome, {username}! Account created successfully.', 'success')
-        # Redirect to HOME instead of LOGIN
         return redirect(url_for('home'))
-    
     return render_template('signup.html')
 
 @app.route('/home')
 def home():
-    """Home feed"""
-    if 'user_id' not in session:
+    if 'user_id' not in session: return redirect(url_for('login'))
+    current_user = User.query.get(session['user_id'])
+    if not current_user:
+        session.clear()
         return redirect(url_for('login'))
-    
     posts = Post.query.order_by(Post.created_at.desc()).all()
-    current_user = User.query.get_or_404(session['user_id'])
-    
     return render_template('home.html', posts=posts, current_user=current_user)
 
+@app.route('/messages')
+def messages():
+    if 'user_id' not in session: return redirect(url_for('login'))
+    current_user = User.query.get(session['user_id'])
+    if not current_user: return redirect(url_for('login'))
+    
+    contacts = current_user.get_contacts()
+    groups = Community.query.join(CommunityMember).filter(CommunityMember.user_id == current_user.id).all()
+    
+    conversations = []
+    # Contacts
+    for contact in contacts:
+        last_msg = Message.query.filter(or_(
+            and_(Message.sender_id == current_user.id, Message.receiver_id == contact.id),
+            and_(Message.sender_id == contact.id, Message.receiver_id == current_user.id)
+        )).order_by(Message.created_at.desc()).first()
+        
+        conversations.append({'id': contact.id, 'name': contact.username, 'contact': contact, 'last_message': last_msg, 'is_group': False})
+    
+    # Groups
+    for group in groups:
+        last_msg = Message.query.filter_by(community_id=group.id).order_by(Message.created_at.desc()).first()
+        conversations.append({'id': group.id, 'name': group.name, 'group': group, 'last_message': last_msg, 'is_group': True})
+    
+    return render_template('messages.html', conversations=conversations, current_user=current_user, contacts=contacts)
+
+@app.route('/messages/<int:target_id>')
+def message_thread(target_id):
+    if 'user_id' not in session: return redirect(url_for('login'))
+    current_user = User.query.get(session['user_id'])
+    if not current_user: return redirect(url_for('login'))
+    
+    contacts = current_user.get_contacts()
+    groups = Community.query.join(CommunityMember).filter(CommunityMember.user_id == current_user.id).all()
+    
+    conversations = []
+    for c in contacts:
+        conversations.append({'id': c.id, 'name': c.username, 'contact': c, 'is_group': False})
+    for g in groups:
+        conversations.append({'id': g.id, 'name': g.name, 'group': g, 'is_group': True})
+    
+    is_group = request.args.get('is_group') == 'true'
+    
+    if is_group:
+        contact = Community.query.get_or_404(target_id)
+        messages = Message.query.filter_by(community_id=target_id).order_by(Message.created_at.asc()).all()
+    else:
+        contact = User.query.get_or_404(target_id)
+        messages = Message.query.filter(or_(
+            and_(Message.sender_id == current_user.id, Message.receiver_id == contact.id),
+            and_(Message.sender_id == contact.id, Message.receiver_id == current_user.id)
+        )).order_by(Message.created_at.asc()).all()
+        
+    return render_template('message_thread.html', contact=contact, messages=messages, conversations=conversations, contacts=contacts, current_user=current_user, is_group=is_group)
+
+@app.route('/send_message', methods=['POST'])
+def send_message():
+    if 'user_id' not in session: return jsonify({'success': False}), 401
+    receiver_id = request.form.get('receiver_id')
+    content = request.form.get('content', '')
+    file = request.files.get('file')
+    
+    user_target = User.query.get(receiver_id)
+    final_receiver_id = receiver_id if user_target else None
+    community_id = receiver_id if not user_target else None
+
+    filename = None
+    if file and file.filename != '':
+        filename = secure_filename(f"{datetime.utcnow().timestamp()}_{file.filename}")
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        if not content: content = "[File Attachment]"
+
+    new_msg = Message(
+        sender_id=session['user_id'], receiver_id=final_receiver_id, community_id=community_id, 
+        content=content, file_path=filename
+    )
+    db.session.add(new_msg)
+    db.session.commit()
+    return jsonify({'success': True})
+
+@app.route('/create_group', methods=['POST'])
+def create_group():
+    if 'user_id' not in session: return jsonify({'success': False}), 401
+    name = request.form.get('group_name')
+    members = request.form.getlist('members')
+    if not name: return jsonify({'success': False, 'message': 'Name required'})
+
+    try:
+        new_g = Community(name=name, creator_id=session['user_id'])
+        db.session.add(new_g)
+        db.session.flush()
+        db.session.add(CommunityMember(user_id=session['user_id'], community_id=new_g.id))
+        for m_id in members:
+            db.session.add(CommunityMember(user_id=int(m_id), community_id=new_g.id))
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Group created!'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/add_contact', methods=['POST'])
+def add_contact():
+    if 'user_id' not in session: return jsonify({'success': False}), 401
+    email = request.form.get('email')
+    target = User.query.filter_by(email=email).first()
+    if not target or target.id == session['user_id']: return jsonify({'success': False, 'message': 'Invalid User'})
+    exists = Contact.query.filter(or_(and_(Contact.user_id==session['user_id'], Contact.contact_user_id==target.id), and_(Contact.user_id==target.id, Contact.contact_user_id==session['user_id']))).first()
+    if exists: return jsonify({'success': False, 'message': 'Already contacts'})
+    db.session.add(Contact(user_id=session['user_id'], contact_user_id=target.id))
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Added'})
+
+@app.route('/delete_message/<int:message_id>', methods=['POST'])
+def delete_message(message_id):
+    if 'user_id' not in session: return jsonify({'success': False}), 401
+    msg = Message.query.get_or_404(message_id)
+    if msg.sender_id == session['user_id']:
+        db.session.delete(msg)
+        db.session.commit()
+        return jsonify({'success': True})
+    return jsonify({'success': False})
+
+@app.route('/edit_message/<int:message_id>', methods=['POST'])
+def edit_message(message_id):
+    if 'user_id' not in session: return jsonify({'success': False}), 401
+    msg = Message.query.get_or_404(message_id)
+    if msg.sender_id == session['user_id']:
+        msg.content = request.form.get('content')
+        msg.updated_at = datetime.utcnow()
+        db.session.commit()
+        return jsonify({'success': True})
+    return jsonify({'success': False})
+
+@app.route('/remove_contact/<int:contact_id>', methods=['POST'])
+def remove_contact(contact_id):
+    if 'user_id' not in session: return jsonify({'success': False}), 401
+    contact = Contact.query.filter(or_(and_(Contact.user_id==session['user_id'], Contact.contact_user_id==contact_id), and_(Contact.user_id==contact_id, Contact.contact_user_id==session['user_id']))).first_or_404()
+    db.session.delete(contact)
+    db.session.commit()
+    return jsonify({'success': True})
 
 @app.route('/profile')
 @app.route('/profile/<username>')
 def profile(username=None):
-    """User profile page"""
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    
-    if username:
-        user = User.query.filter_by(username=username).first_or_404()
-    else:
-        user = User.query.get_or_404(session['user_id'])
-    
-    communities = Community.query.join(CommunityMember).filter(
-        CommunityMember.user_id == user.id
-    ).all()
-    
-    return render_template('profile.html', user=user, communities=communities,
-                         is_own_profile=(user.id == session['user_id']))
-
+    if 'user_id' not in session: return redirect(url_for('login'))
+    user = User.query.filter_by(username=username).first_or_404() if username else User.query.get(session['user_id'])
+    return render_template('profile.html', user=user, is_own_profile=(user.id == session['user_id']))
 
 @app.route('/edit_profile', methods=['GET', 'POST'])
 def edit_profile():
-    """Handle editing of user profile information"""
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    
-    user = User.query.get_or_404(session['user_id'])
-    
+    if 'user_id' not in session: return redirect(url_for('login'))
+    user = User.query.get(session['user_id'])
     if request.method == 'POST':
-        # Update basic fields
         user.username = request.form.get('username')
         user.email = request.form.get('email')
         user.bio = request.form.get('bio')
-        
-        # Handle Checkboxes for Interests
         selected_interests = request.form.getlist('interests')
         user.interests = ",".join(selected_interests)
-        
         try:
             db.session.commit()
-            flash('Profile updated successfully!', 'success')
             return redirect(url_for('profile'))
         except:
             db.session.rollback()
-            flash('Username or Email already exists.', 'error')
-            
     return render_template('edit_profile.html', user=user)
-
-
-@app.route('/delete_account', methods=['POST'])
-def delete_account():
-    """Handle user account deletion"""
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    
-    user = User.query.get_or_404(session['user_id'])
-    
-    try:
-        # Delete the user and all related data
-        db.session.delete(user)
-        db.session.commit()
-        session.clear()
-        flash('Your account has been deleted.', 'success')
-        return redirect(url_for('index'))
-    except:
-        db.session.rollback()
-        flash('Error deleting account.', 'error')
-        return redirect(url_for('edit_profile'))
-
-
-@app.route('/messages')
-def messages():
-    """Messages page - list of conversations"""
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    
-    current_user = User.query.get_or_404(session['user_id'])
-    contacts = current_user.get_contacts()
-    
-    conversations = []
-    for contact in contacts:
-        last_message = Message.query.filter(
-            or_(
-                and_(Message.sender_id == current_user.id, Message.receiver_id == contact.id),
-                and_(Message.sender_id == contact.id, Message.receiver_id == current_user.id)
-            )
-        ).order_by(Message.created_at.desc()).first()
-        
-        unread_count = Message.query.filter_by(
-            sender_id=contact.id,
-            receiver_id=current_user.id,
-            is_read=False
-        ).count()
-        
-        conversations.append({
-            'contact': contact,
-            'last_message': last_message,
-            'unread_count': unread_count
-        })
-    
-    conversations.sort(key=lambda x: x['last_message'].created_at if x['last_message'] else datetime.min, reverse=True)
-    
-    return render_template('messages.html', conversations=conversations, current_user=current_user)
-
-
-@app.route('/messages/<int:contact_id>')
-def message_thread(contact_id):
-    """View message thread with a specific contact"""
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    
-    current_user = User.query.get_or_404(session['user_id'])
-    contact = User.query.get_or_404(contact_id)
-    
-    messages = Message.query.filter(
-        or_(
-            and_(Message.sender_id == current_user.id, Message.receiver_id == contact.id),
-            and_(Message.sender_id == contact.id, Message.receiver_id == current_user.id)
-        )
-    ).order_by(Message.created_at.asc()).all()
-    
-    for msg in messages:
-        if msg.receiver_id == current_user.id and not msg.is_read:
-            msg.mark_as_read()
-    
-    contacts = current_user.get_contacts()
-    
-    return render_template('message_thread.html', 
-                         contact=contact, 
-                         messages=messages,
-                         contacts=contacts,
-                         current_user=current_user)
-
-
-@app.route('/send_message', methods=['POST'])
-def send_message():
-    """Send a new message"""
-    if 'user_id' not in session:
-        return jsonify({'success': False, 'message': 'Not authenticated'}), 401
-    
-    receiver_id = request.form.get('receiver_id')
-    content = request.form.get('content')
-    
-    if not content or not receiver_id:
-        return jsonify({'success': False, 'message': 'Missing required fields'}), 400
-    
-    contact = Contact.query.filter(
-        or_(
-            and_(Contact.user_id == session['user_id'], Contact.contact_user_id == receiver_id),
-            and_(Contact.user_id == receiver_id, Contact.contact_user_id == session['user_id'])
-        ),
-        Contact.status == 'accepted'
-    ).first()
-    
-    if not contact:
-        return jsonify({'success': False, 'message': 'Not in contacts'}), 403
-    
-    new_message = Message(
-        sender_id=session['user_id'],
-        receiver_id=receiver_id,
-        content=content
-    )
-    
-    db.session.add(new_message)
-    db.session.commit()
-    
-    return jsonify({'success': True, 'message_id': new_message.id})
-
-
-@app.route('/delete_message/<int:message_id>', methods=['POST'])
-def delete_message(message_id):
-    """Delete a message"""
-    if 'user_id' not in session:
-        return jsonify({'success': False, 'message': 'Not authenticated'}), 401
-    
-    message = Message.query.get_or_404(message_id)
-    
-    if message.sender_id != session['user_id']:
-        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
-    
-    db.session.delete(message)
-    db.session.commit()
-    
-    return jsonify({'success': True})
-
-
-@app.route('/edit_message/<int:message_id>', methods=['POST'])
-def edit_message(message_id):
-    """Edit a message"""
-    if 'user_id' not in session:
-        return jsonify({'success': False, 'message': 'Not authenticated'}), 401
-    
-    message = Message.query.get_or_404(message_id)
-    
-    if message.sender_id != session['user_id']:
-        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
-    
-    new_content = request.form.get('content')
-    if not new_content:
-        return jsonify({'success': False, 'message': 'Content required'}), 400
-    
-    message.content = new_content
-    message.updated_at = datetime.utcnow()
-    db.session.commit()
-    
-    return jsonify({'success': True})
-
-
-@app.route('/add_contact', methods=['POST'])
-def add_contact():
-    """Add a new contact by email"""
-    if 'user_id' not in session:
-        return jsonify({'success': False, 'message': 'Not authenticated'}), 401
-    
-    email = request.form.get('email')
-    
-    if not email:
-        return jsonify({'success': False, 'message': 'Email required'}), 400
-    
-    contact_user = User.query.filter_by(email=email).first()
-    
-    if not contact_user:
-        return jsonify({'success': False, 'message': 'User not found'}), 404
-    
-    if contact_user.id == session['user_id']:
-        return jsonify({'success': False, 'message': 'Cannot add yourself'}), 400
-    
-    existing = Contact.query.filter(
-        or_(
-            and_(Contact.user_id == session['user_id'], Contact.contact_user_id == contact_user.id),
-            and_(Contact.user_id == contact_user.id, Contact.contact_user_id == session['user_id'])
-        )
-    ).first()
-    
-    if existing:
-        return jsonify({'success': False, 'message': 'Contact already exists'}), 400
-    
-    new_contact = Contact(
-        user_id=session['user_id'],
-        contact_user_id=contact_user.id,
-        status='accepted'
-    )
-    
-    db.session.add(new_contact)
-    db.session.commit()
-    
-    flash(f'Added {contact_user.username} to your contacts!', 'success')
-    return jsonify({'success': True, 'contact_id': contact_user.id})
-
-
-@app.route('/remove_contact/<int:contact_id>', methods=['POST'])
-def remove_contact(contact_id):
-    """Remove a contact"""
-    if 'user_id' not in session:
-        return jsonify({'success': False, 'message': 'Not authenticated'}), 401
-    
-    contact = Contact.query.filter(
-        or_(
-            and_(Contact.user_id == session['user_id'], Contact.contact_user_id == contact_id),
-            and_(Contact.user_id == contact_id, Contact.contact_user_id == session['user_id'])
-        )
-    ).first_or_404()
-    
-    db.session.delete(contact)
-    db.session.commit()
-    
-    return jsonify({'success': True})
-
 
 @app.route('/logout')
 def logout():
-    """Handle user logout"""
     session.clear()
-    flash('Logged out successfully', 'success')
     return redirect(url_for('index'))
 
-
-@app.route('/create_post', methods=['POST'])
-def create_post():
-    """Create a new post"""
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    
-    content = request.form.get('content')
-    image_url = request.form.get('image_url')
-    
-    if content:
-        new_post = Post(
-            content=content,
-            image_url=image_url,
-            user_id=session['user_id']
-        )
-        db.session.add(new_post)
-        db.session.commit()
-        flash('Post created successfully!', 'success')
-    else:
-        flash('Post content cannot be empty', 'error')
-    
-    return redirect(url_for('home'))
-
-@app.route('/create_group', methods=['POST'])
-def create_group():
-    """Create a new group (Community) and add members"""
-    if 'user_id' not in session:
-        return jsonify({'success': False, 'message': 'Not authenticated'}), 401
-    
-    group_name = request.form.get('group_name')
-    member_ids = request.form.getlist('members')
-    
-    if not group_name:
-        return jsonify({'success': False, 'message': 'Group name required'}), 400
-        
+@app.route('/delete_account', methods=['POST'])
+def delete_account():
+    if 'user_id' not in session: return redirect(url_for('login'))
+    user = User.query.get_or_404(session['user_id'])
     try:
-        # Create new group
-        new_group = Community(
-            name=group_name,
-            creator_id=session['user_id']
-        )
-        db.session.add(new_group)
-        db.session.flush()  # Get ID before commit
-        
-        # Add creator as member
-        creator_member = CommunityMember(
-            user_id=session['user_id'],
-            community_id=new_group.id
-        )
-        db.session.add(creator_member)
-        
-        # Add other members
-        for m_id in member_ids:
-            new_member = CommunityMember(
-                user_id=int(m_id),
-                community_id=new_group.id
-            )
-            db.session.add(new_member)
-            
+        db.session.delete(user)
         db.session.commit()
-        return jsonify({'success': True, 'message': f'Group "{group_name}" created successfully!'})
-    except Exception as e:
+        session.clear()
+        return redirect(url_for('index'))
+    except:
         db.session.rollback()
-        print(f"Error creating group: {e}")
-        return jsonify({'success': False, 'message': 'Server error while creating group'}), 500
+        return redirect(url_for('edit_profile'))
 
-# --- FORGOT PASSWORD ROUTES ---
-
+# --- Forgot Password Routes ---
 @app.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
-    """Step 1: User enters email/phone to receive OTP"""
     if request.method == 'POST':
         email = request.form.get('email')
         user = User.query.filter_by(email=email).first()
-        
         if user:
             otp = str(random.randint(100000, 999999))
             session['reset_otp'] = otp
             session['reset_email'] = email
-            
-            # --- SIMULATION ---
-            print(f"\n" + "="*50)
-            print(f" OTP SENT TO {email}: {otp}")
-            print(f" (Or just use Magic Code: 000000)")
-            print("="*50 + "\n")
-            
-            flash('OTP sent! (Check the terminal or use 000000)', 'success')
+            print(f"\nOTP SENT TO {email}: {otp}\n")
             return redirect(url_for('verify_otp'))
-        else:
-            flash('Email not found.', 'error')
-            
     return render_template('forgot_password.html')
 
 @app.route('/verify_otp', methods=['GET', 'POST'])
 def verify_otp():
-    """Step 2: User enters the OTP"""
-    if 'reset_email' not in session:
-        return redirect(url_for('forgot_password'))
-        
+    if 'reset_email' not in session: return redirect(url_for('forgot_password'))
     if request.method == 'POST':
         user_otp = request.form.get('otp')
-        
-        # ALLOW "000000" AS A MAGIC MASTER KEY (For easy testing/demo)
         if user_otp == '000000' or user_otp == session.get('reset_otp'):
             session['otp_verified'] = True
             return redirect(url_for('reset_password'))
-        else:
-            flash('Invalid OTP. Try 000000 for testing.', 'error')
-            
     return render_template('verify_otp.html')
 
 @app.route('/reset_password', methods=['GET', 'POST'])
 def reset_password():
-    """Step 3: User enters new password"""
-    if 'otp_verified' not in session or not session['otp_verified']:
-        return redirect(url_for('forgot_password'))
-        
+    if not session.get('otp_verified'): return redirect(url_for('forgot_password'))
     if request.method == 'POST':
         password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
-        
-        if password != confirm_password:
-            flash('Passwords do not match.', 'error')
-        else:
-            email = session.get('reset_email')
-            user = User.query.filter_by(email=email).first()
-            
+        confirm = request.form.get('confirm_password')
+        if password == confirm:
+            user = User.query.filter_by(email=session.get('reset_email')).first()
             if user:
                 user.set_password(password)
                 db.session.commit()
-                
-                # Clear session data
                 session.pop('reset_otp', None)
-                session.pop('reset_email', None)
                 session.pop('otp_verified', None)
-                
-                flash('Password reset successful! Please login.', 'success')
                 return redirect(url_for('login'))
-                
     return render_template('reset_password.html')
 
-
-# ==================== ERROR HANDLERS ====================
-
 @app.errorhandler(404)
-def not_found(error):
-    return '<h1>404 - Page Not Found</h1>', 404
-
+def not_found(error): return '<h1>404 - Page Not Found</h1>', 404
 @app.errorhandler(500)
-def internal_error(error):
-    db.session.rollback()
-    return '<h1>500 - Internal Server Error</h1>', 500
-
-
-# ==================== INITIALIZATION ====================
+def internal_error(error): db.session.rollback(); return '<h1>500 - Internal Server Error</h1>', 500
 
 def init_db():
-    """Initialize database with sample data"""
     with app.app_context():
-        # This DROP_ALL is important! It ensures your DB updates with the new 'fullname' column.
-        db.drop_all()
         db.create_all()
-        
-        print("Database tables created!")
-        
-        # Create sample users
-        users_data = [
-            {'username': 'demo_user', 'email': 'demo@genconnect.com', 'password': 'demo1234', 'fullname': 'Demo User', 'member_type': 'Youth Member'},
-            {'username': 'Qien', 'email': 'qien@genconnect.com', 'password': 'demo1234', 'fullname': 'Qien Tan', 'member_type': 'Youth Member'},
-            {'username': 'Thant', 'email': 'thant@genconnect.com', 'password': 'demo1234', 'fullname': 'Thant Zin', 'member_type': 'Senior Member'},
-        ]
-        
-        created_users = []
-        for user_data in users_data:
-            user = User(
-                username=user_data['username'], 
-                email=user_data['email'],
-                fullname=user_data['fullname'],
-                member_type=user_data['member_type']
-            )
-            user.set_password(user_data['password'])
-            db.session.add(user)
-            created_users.append(user)
-        
-        db.session.commit()
-        
-        # ... (rest of init_db)
-        
-        # Create sample communities
-        communities_data = [
-            {'name': 'The Digital Ethics Forum', 'description': 'Discussing moral challenges', 'image_url': 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=600&h=400&fit=crop', 'creator_id': 1},
-            {'name': 'Budgeting & Beyond', 'description': 'Financial wisdom', 'image_url': 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=600&h=400&fit=crop', 'creator_id': 1},
-            {'name': 'The Green Thumb Collective', 'description': 'Gardening tips', 'image_url': 'https://images.unsplash.com/photo-1416879741262-793b363d0309?w=600&h=400&fit=crop', 'creator_id': 1}
-        ]
-        
-        for comm_data in communities_data:
-            community = Community(**comm_data)
-            db.session.add(community)
-        
-        db.session.commit()
-        
-        print("Sample data created!")
-
 
 if __name__ == '__main__':
-    init_db()
+    # init_db() 
     app.run(debug=True)
