@@ -9,6 +9,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename 
 from datetime import datetime
 from sqlalchemy import or_, and_
+from sqlalchemy.exc import IntegrityError
 import os
 import random
 
@@ -18,7 +19,7 @@ app.config['SECRET_KEY'] = 'your-secret-key-change-in-production'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///genconnect.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# --- FIX: USE ABSOLUTE PATHS FOR UPLOADS ---
+# Absolute path for uploads
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'uploads')
 
@@ -50,99 +51,37 @@ class User(db.Model):
     posts = db.relationship('Post', backref='author', lazy=True, cascade='all, delete-orphan')
     comments = db.relationship('Comment', backref='author', lazy=True, cascade='all, delete-orphan')
     likes = db.relationship('Like', backref='user', lazy=True, cascade='all, delete-orphan')
-    
-    # Follow relationships
-    followers = db.relationship(
-        'Follow',
-        foreign_keys='Follow.followed_id',
-        backref='followed_user',
-        lazy='dynamic',
-        cascade='all, delete-orphan'
-    )
-    following = db.relationship(
-        'Follow',
-        foreign_keys='Follow.follower_id',
-        backref='follower_user',
-        lazy='dynamic',
-        cascade='all, delete-orphan'
-    )
-    
-    # Community memberships
     community_memberships = db.relationship('CommunityMember', backref='user', lazy=True, cascade='all, delete-orphan')
     
-    # Messaging relationships
-    sent_messages = db.relationship(
-        'Message',
-        foreign_keys='Message.sender_id',
-        backref='sender',
-        lazy='dynamic',
-        cascade='all, delete-orphan'
-    )
-    received_messages = db.relationship(
-        'Message',
-        foreign_keys='Message.receiver_id',
-        backref='receiver',
-        lazy='dynamic',
-        cascade='all, delete-orphan'
-    )
+    # Messaging (backref='sender' creates message.sender automatically)
+    sent_messages = db.relationship('Message', foreign_keys='Message.sender_id', backref='sender', lazy='dynamic', cascade='all, delete-orphan')
+    received_messages = db.relationship('Message', foreign_keys='Message.receiver_id', backref='receiver', lazy='dynamic', cascade='all, delete-orphan')
+    contacts_initiated = db.relationship('Contact', foreign_keys='Contact.user_id', backref='user', lazy='dynamic', cascade='all, delete-orphan')
+    contacts_received = db.relationship('Contact', foreign_keys='Contact.contact_user_id', backref='contact_user', lazy='dynamic', cascade='all, delete-orphan')
     
-    # Contacts
-    contacts_initiated = db.relationship(
-        'Contact',
-        foreign_keys='Contact.user_id',
-        backref='user',
-        lazy='dynamic',
-        cascade='all, delete-orphan'
-    )
-    contacts_received = db.relationship(
-        'Contact',
-        foreign_keys='Contact.contact_user_id',
-        backref='contact_user',
-        lazy='dynamic',
-        cascade='all, delete-orphan'
-    )
-    
+    # Follow relationships
+    followers = db.relationship('Follow', foreign_keys='Follow.followed_id', backref='followed_user', lazy='dynamic', cascade='all, delete-orphan')
+    following = db.relationship('Follow', foreign_keys='Follow.follower_id', backref='follower_user', lazy='dynamic', cascade='all, delete-orphan')
+
     def set_password(self, password):
-        """Hash and set user password"""
         self.password_hash = generate_password_hash(password)
-    
+        
     def check_password(self, password):
-        """Verify user password"""
         return check_password_hash(self.password_hash, password)
 
-    # --- RESTORED PROFILE METHODS ---
-    def get_follower_count(self):
-        """Get number of followers"""
-        return Follow.query.filter_by(followed_id=self.id).count()
-    
-    def get_following_count(self):
-        """Get number of users being followed"""
-        return Follow.query.filter_by(follower_id=self.id).count()
-    
-    def get_post_count(self):
-        """Get number of posts"""
-        return Post.query.filter_by(user_id=self.id).count()
-    # --------------------------------
+    def get_post_count(self): return Post.query.filter_by(user_id=self.id).count()
+    def get_follower_count(self): return Follow.query.filter_by(followed_id=self.id).count()
+    def get_following_count(self): return Follow.query.filter_by(follower_id=self.id).count()
 
     def get_contacts(self):
-        """Get all accepted contacts for this user"""
-        contacts = Contact.query.filter(
-            or_(
-                and_(Contact.user_id == self.id, Contact.status == 'accepted'),
-                and_(Contact.contact_user_id == self.id, Contact.status == 'accepted')
-            )
-        ).all()
-        
+        contacts = Contact.query.filter(or_(and_(Contact.user_id == self.id, Contact.status == 'accepted'), and_(Contact.contact_user_id == self.id, Contact.status == 'accepted'))).all()
         contact_users = []
         for contact in contacts:
-            if contact.user_id == self.id:
-                contact_users.append(contact.contact_user)
-            else:
-                contact_users.append(contact.user)
+            if contact.user_id == self.id: contact_users.append(contact.contact_user)
+            else: contact_users.append(contact.user)
         return contact_users
     
     def get_unread_message_count(self):
-        """Get count of unread messages"""
         return Message.query.filter_by(receiver_id=self.id, is_read=False).count()
     
     def __repr__(self):
@@ -150,7 +89,6 @@ class User(db.Model):
 
 
 class Community(db.Model):
-    """Community model for group interactions"""
     __tablename__ = 'communities'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -182,6 +120,8 @@ class Message(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
+    # FIXED: Removed manual 'sender' relationship because backref in User handles it
+    
     def mark_as_read(self):
         self.is_read = True
         db.session.commit()
@@ -211,11 +151,8 @@ class Post(db.Model):
     comments = db.relationship('Comment', backref='post', lazy=True, cascade='all, delete-orphan')
     likes = db.relationship('Like', backref='post', lazy=True, cascade='all, delete-orphan')
     
-    def get_like_count(self):
-        return Like.query.filter_by(post_id=self.id).count()
-    
-    def get_comment_count(self):
-        return Comment.query.filter_by(post_id=self.id).count()
+    def get_like_count(self): return Like.query.filter_by(post_id=self.id).count()
+    def get_comment_count(self): return Comment.query.filter_by(post_id=self.id).count()
 
 class Comment(db.Model):
     __tablename__ = 'comments'
@@ -250,7 +187,7 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form.get('email')
+        email = request.form.get('email').strip().lower()
         password = request.form.get('password')
         user = User.query.filter_by(email=email).first()
         if user and user.check_password(password):
@@ -265,13 +202,37 @@ def login():
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        new_user = User(username=request.form.get('username'), email=request.form.get('email'), fullname=request.form.get('fullname'), member_type=request.form.get('member_type'))
-        new_user.set_password(request.form.get('password'))
-        db.session.add(new_user)
-        db.session.commit()
-        session['user_id'] = new_user.id
-        session['username'] = new_user.username
-        return redirect(url_for('home'))
+        username = request.form.get('username').strip()
+        email = request.form.get('email').strip().lower()
+        password = request.form.get('password')
+        fullname = request.form.get('fullname').strip()
+        member_type = request.form.get('member_type')
+        
+        if User.query.filter_by(email=email).first():
+            flash('Email already registered', 'error')
+            return redirect(url_for('signup'))
+        if User.query.filter_by(username=username).first():
+            flash('Username already taken', 'error')
+            return redirect(url_for('signup'))
+        
+        try:
+            new_user = User(username=username, email=email, fullname=fullname, member_type=member_type)
+            new_user.set_password(password)
+            db.session.add(new_user)
+            db.session.commit()
+            session['user_id'] = new_user.id
+            session['username'] = new_user.username
+            flash(f'Welcome, {username}! Account created successfully.', 'success')
+            return redirect(url_for('home'))
+        except IntegrityError:
+            db.session.rollback()
+            flash('Username or Email already exists.', 'error')
+            return redirect(url_for('signup'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'An error occurred: {str(e)}', 'error')
+            return redirect(url_for('signup'))
+            
     return render_template('signup.html')
 
 @app.route('/home')
@@ -287,7 +248,6 @@ def home():
 @app.route('/messages')
 def messages():
     if 'user_id' not in session: return redirect(url_for('login'))
-    
     current_user = User.query.get(session['user_id'])
     if not current_user: return redirect(url_for('login'))
     
@@ -295,10 +255,8 @@ def messages():
     groups = Community.query.join(CommunityMember).filter(CommunityMember.user_id == current_user.id).all()
     
     conversations = []
-    # Contacts
     for c in contacts:
         conversations.append({'id': c.id, 'name': c.username, 'is_group': False})
-    # Groups
     for g in groups:
         conversations.append({'id': g.id, 'name': g.name, 'is_group': True})
     
@@ -307,11 +265,9 @@ def messages():
 @app.route('/messages/<int:target_id>')
 def message_thread(target_id):
     if 'user_id' not in session: return redirect(url_for('login'))
-    
     current_user = User.query.get(session['user_id'])
     if not current_user: return redirect(url_for('login'))
     
-    # 1. Sidebar List
     contacts = current_user.get_contacts()
     groups = Community.query.join(CommunityMember).filter(CommunityMember.user_id == current_user.id).all()
     
@@ -321,7 +277,6 @@ def message_thread(target_id):
     for g in groups:
         conversations.append({'id': g.id, 'name': g.name, 'group': g, 'is_group': True})
     
-    # 2. Chat Logic
     is_group = request.args.get('is_group') == 'true'
     member_count = 0
     group_members = []
@@ -329,7 +284,6 @@ def message_thread(target_id):
     if is_group:
         contact = Community.query.get_or_404(target_id)
         member_count = contact.get_member_count()
-        # Fetch group members
         group_members = User.query.join(CommunityMember).filter(CommunityMember.community_id == target_id).all()
         messages = Message.query.filter_by(community_id=target_id).order_by(Message.created_at.asc()).all()
     else:
@@ -354,12 +308,17 @@ def send_message():
     if 'user_id' not in session: return jsonify({'success': False}), 401
     
     receiver_id = request.form.get('receiver_id')
+    is_group = request.form.get('is_group') == 'true'
     content = request.form.get('content', '')
     file = request.files.get('file')
     
-    user_target = User.query.get(receiver_id)
-    final_receiver_id = receiver_id if user_target else None
-    community_id = receiver_id if not user_target else None
+    community_id = None
+    final_receiver_id = None
+    
+    if is_group:
+        community_id = receiver_id
+    else:
+        final_receiver_id = receiver_id
 
     filename = None
     if file and file.filename != '':
@@ -368,8 +327,11 @@ def send_message():
         if not content: content = "[File Attachment]"
 
     new_msg = Message(
-        sender_id=session['user_id'], receiver_id=final_receiver_id, community_id=community_id, 
-        content=content, file_path=filename
+        sender_id=session['user_id'], 
+        receiver_id=final_receiver_id, 
+        community_id=community_id, 
+        content=content, 
+        file_path=filename
     )
     db.session.add(new_msg)
     db.session.commit()
@@ -386,14 +348,9 @@ def create_group():
         new_g = Community(name=name, creator_id=session['user_id'])
         db.session.add(new_g)
         db.session.flush()
-        
-        # Add creator
         db.session.add(CommunityMember(user_id=session['user_id'], community_id=new_g.id))
-        
-        # Add members
         for m_id in members:
             db.session.add(CommunityMember(user_id=int(m_id), community_id=new_g.id))
-            
         db.session.commit()
         return jsonify({'success': True, 'message': 'Group created!'})
     except Exception as e:
@@ -402,9 +359,8 @@ def create_group():
 
 @app.route('/add_contact', methods=['POST'])
 def add_contact():
-    # --- UPDATED TO USE USERNAME ---
     if 'user_id' not in session: return jsonify({'success': False}), 401
-    username = request.form.get('username')
+    username = request.form.get('username').strip()
     target = User.query.filter_by(username=username).first()
     
     if not target: return jsonify({'success': False, 'message': 'User not found'})
@@ -421,11 +377,32 @@ def add_contact():
     db.session.commit()
     return jsonify({'success': True, 'message': 'Added'})
 
+@app.route('/remove_contact/<int:contact_id>', methods=['POST'])
+def remove_contact(contact_id):
+    if 'user_id' not in session: return jsonify({'success': False}), 401
+    current_user_id = session['user_id']
+    try:
+        Message.query.filter(or_(
+            and_(Message.sender_id == current_user_id, Message.receiver_id == contact_id),
+            and_(Message.sender_id == contact_id, Message.receiver_id == current_user_id)
+        )).delete(synchronize_session=False)
+
+        Contact.query.filter(or_(
+            and_(Contact.user_id == current_user_id, Contact.contact_user_id == contact_id),
+            and_(Contact.user_id == contact_id, Contact.contact_user_id == current_user_id)
+        )).delete(synchronize_session=False)
+        
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 @app.route('/delete_message/<int:message_id>', methods=['POST'])
 def delete_message(message_id):
     if 'user_id' not in session: return jsonify({'success': False}), 401
-    msg = Message.query.get(message_id)
-    if msg and msg.sender_id == session['user_id']:
+    msg = Message.query.get_or_404(message_id)
+    if msg.sender_id == session['user_id']:
         db.session.delete(msg)
         db.session.commit()
         return jsonify({'success': True})
@@ -434,45 +411,17 @@ def delete_message(message_id):
 @app.route('/edit_message/<int:message_id>', methods=['POST'])
 def edit_message(message_id):
     if 'user_id' not in session: return jsonify({'success': False}), 401
-    msg = Message.query.get(message_id)
-    if msg and msg.sender_id == session['user_id']:
+    msg = Message.query.get_or_404(message_id)
+    if msg.sender_id == session['user_id']:
         msg.content = request.form.get('content')
         msg.updated_at = datetime.utcnow()
         db.session.commit()
         return jsonify({'success': True})
     return jsonify({'success': False})
 
-@app.route('/remove_contact/<int:contact_id>', methods=['POST'])
-def remove_contact(contact_id):
-    if 'user_id' not in session: return jsonify({'success': False}), 401
-    
-    current_user_id = session['user_id']
-    try:
-        messages_to_delete = Message.query.filter(or_(
-            and_(Message.sender_id == current_user_id, Message.receiver_id == contact_id),
-            and_(Message.sender_id == contact_id, Message.receiver_id == current_user_id)
-        )).all()
-        for msg in messages_to_delete:
-            db.session.delete(msg)
-
-        contact = Contact.query.filter(or_(
-            and_(Contact.user_id == current_user_id, Contact.contact_user_id == contact_id),
-            and_(Contact.user_id == contact_id, Contact.contact_user_id == current_user_id)
-        )).first()
-        
-        if contact:
-            db.session.delete(contact)
-            
-        db.session.commit()
-        return jsonify({'success': True})
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'success': False, 'message': str(e)}), 500
-
 @app.route('/logout')
 def logout():
     session.clear()
-    flash('Logged out successfully', 'success')
     return redirect(url_for('index'))
 
 @app.route('/profile')
@@ -494,11 +443,9 @@ def edit_profile():
         user.interests = ",".join(selected_interests)
         try:
             db.session.commit()
-            flash('Profile updated successfully!', 'success')
             return redirect(url_for('profile'))
         except:
             db.session.rollback()
-            flash('Username or Email already exists.', 'error')
     return render_template('edit_profile.html', user=user)
 
 @app.route('/delete_account', methods=['POST'])
@@ -568,13 +515,10 @@ def reset_password():
     return render_template('reset_password.html')
 
 @app.errorhandler(404)
-def not_found(error):
-    return '<h1>404 - Page Not Found</h1>', 404
+def not_found(error): return '<h1>404 - Page Not Found</h1>', 404
 
 @app.errorhandler(500)
-def internal_error(error):
-    db.session.rollback()
-    return '<h1>500 - Internal Server Error</h1>', 500
+def internal_error(error): db.session.rollback(); return '<h1>500 - Internal Server Error</h1>', 500
 
 def init_db():
     with app.app_context():
