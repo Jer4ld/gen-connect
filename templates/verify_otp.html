@@ -1,90 +1,70 @@
 {% extends "base.html" %}
-{% block title %}Verify OTP{% endblock %}
+{% block title %}Verify Code - GenConnect{% endblock %}
 
 {% block extra_css %}
 <style>
-    body { background-color: #fafafa; display: flex; flex-direction: column; align-items: center; min-height: 100vh; font-family: -apple-system, sans-serif; margin: 0; }
-    
-    .simple-nav { 
-        background: white; 
-        border-bottom: 1px solid #dbdbdb; 
-        padding: 15px 40px; 
-        width: 100%; 
-        position: fixed; 
-        top: 0; 
-        left: 0; 
-        z-index: 100; 
-        display: flex; 
-        justify-content: space-between; 
-        align-items: center; 
-    }
-    
-    /* 1. UPDATED LOGO (Consistent with Base) */
-    .nav-logo { 
-        display: flex; 
-        align-items: center; 
-        gap: 10px; 
-        color: #6366f1; /* GenConnect Indigo */
-        font-weight: 600; 
-        font-size: 20px; 
-        text-decoration: none; 
-    }
-    
-    .nav-logo svg {
-        width: 24px; /* Standard 24px */
-        height: 24px;
-        color: #6366f1;
-    }
+    body { background-color: #f3f4f6; min-height: 100vh; display: flex; flex-direction: column; }
 
-    /* 2. ADDED BUTTON STYLE (Copied from Login Page "Sign Up" button) */
-    .header-btn {
-        background-color: #2563eb;
-        color: white;
-        text-decoration: none;
-        padding: 10px 24px;
-        border-radius: 4px;
-        font-weight: 500;
-        font-size: 14px;
-        transition: background-color 0.2s;
-    }
+    /* Navigation */
+    .simple-nav { background: white; border-bottom: 1px solid #e5e7eb; padding: 15px 40px; position: fixed; top: 0; width: 100%; z-index: 100; display: flex; justify-content: space-between; align-items: center; }
+    .nav-logo { display: flex; align-items: center; gap: 10px; color: #6366f1; font-weight: 600; font-size: 20px; text-decoration: none; }
+    .nav-logo svg { width: 24px; height: 24px; }
+    .nav-login-btn { color: #6366f1; text-decoration: none; font-weight: 600; font-size: 14px; padding: 8px 16px; border-radius: 6px; background-color: #e0e7ff; transition: all 0.2s; }
+    .nav-login-btn:hover { background-color: #c7d2fe; }
 
-    .header-btn:hover {
-        background-color: #1d4ed8;
-    }
+    /* Main Card */
+    .main-container { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; margin-top: 60px; }
+    .auth-card { background: white; width: 100%; max-width: 400px; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); text-align: center; border: 1px solid #f3f4f6; }
+
+    /* Icon */
+    .icon-wrapper { width: 64px; height: 64px; background-color: #d1fae5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; color: #10b981; }
     
-    .main-container { margin-top: 100px; width: 100%; display: flex; justify-content: center; }
-    .auth-box { background: white; border: 1px solid #dbdbdb; padding: 40px; text-align: center; width: 100%; max-width: 350px; }
-    
-    .title { font-weight: 600; font-size: 16px; margin-bottom: 10px; }
-    .desc { font-size: 14px; color: #8e8e8e; margin-bottom: 20px; }
-    .input-field { width: 100%; background: #fafafa; border: 1px solid #dbdbdb; border-radius: 3px; padding: 10px; font-size: 16px; letter-spacing: 5px; text-align: center; margin-bottom: 10px; outline: none; }
-    .btn-submit { background: #0095f6; color: white; border: none; border-radius: 4px; padding: 8px; font-size: 14px; font-weight: 600; width: 100%; cursor: pointer; }
+    .title { font-size: 24px; font-weight: 700; color: #111827; margin-bottom: 8px; }
+    .desc { font-size: 15px; color: #6b7280; margin-bottom: 30px; line-height: 1.5; }
+    .email-highlight { font-weight: 600; color: #374151; }
+
+    /* Input */
+    .input-field { width: 100%; padding: 14px; font-size: 24px; letter-spacing: 12px; text-align: center; border: 2px solid #e5e7eb; border-radius: 8px; background: #fff; transition: all 0.2s; font-family: monospace; font-weight: bold; }
+    .input-field:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); }
+    .input-field::placeholder { letter-spacing: 2px; font-size: 16px; font-family: sans-serif; font-weight: normal; color: #9ca3af; }
+
+    /* Button */
+    .btn-submit { width: 100%; padding: 14px; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 20px; transition: transform 0.1s, box-shadow 0.2s; }
+    .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 12px rgba(79, 70, 229, 0.25); }
+
+    .resend-link { display: inline-block; margin-top: 25px; color: #6b7280; font-size: 14px; text-decoration: none; transition: color 0.2s; }
+    .resend-link:hover { color: #6366f1; text-decoration: underline; }
 </style>
 {% endblock %}
 
 {% block content %}
 <nav class="simple-nav">
-    <a href="{{ url_for('login') }}" class="nav-logo">
+    <a href="/" class="nav-logo">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-            <path d="M2 17l10 5 10-5"/>
-            <path d="M2 12l10 5 10-5"/>
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
         </svg>
         GenConnect
     </a>
-    
-    <a href="{{ url_for('login') }}" class="header-btn">Log In</a>
+    <a href="{{ url_for('login') }}" class="nav-login-btn">Log In</a>
 </nav>
 
 <div class="main-container">
-    <div class="auth-box">
-        <div class="title">Enter Verification Code</div>
-        <div class="desc">Enter the 6-digit code sent to your email.</div>
+    <div class="auth-card">
+        <div class="icon-wrapper">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+        </div>
+        <div class="title">Check your email</div>
+        <div class="desc">
+            We sent a verification code to<br>
+            <span class="email-highlight">{{ email }}</span>
+        </div>
         <form method="POST">
-            <input type="text" name="otp" class="input-field" placeholder="000000" maxlength="6" required>
+            <input type="text" name="otp" class="input-field" placeholder="000000" maxlength="6" required autofocus>
             <button type="submit" class="btn-submit">Verify Code</button>
         </form>
-        <a href="{{ url_for('forgot_password') }}" style="display:block; margin-top:20px; font-size:12px; color:#0095f6; text-decoration:none;">Resend Code</a>
+        <a href="{{ url_for('forgot_password') }}" class="resend-link">Didn't receive the email? Click to resend</a>
     </div>
 </div>
 {% endblock %}
