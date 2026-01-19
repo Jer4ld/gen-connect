@@ -22,7 +22,7 @@
         .conversations-sidebar { width: 280px; background: white; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column; position: relative; }
         .conversations-header { padding: 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
         .conversations-header h2 { font-size: 20px; font-weight: 700; color: #111827; }
-        .header-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #6b7280; transition: background 0.2s; }
+        .header-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.2s; color: #6b7280; }
         .header-icon:hover { background-color: #f3f4f6; }
         .conversations-list { flex: 1; overflow-y: auto; }
         .conversation-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid #f3f4f6; text-decoration: none; color: inherit; cursor: pointer; }
@@ -297,6 +297,7 @@
                         <textarea id="messageInput" name="content" placeholder="Type a message..." rows="1"></textarea>
                     </div>
                     <input type="hidden" name="receiver_id" value="{{ contact.id }}">
+                    <input type="hidden" name="is_group" value="{{ 'true' if is_group else 'false' }}">
                     <button type="submit" class="send-button" id="submitBtn">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                     </button>
@@ -333,7 +334,7 @@
         </div>
         <form id="addContactForm">
             <div class="form-group">
-                <label for="contactUsername">Username</label>
+                <label>Username</label>
                 <input type="text" id="contactUsername" name="username" placeholder="Enter username" required>
             </div>
             <div class="modal-actions">
@@ -415,27 +416,41 @@
     // --- REPLY ---
     function startReply(id) {
         isReplying = true;
+        isEditing = false; // Ensure edit mode is off
         const msgEl = document.querySelector(`[data-content-id="${id}"]`);
         let text = msgEl ? msgEl.innerText : "";
         let cleanText = text.replace(/Replying to message[\s\S]*?\n/, '').trim();
         cleanText = cleanText.replace('📎 View Attachment', '').trim();
         cleanText = cleanText.replace(/\(edited\)$/, '').trim();
         replyText = cleanText;
+        
+        document.getElementById('replyTargetUser').innerText = "Replying to message";
         document.getElementById('replyTargetText').innerText = cleanText;
         document.getElementById('replyPreview').style.display = 'flex';
         document.getElementById('messageInput').focus();
     }
-    function cancelReply() { isReplying = false; document.getElementById('replyPreview').style.display = 'none'; replyText = ""; }
+    function cancelReply() { 
+        isReplying = false; 
+        isEditing = false;
+        editingId = null;
+        document.getElementById('replyPreview').style.display = 'none'; 
+        replyText = ""; 
+        document.getElementById('messageInput').value = ""; // Clear input if canceling edit
+    }
 
     // --- REACT ---
     function showReactionPicker(e, id) { e.stopPropagation(); document.getElementById('menu-' + id).classList.remove('active'); document.getElementById('react-bar-' + id).classList.add('active'); }
     function addReaction(id, emoji) { const container = document.getElementById('reactions-' + id); container.style.display = 'flex'; container.innerHTML += `<span>${emoji}</span>`; }
 
-    // --- EDIT ---
+    // --- EDIT (UPDATED TO USE PREVIEW BAR) ---
     function startEdit(id) {
         isEditing = true;
+        isReplying = false; // Ensure reply mode is off
         editingId = id;
+        
         const msgEl = document.querySelector(`[data-content-id="${id}"]`);
+        
+        // Handle if message was a reply
         const quoteBubble = msgEl.querySelector('.reply-quote-bubble');
         if (quoteBubble) {
             currentQuoteHtml = quoteBubble.outerHTML;
@@ -446,8 +461,15 @@
             currentQuoteHtml = "";
             textContent = msgEl.innerText;
         }
+        
         textContent = textContent.replace('📎 View Attachment', '').trim();
         textContent = textContent.replace(/\s*\(edited\)$/i, '').trim();
+        
+        // Show the preview bar but styled for EDITING
+        document.getElementById('replyTargetUser').innerText = "Editing Message";
+        document.getElementById('replyTargetText').innerText = textContent; // Show what we are editing
+        document.getElementById('replyPreview').style.display = 'flex';
+        
         const input = document.getElementById('messageInput');
         input.value = textContent;
         input.focus();
@@ -486,9 +508,10 @@
 
         if (isEditing) {
             let finalContent = content;
-            if (currentQuoteHtml) finalContent = currentQuoteHtml + finalContent;
+            if (currentQuoteHtml) finalContent = currentQuoteHtml + finalContent; // Keep quote if existed
             finalContent += ' <span class="edited-label">(edited)</span>';
             formData.set('content', finalContent);
+            
             const res = await fetch('/edit_message/' + editingId, { method: 'POST', body: formData });
             if((await res.json()).success) window.location.reload();
             return;
