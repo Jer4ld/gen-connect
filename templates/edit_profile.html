@@ -15,7 +15,22 @@
         position: fixed; left: 0; top: 0; width: 250px; height: 100vh;
         background-color: white; border-right: 1px solid #e5e7eb; padding: 20px 0; z-index: 100;
     }
-    .sidebar-logo { padding: 0 30px 20px; border-bottom: 1px solid #e5e7eb; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; color: #2563eb; font-weight: 700; font-size: 20px; }
+
+    /* LOGO STYLES */
+    .sidebar-logo { 
+        padding: 0 30px 20px; 
+        border-bottom: 1px solid #e5e7eb; 
+        margin-bottom: 20px; 
+        display: flex; 
+        align-items: center; 
+        gap: 10px; 
+        color: #6366f1; /* GenConnect Indigo */
+        font-weight: 600; 
+        font-size: 20px; 
+    }
+    
+    .sidebar-logo svg { width: 24px; height: 24px; color: #6366f1; }
+
     .sidebar-nav { list-style: none; }
     .sidebar-nav a { display: flex; align-items: center; gap: 15px; padding: 12px 30px; text-decoration: none; color: #4b5563; transition: all 0.2s; font-size: 15px; font-weight: 500; }
     .sidebar-nav a:hover { background-color: #f9fafb; color: #111827; }
@@ -55,11 +70,19 @@
 
     /* Avatar Section */
     .avatar-edit-section { display: flex; flex-direction: column; align-items: center; margin-bottom: 40px; }
+    
+    /* UPDATED: Larger Profile Image */
     .avatar-preview {
-        width: 120px; height: 120px; border-radius: 50%; overflow: hidden;
-        margin-bottom: 15px; border: 4px solid #f9fafb; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        width: 160px; /* Increased from 120px */
+        height: 160px; /* Increased from 120px */
+        border-radius: 50%; 
+        overflow: hidden;
+        margin-bottom: 15px; 
+        border: 4px solid #f9fafb; 
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
     .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
+    
     .change-photo-btn {
         color: #2563eb; background: none; border: none; font-size: 14px; font-weight: 600; cursor: pointer;
     }
@@ -76,20 +99,69 @@
     .form-input:focus, .form-textarea:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
     .form-textarea { min-height: 100px; resize: vertical; }
 
-    /* Hobbies Checkboxes */
-    .hobbies-grid {
-        display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
-        background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb;
+    /* UPDATED: Scrollable Hobbies Grid */
+    .hobbies-wrapper {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 15px;
+        /* Scroll Logic */
+        max-height: 200px; /* Limits height */
+        overflow-y: auto;  /* Adds scrollbar if content exceeds height */
     }
+    
+    .hobbies-grid {
+        display: grid; 
+        grid-template-columns: repeat(2, 1fr); /* 2 Columns for better readability in scroll */
+        gap: 12px;
+    }
+
     .checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #4b5563; cursor: pointer; }
 
-    /* Delete Section */
-    .delete-section { margin-top: 50px; padding-top: 30px; border-top: 1px solid #e5e7eb; text-align: center; }
-    .btn-delete-trigger {
-        background-color: #fee2e2; color: #dc2626; border: none; padding: 12px 30px;
-        border-radius: 8px; font-weight: 600; cursor: pointer; transition: background-color 0.2s;
+    /* UPDATED: Expanded Delete Section (Danger Zone) */
+    .danger-zone {
+        margin-top: 60px;
+        border: 1px solid #fee2e2;
+        border-radius: 8px;
+        overflow: hidden;
     }
-    .btn-delete-trigger:hover { background-color: #fecaca; }
+
+    .danger-header {
+        background-color: #fef2f2;
+        padding: 15px 20px;
+        border-bottom: 1px solid #fee2e2;
+        color: #991b1b;
+        font-weight: 600;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .danger-content {
+        padding: 20px;
+        background-color: #fff;
+    }
+
+    .danger-text {
+        color: #4b5563;
+        font-size: 14px;
+        margin-bottom: 20px;
+        line-height: 1.5;
+    }
+
+    .btn-delete-trigger {
+        background-color: #dc2626; 
+        color: white; 
+        border: none; 
+        padding: 10px 20px;
+        border-radius: 6px; 
+        font-weight: 600; 
+        font-size: 14px;
+        cursor: pointer; 
+        transition: background-color 0.2s;
+    }
+    .btn-delete-trigger:hover { background-color: #b91c1c; }
 
     /* Modal */
     .modal {
@@ -112,7 +184,7 @@
         .sidebar-nav a span { display: none; }
         .main-content { margin-left: 70px; padding: 20px; }
         .form-row { grid-template-columns: 1fr; gap: 8px; }
-        .hobbies-grid { grid-template-columns: 1fr 1fr; }
+        .hobbies-grid { grid-template-columns: 1fr; }
     }
 </style>
 {% endblock %}
@@ -140,7 +212,7 @@
         <form method="POST" action="{{ url_for('edit_profile') }}" enctype="multipart/form-data" class="edit-container">
             <div class="page-header">
                 <h1 class="page-title">Edit Profile</h1>
-                <button type="submit" class="btn-save">Save</button>
+                <button type="submit" class="btn-save">Save Changes</button>
             </div>
 
             <div class="avatar-edit-section">
@@ -166,11 +238,12 @@
                         <option>Prefer not to say</option>
                         <option>Male</option>
                         <option>Female</option>
+                        <option>Non-binary</option>
                     </select>
                 </div>
                 <div class="form-row">
                     <label class="form-label">Bio</label>
-                    <textarea name="bio" class="form-textarea">{{ user.bio or '' }}</textarea>
+                    <textarea name="bio" class="form-textarea" placeholder="Tell us a little about yourself...">{{ user.bio or '' }}</textarea>
                 </div>
                 <div class="form-row">
                     <label class="form-label">Phone Number</label>
@@ -178,23 +251,46 @@
                 </div>
                 <div class="form-row">
                     <label class="form-label">Hobbies</label>
-                    <div class="hobbies-grid">
-                        {% set interests = user.interests.split(',') if user.interests else [] %}
-                        {% set all_hobbies = ['Writing', 'Photography', 'Traveling', 'Videography', 'Music', 'Reading', 'Hiking', 'Sports', 'Cooking'] %}
-                        
-                        {% for hobby in all_hobbies %}
-                        <label class="checkbox-item">
-                            <input type="checkbox" name="interests" value="{{ hobby }}" 
-                                {% if hobby in interests %}checked{% endif %}>
-                            {{ hobby }}
-                        </label>
-                        {% endfor %}
+                    
+                    <div class="hobbies-wrapper">
+                        <div class="hobbies-grid">
+                            {% set interests = user.interests.split(',') if user.interests else [] %}
+                            {% set all_hobbies = [
+                                'Writing', 'Photography', 'Traveling', 'Videography', 'Music', 
+                                'Reading', 'Hiking', 'Sports', 'Cooking', 'Gardening',
+                                'Programming', 'Gaming', 'Art & Design', 'Volunteering', 
+                                'Yoga', 'Fishing', 'Dancing', 'History', 'Board Games',
+                                'Technology', 'DIY & Crafts', 'Languages', 'Meditation'
+                            ] %}
+                            
+                            {% for hobby in all_hobbies %}
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="interests" value="{{ hobby }}" 
+                                    {% if hobby in interests %}checked{% endif %}>
+                                {{ hobby }}
+                            </label>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="delete-section">
-                <button type="button" class="btn-delete-trigger" onclick="openDeleteModal()">Delete Account</button>
+            <div class="danger-zone">
+                <div class="danger-header">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    Danger Zone
+                </div>
+                <div class="danger-content">
+                    <p class="danger-text">
+                        Deleting your account is permanent. Once you delete your account, there is no going back. 
+                        Please be certain.
+                    </p>
+                    <button type="button" class="btn-delete-trigger" onclick="openDeleteModal()">Delete Account</button>
+                </div>
             </div>
         </form>
     </main>
@@ -203,11 +299,11 @@
 <div class="modal" id="deleteModal">
     <div class="modal-content">
         <div class="modal-title">Delete Account</div>
-        <p class="modal-text">You will permanently lose your account and all contributed data. This action cannot be undone.</p>
+        <p class="modal-text">Are you sure you want to delete your account? All of your data will be permanently removed. This action cannot be undone.</p>
         <div class="modal-actions">
             <button class="btn-cancel" onclick="closeDeleteModal()">Cancel</button>
             <form action="{{ url_for('delete_account') }}" method="POST" style="display: inline;">
-                <button type="submit" class="btn-confirm-delete">Delete</button>
+                <button type="submit" class="btn-confirm-delete">Yes, Delete My Account</button>
             </form>
         </div>
     </div>
