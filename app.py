@@ -377,7 +377,8 @@ def edit_profile():
         try:
             db.session.commit()
             flash('Profile updated successfully!', 'success')
-            return redirect(url_for('edit_profile'))
+            # CHANGE: Redirects to 'profile' instead of 'edit_profile'
+            return redirect(url_for('profile')) 
         except:
             db.session.rollback()
             flash('Error updating profile.', 'error')
