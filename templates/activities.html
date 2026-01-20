@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GenConnect Wireframe Prototype</title>
+    <style>
+        /* --- CSS STYLES (Inline) --- */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background-color: #ffffff;
+            border-right: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-links {
+            list-style: none;
+            padding: 0;
+        }
+
+        .nav-links li { margin-bottom: 15px; }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #555;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            background-color: #eef2ff;
+            color: #007bff;
+            font-weight: 600;
+        }
+
+        /* Main Layout */
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            background-color: #fff;
+            position: relative;
+        }
+
+        /* Headers & Search */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .search-bar {
+            padding: 8px 15px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            width: 200px;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            text-align: center;
+            display: inline-block;
+        }
+        .btn-primary { background-color: #00cba9; color: white; }
+        .btn-secondary { background-color: #00b0ff; color: white; }
+        .btn:hover { opacity: 0.9; }
+
+        /* Screen 1: List View */
+        .filter-tags { margin-bottom: 20px; text-align: center; }
+        .tag {
+            display: inline-block; padding: 5px 15px; background-color: #e0e7ff;
+            color: #333; border-radius: 15px; margin: 0 5px; font-size: 14px; cursor: pointer;
+        }
+        .tag.active { background-color: #007bff; color: white; }
+
+        .activity-card {
+            background-color: #f9f9f9; border-radius: 12px; overflow: hidden;
+            margin-bottom: 20px; display: flex; border: 1px solid #eee; height: 250px;
+        }
+        .card-image { width: 40%; background-color: #ddd; background-size: cover; background-position: center; }
+        .card-content { width: 60%; padding: 20px; position: relative; display: flex; flex-direction: column; justify-content: center; }
+        .card-category { font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 5px; }
+        .card-title { margin: 0 0 10px 0; font-size: 22px; }
+        .card-meta { font-size: 14px; color: #444; margin-bottom: 15px; line-height: 1.5; }
+        .quote { font-style: italic; color: #555; margin-bottom: 20px; }
+        .card-actions {
+            position: absolute; bottom: 20px; right: 20px; display: flex;
+            flex-direction: column; gap: 10px;
+        }
+
+        /* Screen 2: Details View */
+        .back-link {
+            text-decoration: none; color: #333; display: flex; align-items: center;
+            gap: 5px; margin-bottom: 20px; font-weight: bold; cursor: pointer;
+        }
+        .details-hero {
+            width: 100%; height: 300px; background-color: #ddd; border-radius: 10px;
+            margin-bottom: 20px; background-size: cover; background-position: center;
+        }
+        .details-box {
+            background-color: #e6e6e6; padding: 30px; border-radius: 10px; position: relative;
+        }
+        .info-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; color: #333; }
+        .details-join-btn { position: absolute; bottom: 30px; right: 30px; }
+
+        /* Screen 3: Success View */
+        .success-card {
+            background-color: #2ecc71; color: white; padding: 40px; border-radius: 10px;
+            max-width: 600px; margin: 50px auto;
+        }
+        .success-header {
+            display: flex; align-items: center; gap: 15px; font-size: 20px;
+            margin-bottom: 20px; font-weight: bold;
+        }
+        .success-details { margin-left: 35px; margin-bottom: 30px; line-height: 1.6; }
+
+        /* Utility to toggle screens */
+        .screen { display: none; animation: fadeIn 0.3s; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="logo">GenConnect</div>
+        <ul class="nav-links">
+            <li><a href="#" onclick="showScreen('home')">Home</a></li>
+            <li><a href="#" onclick="showScreen('home')" class="active">Explore Activities</a></li>
+            <li><a href="#">Community</a></li>
+            <li><a href="#">Create</a></li>
+            <li><a href="#">Notification</a></li>
+            <li><a href="#">Messages</a></li>
+            <li><a href="#">Settings</a></li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+
+        <div id="screen-home" class="screen active">
+            <div class="header">
+                <h1>Activities</h1>
+                <input type="text" class="search-bar" placeholder="Search for...">
+            </div>
+
+            <div class="filter-tags">
+                <span class="tag active">All</span>
+                <span class="tag">Hobbies</span>
+                <span class="tag">Tech Help</span>
+                <span class="tag">Outdoor</span>
+                <span class="tag">Volunteer</span>
+            </div>
+
+            <div class="activity-card">
+                <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1544367563-12123d8965cd?w=500');"></div>
+                <div class="card-content">
+                    <div class="card-category">Outdoor</div>
+                    <h2 class="card-title">Morning Yoga</h2>
+                    <div class="card-meta">
+                        17 Dec 2025<br>7:30 AM - 9:00 AM<br>Studio 1 Community Hall
+                    </div>
+                    <p class="quote">"Start your day with gentle stretches..."</p>
+                    <div class="card-actions">
+                        <button class="btn btn-primary" onclick="showScreen('confirmation')">Join</button>
+                        <button class="btn btn-secondary" onclick="showScreen('details')">View Details</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="activity-card">
+                <div class="card-image" style="background-image: url('https://images.unsplash.com/photo-1626224583764-847890e058f5?w=500');"></div>
+                <div class="card-content">
+                    <div class="card-category">Outdoor</div>
+                    <h2 class="card-title">Badminton Fun</h2>
+                    <div class="card-meta">
+                        28 Dec 2025<br>10:00 AM - 12:00 PM<br>Community Sports Hall
+                    </div>
+                    <p class="quote">"Join fellow youth and seniors for friendly badminton!"</p>
+                    <div class="card-actions">
+                        <button class="btn btn-primary" onclick="showScreen('confirmation')">Join</button>
+                        <button class="btn btn-secondary" onclick="showScreen('details')">View Details</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="#" style="color: #007bff; text-decoration: none;">View More</a>
+            </div>
+        </div>
+
+        <div id="screen-details" class="screen">
+            <div class="header">
+                <a href="#" class="back-link" onclick="showScreen('home')">← Activity Details</a>
+                <input type="text" class="search-bar" placeholder="Search for...">
+            </div>
+
+            <div style="max-width: 800px; margin: 0 auto;">
+                <h1 style="margin-bottom: 5px;">Morning Yoga</h1>
+                <p style="color: #666; margin-bottom: 20px;">Outdoor</p>
+
+                <div class="details-hero" style="background-image: url('https://images.unsplash.com/photo-1544367563-12123d8965cd?w=800');"></div>
+
+                <div class="details-box">
+                    <div class="info-row"><span>📅</span> <strong>17 Dec 2025</strong></div>
+                    <div class="info-row"><span>⏰</span> <strong>7:30 AM - 9:00 AM</strong></div>
+                    <div class="info-row"><span>📍</span> <strong>Studio 1, Community Hall</strong></div>
+
+                    <p style="margin-top: 20px; font-style: italic; color: #444;">
+                        "Start your day with gentle stretches, relax your body, and connect with both youths and seniors in a calm, friendly environment"
+                    </p>
+
+                    <button class="btn btn-primary details-join-btn" onclick="showScreen('confirmation')">Join</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="screen-confirmation" class="screen">
+            <div class="header">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <a href="#" class="back-link" onclick="showScreen('details')" style="margin: 0;">← Activity Details</a>
+                    <h2 style="margin: 0; margin-left: 20px;">Join Confirmation</h2>
+                </div>
+                <input type="text" class="search-bar" placeholder="Search for...">
+            </div>
+
+            <div class="success-card">
+                <div class="success-header">
+                    <span style="font-size: 30px;">☑</span> 
+                    You've successfully joined:
+                </div>
+                
+                <div class="success-details">
+                    <strong>Morning Yoga</strong><br>
+                    17 Dec 2025<br>
+                    7:30 AM - 9:00 AM<br>
+                    Studio 1 Community Hall
+                </div>
+
+                <p style="margin-left: 35px; font-weight: bold;">
+                    You will receive an email confirming your participation!
+                </p>
+                <br>
+                <div style="text-align: center;">
+                    <button class="btn btn-secondary" onclick="showScreen('home')">Back to Home</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        function showScreen(screenId) {
+            // Hide all screens
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            // Show the selected screen
+            document.getElementById('screen-' + screenId).classList.add('active');
+        }
+    </script>
+
+</body>
+</html>
