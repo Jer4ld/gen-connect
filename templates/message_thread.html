@@ -373,15 +373,11 @@
         moreOptionsBtn.onclick = (e) => { e.stopPropagation(); document.getElementById('optionsMenu').classList.toggle('active'); };
     }
 
-    // Attach listeners for Remove/Report using JS (Fixes red syntax error)
+    // Listeners for Remove/Report
     const btnRemove = document.getElementById('btn-remove-contact');
-    if (btnRemove) {
-        btnRemove.onclick = () => removeContact(btnRemove.dataset.id);
-    }
+    if (btnRemove) { btnRemove.onclick = () => removeContact(btnRemove.dataset.id); }
     const btnReport = document.getElementById('btn-report-user');
-    if (btnReport) {
-        btnReport.onclick = () => reportUser();
-    }
+    if (btnReport) { btnReport.onclick = () => reportUser(); }
 
     document.addEventListener('click', () => { 
         document.querySelectorAll('.message-dropdown').forEach(m => m.classList.remove('active')); 
@@ -390,7 +386,6 @@
         document.getElementById('optionsMenu').classList.remove('active'); 
     });
 
-    // --- TOP RIGHT MENU ACTIONS (FIXED) ---
     async function removeContact(id) {
         if(confirm("Are you sure you want to remove this contact? WARNING: All chat history and data will be permanently deleted.")) {
             try {
@@ -400,12 +395,8 @@
         }
     }
 
-    function reportUser() {
-        alert("User reported. Thank you for keeping the community safe.");
-        document.getElementById('optionsMenu').classList.remove('active');
-    }
+    function reportUser() { alert("User reported. Thank you for keeping the community safe."); document.getElementById('optionsMenu').classList.remove('active'); }
 
-    // --- INFO ---
     function showMessageInfo(id) {
         const timeEl = document.querySelector(`#msg-${id} .message-meta span`);
         document.getElementById('infoTime').innerText = timeEl ? timeEl.innerText : "Unknown";
@@ -413,45 +404,29 @@
     }
     function closeMessageInfo() { document.getElementById('messageInfoModal').classList.remove('active'); }
 
-    // --- REPLY ---
     function startReply(id) {
-        isReplying = true;
-        isEditing = false; // Ensure edit mode is off
+        isReplying = true; isEditing = false;
         const msgEl = document.querySelector(`[data-content-id="${id}"]`);
         let text = msgEl ? msgEl.innerText : "";
         let cleanText = text.replace(/Replying to message[\s\S]*?\n/, '').trim();
         cleanText = cleanText.replace('📎 View Attachment', '').trim();
         cleanText = cleanText.replace(/\(edited\)$/, '').trim();
         replyText = cleanText;
-        
         document.getElementById('replyTargetUser').innerText = "Replying to message";
         document.getElementById('replyTargetText').innerText = cleanText;
         document.getElementById('replyPreview').style.display = 'flex';
         document.getElementById('messageInput').focus();
     }
-    function cancelReply() { 
-        isReplying = false; 
-        isEditing = false;
-        editingId = null;
-        document.getElementById('replyPreview').style.display = 'none'; 
-        replyText = ""; 
-        document.getElementById('messageInput').value = ""; // Clear input if canceling edit
-    }
+    function cancelReply() { isReplying = false; isEditing = false; editingId = null; document.getElementById('replyPreview').style.display = 'none'; replyText = ""; document.getElementById('messageInput').value = ""; }
 
-    // --- REACT ---
     function showReactionPicker(e, id) { e.stopPropagation(); document.getElementById('menu-' + id).classList.remove('active'); document.getElementById('react-bar-' + id).classList.add('active'); }
     function addReaction(id, emoji) { const container = document.getElementById('reactions-' + id); container.style.display = 'flex'; container.innerHTML += `<span>${emoji}</span>`; }
 
-    // --- EDIT (UPDATED TO USE PREVIEW BAR) ---
     function startEdit(id) {
-        isEditing = true;
-        isReplying = false; // Ensure reply mode is off
-        editingId = id;
-        
+        isEditing = true; isReplying = false; editingId = id;
         const msgEl = document.querySelector(`[data-content-id="${id}"]`);
-        
-        // Handle if message was a reply
         const quoteBubble = msgEl.querySelector('.reply-quote-bubble');
+        let textContent = "";
         if (quoteBubble) {
             currentQuoteHtml = quoteBubble.outerHTML;
             let clone = msgEl.cloneNode(true);
@@ -461,21 +436,16 @@
             currentQuoteHtml = "";
             textContent = msgEl.innerText;
         }
-        
         textContent = textContent.replace('📎 View Attachment', '').trim();
         textContent = textContent.replace(/\s*\(edited\)$/i, '').trim();
-        
-        // Show the preview bar but styled for EDITING
         document.getElementById('replyTargetUser').innerText = "Editing Message";
-        document.getElementById('replyTargetText').innerText = textContent; // Show what we are editing
+        document.getElementById('replyTargetText').innerText = textContent;
         document.getElementById('replyPreview').style.display = 'flex';
-        
         const input = document.getElementById('messageInput');
         input.value = textContent;
         input.focus();
     }
 
-    // --- PIN ---
     function pinMessage(id) {
         pinnedMessageId = id;
         const msgEl = document.querySelector(`[data-content-id="${id}"]`);
@@ -496,46 +466,38 @@
         }
     }
 
-    // --- SUBMIT ---
     document.getElementById('messageForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         const input = document.getElementById('messageInput');
         const content = input.value.trim();
         const file = document.getElementById('fileInput').files[0];
         if (!content && !file) return;
-
         const formData = new FormData(this);
-
         if (isEditing) {
             let finalContent = content;
-            if (currentQuoteHtml) finalContent = currentQuoteHtml + finalContent; // Keep quote if existed
+            if (currentQuoteHtml) finalContent = currentQuoteHtml + finalContent;
             finalContent += ' <span class="edited-label">(edited)</span>';
             formData.set('content', finalContent);
-            
             const res = await fetch('/edit_message/' + editingId, { method: 'POST', body: formData });
             if((await res.json()).success) window.location.reload();
             return;
         }
-
         if (isReplying) {
             const quoteHtml = `<div class="reply-quote-bubble"><span class="reply-quote-sender">Replying to message</span><span>${replyText}</span></div>${content}`;
             formData.set('content', quoteHtml);
-        } else if (file && !content) {
-            formData.set('content', '[File Attachment]');
-        }
-
+        } else if (file && !content) { formData.set('content', '[File Attachment]'); }
         try {
             const res = await fetch('/send_message', { method: 'POST', body: formData });
             if ((await res.json()).success) window.location.reload();
         } catch (err) {}
     });
 
-    // Helper Functions
-    function showNotification(title, message) {
+    function showNotification(type, title, message) {
         const toast = document.getElementById('notificationToast');
         document.getElementById('notificationTitle').textContent = title;
         document.getElementById('notificationMessage').textContent = message;
-        toast.classList.add('active');
+        toast.classList.remove('success', 'error');
+        toast.classList.add(type, 'active');
         setTimeout(() => toast.classList.remove('active'), 3000);
     }
     const fileInput = document.getElementById('fileInput');
@@ -547,21 +509,35 @@
     function openNewGroupModal() { document.getElementById('newGroupModal').classList.add('active'); document.getElementById('conversationMenu').classList.remove('active'); }
     function closeNewGroupModal() { document.getElementById('newGroupModal').classList.remove('active'); }
 
-    // Forms
+    // Forms - UPDATED TO USE SERVER data.message
     document.getElementById('newGroupForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         try {
             const res = await fetch('/create_group', { method: 'POST', body: new FormData(this) });
-            if ((await res.json()).success) window.location.href = '/messages';
-        } catch(err) {}
+            const data = await res.json();
+            if (data.success) { 
+                showNotification('success', 'Group Created', data.message); 
+                setTimeout(() => window.location.href = '/messages', 2500); 
+            } else {
+                showNotification('error', 'Error', data.message);
+            }
+        } catch(err) { showNotification('error', 'Error', 'Failed to create group'); }
     });
+
     document.getElementById('addContactForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         try {
             const res = await fetch('/add_contact', { method: 'POST', body: new FormData(this) });
-            if ((await res.json()).success) window.location.reload();
-        } catch(err) {}
+            const data = await res.json();
+            if (data.success) { 
+                showNotification('success', 'Status', data.message); 
+                setTimeout(() => window.location.reload(), 2500);
+            } else {
+                showNotification('error', 'Error', data.message);
+            }
+        } catch(err) { showNotification('error', 'Error', 'Failed to send request'); }
     });
+    
     const area = document.getElementById('messagesArea');
     if(area) area.scrollTop = area.scrollHeight;
 </script>

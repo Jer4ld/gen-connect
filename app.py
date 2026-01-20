@@ -119,6 +119,18 @@ class Message(db.Model):
     def mark_as_read(self):
         self.is_read = True
         db.session.commit()
+# Insert this with your other models in app.py
+class Notification(db.Model):
+    __tablename__ = 'notifications'
+    id = db.Column(db.Integer, primary_key=True)
+    recipient_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    type = db.Column(db.String(50)) # 'contact_request' or 'group_invite'
+    target_id = db.Column(db.Integer) # User ID for contact, Community ID for group
+    message = db.Column(db.String(255))
+    is_read = db.Column(db.Boolean, default=False)
+    status = db.Column(db.String(20), default='pending') # pending, accepted, rejected
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Contact(db.Model):
     __tablename__ = 'contacts'
@@ -292,31 +304,136 @@ def create_group():
     if 'user_id' not in session: return jsonify({'success': False}), 401
     name = request.form.get('group_name')
     members = request.form.getlist('members')
-    if not name: return jsonify({'success': False, 'message': 'Name required'})
+    
+    if not name: return jsonify({'success': False, 'message': 'Group name required'})
+    
     try:
         new_g = Community(name=name, creator_id=session['user_id'])
         db.session.add(new_g)
-        db.session.flush()
+        db.session.flush() 
+        
+        # Add creator immediately
         db.session.add(CommunityMember(user_id=session['user_id'], community_id=new_g.id))
-        for m_id in members: db.session.add(CommunityMember(user_id=int(m_id), community_id=new_g.id))
+        
+        # Send invitations to others
+        for m_id in members:
+            new_notif = Notification(
+                recipient_id=int(m_id),
+                sender_id=session['user_id'],
+                type='group_invite',
+                target_id=new_g.id,
+                message=f"{session['username']} invited you to join the group: {name}"
+            )
+            db.session.add(new_notif)
+            
         db.session.commit()
-        return jsonify({'success': True, 'message': 'Group created!'})
+        # ⬇️ UPDATED MESSAGE
+        return jsonify({
+            'success': True, 
+            'message': 'Group created! Invitations sent and awaiting member approval.'
+        })
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/notifications')
+def notifications_page():
+    if 'user_id' not in session: return redirect(url_for('login'))
+    user_notifications = Notification.query.filter_by(recipient_id=session['user_id']).order_by(Notification.created_at.desc()).all()
+    return render_template('notifications.html', notifications=user_notifications)
 
 @app.route('/add_contact', methods=['POST'])
 def add_contact():
     if 'user_id' not in session: return jsonify({'success': False}), 401
     username = request.form.get('username').strip()
     target = User.query.filter_by(username=username).first()
+    
     if not target: return jsonify({'success': False, 'message': 'User not found'})
     if target.id == session['user_id']: return jsonify({'success': False, 'message': 'Cannot add yourself'})
-    exists = Contact.query.filter(or_(and_(Contact.user_id==session['user_id'], Contact.contact_user_id==target.id), and_(Contact.user_id==target.id, Contact.contact_user_id==session['user_id']))).first()
-    if exists: return jsonify({'success': False, 'message': 'Already contacts'})
-    db.session.add(Contact(user_id=session['user_id'], contact_user_id=target.id))
+    
+    # Check if a pending invitation already exists in the Notifications table
+    # Assuming you have the Notification model implemented as discussed previously
+    exists = Notification.query.filter_by(
+        sender_id=session['user_id'], 
+        recipient_id=target.id, 
+        type='contact_request', 
+        status='pending'
+    ).first()
+    
+    if exists: 
+        return jsonify({'success': True, 'message': 'Request already sent! Awaiting approval.'})
+    
+    # Create the invitation notification
+    new_notif = Notification(
+        recipient_id=target.id,
+        sender_id=session['user_id'],
+        type='contact_request',
+        message=f"{session['username']} wants to add you as a contact."
+    )
+    db.session.add(new_notif)
     db.session.commit()
-    return jsonify({'success': True, 'message': 'Added'})
+    
+    # Return the specific status message
+    return jsonify({'success': True, 'message': 'Request sent! Awaiting approval.'})
+
+@app.route('/respond_notification/<int:notif_id>/<action>', methods=['POST'])
+def respond_notification(notif_id, action):
+    if 'user_id' not in session: return jsonify({'success': False}), 401
+    
+    # Using Notification.query.get_or_404(notif_id) assuming you have the model
+    # If not, ensure the Notification model is defined as per previous steps
+    notif = Notification.query.get_or_404(notif_id)
+    if notif.recipient_id != session['user_id']: 
+        return jsonify({'success': False}), 403
+    
+    current_user = User.query.get(session['user_id'])
+    
+    if action == 'accept':
+        notif.status = 'accepted'
+        
+        if notif.type == 'contact_request':
+            db.session.add(Contact(user_id=notif.sender_id, contact_user_id=notif.recipient_id))
+            # Success feedback for contact initiator
+            db.session.add(Notification(
+                recipient_id=notif.sender_id,
+                sender_id=session['user_id'],
+                type='request_accepted',
+                message=f"{current_user.username} accepted your contact request!"
+            ))
+            
+        elif notif.type == 'group_invite':
+            db.session.add(CommunityMember(user_id=notif.recipient_id, community_id=notif.target_id))
+            group = Community.query.get(notif.target_id)
+            
+            # ⬇️ ADDED: Group joined feedback for the creator
+            db.session.add(Notification(
+                recipient_id=notif.sender_id,
+                sender_id=session['user_id'],
+                type='group_joined',
+                message=f"{current_user.username} joined your group: {group.name}"
+            ))
+            
+            # ⬇️ NEW: Create the system message inside the group chat
+            join_msg = Message(
+                sender_id=session['user_id'], # The person joining
+                community_id=notif.target_id,  # The group they joined
+                content=f"🔔 {current_user.username} has joined the group via invitation.",
+                is_read=True # System messages don't need to be unread for the joiner
+            )
+            db.session.add(join_msg)
+            
+    elif action == 'reject':
+        notif.status = 'rejected'
+        if notif.type == 'contact_request':
+            db.session.add(Notification(
+                recipient_id=notif.sender_id,
+                sender_id=session['user_id'],
+                type='request_rejected',
+                message=f"{current_user.username} declined your contact request."
+            ))
+            
+    db.session.commit()
+    return jsonify({'success': True})
 
 @app.route('/remove_contact/<int:contact_id>', methods=['POST'])
 def remove_contact(contact_id):

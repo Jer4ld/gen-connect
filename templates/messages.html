@@ -192,17 +192,26 @@ document.getElementById('addContactForm').addEventListener('submit', async funct
     try {
         const res = await fetch('/add_contact', { method: 'POST', body: formData });
         const data = await res.json();
-        if (data.success) { showNotification('success', 'Success', 'Contact added!'); setTimeout(() => window.location.reload(), 1500); }
+        if (data.success) { 
+            // ⬇️ CHANGE THIS LINE: Use data.message instead of 'Contact added!'
+            showNotification('success', 'Status', data.message); 
+            setTimeout(() => window.location.reload(), 2000); 
+        }
         else showNotification('error', 'Error', data.message);
-    } catch (err) { showNotification('error', 'Error', 'Failed to add contact'); }
+    } catch (err) { showNotification('error', 'Error', 'Failed to send request'); }
 });
 
+// Find the newGroupForm listener in messages.html
 document.getElementById('newGroupForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     try {
         const res = await fetch('/create_group', { method: 'POST', body: new FormData(this) });
         const data = await res.json();
-        if (data.success) { showNotification('success', 'Success', 'Group created!'); setTimeout(() => window.location.reload(), 1500); }
+        if (data.success) { 
+            // ⬇️ CHANGE THIS LINE: Use data.message instead of 'Group created!'
+            showNotification('success', 'Status', data.message); 
+            setTimeout(() => window.location.reload(), 2000); 
+        }
         else showNotification('error', 'Error', data.message);
     } catch (err) { showNotification('error', 'Error', 'Failed to create group'); }
 });
