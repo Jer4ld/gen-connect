@@ -22,7 +22,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///genconnect.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # ================= EMAIL CONFIGURATION =================
-# Using Port 587 (TLS) - The most compatible mode
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
@@ -103,6 +102,7 @@ class CommunityMember(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     community_id = db.Column(db.Integer, db.ForeignKey('communities.id'), nullable=False)
+    is_admin = db.Column(db.Boolean, default=False) 
     joined_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Message(db.Model):
@@ -119,17 +119,17 @@ class Message(db.Model):
     def mark_as_read(self):
         self.is_read = True
         db.session.commit()
-# Insert this with your other models in app.py
+
 class Notification(db.Model):
     __tablename__ = 'notifications'
     id = db.Column(db.Integer, primary_key=True)
     recipient_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    type = db.Column(db.String(50)) # 'contact_request' or 'group_invite'
-    target_id = db.Column(db.Integer) # User ID for contact, Community ID for group
+    type = db.Column(db.String(50)) 
+    target_id = db.Column(db.Integer) 
     message = db.Column(db.String(255))
     is_read = db.Column(db.Boolean, default=False)
-    status = db.Column(db.String(20), default='pending') # pending, accepted, rejected
+    status = db.Column(db.String(20), default='pending') 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Contact(db.Model):
@@ -260,23 +260,53 @@ def message_thread(target_id):
     if 'user_id' not in session: return redirect(url_for('login'))
     current_user = User.query.get(session['user_id'])
     if not current_user: return redirect(url_for('login'))
+    
     contacts = current_user.get_contacts()
     groups = Community.query.join(CommunityMember).filter(CommunityMember.user_id == current_user.id).all()
+    
     conversations = []
     for c in contacts: conversations.append({'id': c.id, 'name': c.username, 'contact': c, 'is_group': False})
     for g in groups: conversations.append({'id': g.id, 'name': g.name, 'group': g, 'is_group': True})
+    
     is_group = request.args.get('is_group') == 'true'
     member_count = 0
-    group_members = []
+    group_members_data = [] # New list to hold user + admin status
+    current_user_is_admin = False # Flag to pass to template
+    
     if is_group:
         contact = Community.query.get_or_404(target_id)
         member_count = contact.get_member_count()
-        group_members = User.query.join(CommunityMember).filter(CommunityMember.community_id == target_id).all()
         messages = Message.query.filter_by(community_id=target_id).order_by(Message.created_at.asc()).all()
+        
+        # ⬇️ FIX: Get membership details to check admin status accurately
+        memberships = CommunityMember.query.filter_by(community_id=target_id).all()
+        for m in memberships:
+            user = User.query.get(m.user_id)
+            if user:
+                is_admin = m.is_admin
+                if user.id == current_user.id and is_admin:
+                    current_user_is_admin = True
+                
+                group_members_data.append({
+                    'user': user,
+                    'is_admin': is_admin,
+                    'id': user.id,
+                    'username': user.username
+                })
     else:
         contact = User.query.get_or_404(target_id)
         messages = Message.query.filter(or_(and_(Message.sender_id == current_user.id, Message.receiver_id == contact.id), and_(Message.sender_id == contact.id, Message.receiver_id == current_user.id))).order_by(Message.created_at.asc()).all()
-    return render_template('message_thread.html', contact=contact, messages=messages, conversations=conversations, contacts=contacts, current_user=current_user, is_group=is_group, member_count=member_count, group_members=group_members)
+
+    return render_template('message_thread.html', 
+                           contact=contact, 
+                           messages=messages, 
+                           conversations=conversations, 
+                           contacts=contacts, 
+                           current_user=current_user, 
+                           is_group=is_group, 
+                           member_count=member_count, 
+                           group_members=group_members_data, # Passing the detailed list
+                           user_is_admin=current_user_is_admin) # Explicitly passing admin status
 
 @app.route('/send_message', methods=['POST'])
 def send_message():
@@ -304,37 +334,53 @@ def create_group():
     if 'user_id' not in session: return jsonify({'success': False}), 401
     name = request.form.get('group_name')
     members = request.form.getlist('members')
-    
     if not name: return jsonify({'success': False, 'message': 'Group name required'})
-    
     try:
         new_g = Community(name=name, creator_id=session['user_id'])
         db.session.add(new_g)
         db.session.flush() 
-        
-        # Add creator immediately
-        db.session.add(CommunityMember(user_id=session['user_id'], community_id=new_g.id))
-        
-        # Send invitations to others
+        db.session.add(CommunityMember(user_id=session['user_id'], community_id=new_g.id, is_admin=True))
         for m_id in members:
-            new_notif = Notification(
-                recipient_id=int(m_id),
-                sender_id=session['user_id'],
-                type='group_invite',
-                target_id=new_g.id,
-                message=f"{session['username']} invited you to join the group: {name}"
-            )
+            new_notif = Notification(recipient_id=int(m_id), sender_id=session['user_id'], type='group_invite', target_id=new_g.id, message=f"{session['username']} invited you to join the group: {name}")
             db.session.add(new_notif)
-            
         db.session.commit()
-        # ⬇️ UPDATED MESSAGE
-        return jsonify({
-            'success': True, 
-            'message': 'Group created! Invitations sent and awaiting member approval.'
-        })
+        return jsonify({'success': True, 'message': 'Group created! Invitations sent and awaiting member approval.'})
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/promote_admin/<int:group_id>/<int:target_user_id>', methods=['POST'])
+def promote_admin(group_id, target_user_id):
+    if 'user_id' not in session: return jsonify({'success': False}), 401
+    caller = CommunityMember.query.filter_by(user_id=session['user_id'], community_id=group_id).first()
+    if not caller or not caller.is_admin:
+        return jsonify({'success': False, 'message': 'Unauthorized'})
+    target = CommunityMember.query.filter_by(user_id=target_user_id, community_id=group_id).first()
+    if target:
+        target.is_admin = True
+        db.session.add(Notification(recipient_id=target_user_id, sender_id=session['user_id'], type='admin_promotion', message=f"You have been promoted to admin in group: {Community.query.get(group_id).name}"))
+        db.session.commit()
+        return jsonify({'success': True})
+    return jsonify({'success': False, 'message': 'Member not found'})
+
+@app.route('/edit_group_name/<int:group_id>', methods=['POST'])
+def edit_group_name(group_id):
+    if 'user_id' not in session: return jsonify({'success': False}), 401
+    member = CommunityMember.query.filter_by(user_id=session['user_id'], community_id=group_id).first()
+    if not member or not member.is_admin:
+        return jsonify({'success': False, 'message': 'Only admins can edit name'})
+    new_name = request.form.get('new_name')
+    group = Community.query.get(group_id)
+    group.name = new_name
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Group name updated!'})
+
+@app.route('/leave_group/<int:group_id>', methods=['POST'])
+def leave_group(group_id):
+    if 'user_id' not in session: return jsonify({'success': False}), 401
+    CommunityMember.query.filter_by(user_id=session['user_id'], community_id=group_id).delete()
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'You have exited the group.'})
 
 @app.route('/notifications')
 def notifications_page():
@@ -347,91 +393,37 @@ def add_contact():
     if 'user_id' not in session: return jsonify({'success': False}), 401
     username = request.form.get('username').strip()
     target = User.query.filter_by(username=username).first()
-    
     if not target: return jsonify({'success': False, 'message': 'User not found'})
     if target.id == session['user_id']: return jsonify({'success': False, 'message': 'Cannot add yourself'})
-    
-    # Check if a pending invitation already exists in the Notifications table
-    # Assuming you have the Notification model implemented as discussed previously
-    exists = Notification.query.filter_by(
-        sender_id=session['user_id'], 
-        recipient_id=target.id, 
-        type='contact_request', 
-        status='pending'
-    ).first()
-    
+    exists = Notification.query.filter_by(sender_id=session['user_id'], recipient_id=target.id, type='contact_request', status='pending').first()
     if exists: 
         return jsonify({'success': True, 'message': 'Request already sent! Awaiting approval.'})
-    
-    # Create the invitation notification
-    new_notif = Notification(
-        recipient_id=target.id,
-        sender_id=session['user_id'],
-        type='contact_request',
-        message=f"{session['username']} wants to add you as a contact."
-    )
+    new_notif = Notification(recipient_id=target.id, sender_id=session['user_id'], type='contact_request', message=f"{session['username']} wants to add you as a contact.")
     db.session.add(new_notif)
     db.session.commit()
-    
-    # Return the specific status message
     return jsonify({'success': True, 'message': 'Request sent! Awaiting approval.'})
 
 @app.route('/respond_notification/<int:notif_id>/<action>', methods=['POST'])
 def respond_notification(notif_id, action):
     if 'user_id' not in session: return jsonify({'success': False}), 401
-    
-    # Using Notification.query.get_or_404(notif_id) assuming you have the model
-    # If not, ensure the Notification model is defined as per previous steps
     notif = Notification.query.get_or_404(notif_id)
-    if notif.recipient_id != session['user_id']: 
-        return jsonify({'success': False}), 403
-    
+    if notif.recipient_id != session['user_id']: return jsonify({'success': False}), 403
     current_user = User.query.get(session['user_id'])
-    
     if action == 'accept':
         notif.status = 'accepted'
-        
         if notif.type == 'contact_request':
             db.session.add(Contact(user_id=notif.sender_id, contact_user_id=notif.recipient_id))
-            # Success feedback for contact initiator
-            db.session.add(Notification(
-                recipient_id=notif.sender_id,
-                sender_id=session['user_id'],
-                type='request_accepted',
-                message=f"{current_user.username} accepted your contact request!"
-            ))
-            
+            db.session.add(Notification(recipient_id=notif.sender_id, sender_id=session['user_id'], type='request_accepted', message=f"{current_user.username} accepted your contact request!"))
         elif notif.type == 'group_invite':
             db.session.add(CommunityMember(user_id=notif.recipient_id, community_id=notif.target_id))
             group = Community.query.get(notif.target_id)
-            
-            # ⬇️ ADDED: Group joined feedback for the creator
-            db.session.add(Notification(
-                recipient_id=notif.sender_id,
-                sender_id=session['user_id'],
-                type='group_joined',
-                message=f"{current_user.username} joined your group: {group.name}"
-            ))
-            
-            # ⬇️ NEW: Create the system message inside the group chat
-            join_msg = Message(
-                sender_id=session['user_id'], # The person joining
-                community_id=notif.target_id,  # The group they joined
-                content=f"🔔 {current_user.username} has joined the group via invitation.",
-                is_read=True # System messages don't need to be unread for the joiner
-            )
+            db.session.add(Notification(recipient_id=notif.sender_id, sender_id=session['user_id'], type='group_joined', message=f"{current_user.username} joined your group: {group.name}"))
+            join_msg = Message(sender_id=session['user_id'], community_id=notif.target_id, content=f"🔔 {current_user.username} has joined the group via invitation.", is_read=True)
             db.session.add(join_msg)
-            
     elif action == 'reject':
         notif.status = 'rejected'
         if notif.type == 'contact_request':
-            db.session.add(Notification(
-                recipient_id=notif.sender_id,
-                sender_id=session['user_id'],
-                type='request_rejected',
-                message=f"{current_user.username} declined your contact request."
-            ))
-            
+            db.session.add(Notification(recipient_id=notif.sender_id, sender_id=session['user_id'], type='request_rejected', message=f"{current_user.username} declined your contact request."))
     db.session.commit()
     return jsonify({'success': True})
 
@@ -489,12 +481,10 @@ def edit_profile():
         user.username = request.form.get('username')
         user.email = request.form.get('email')
         user.bio = request.form.get('bio')
-        selected_interests = request.form.getlist('interests')
-        user.interests = ",".join(selected_interests)
+        user.interests = ",".join(request.form.getlist('interests'))
         try:
             db.session.commit()
             flash('Profile updated successfully!', 'success')
-            # CHANGE: Redirects to 'profile' instead of 'edit_profile'
             return redirect(url_for('profile')) 
         except:
             db.session.rollback()
@@ -524,17 +514,13 @@ def create_post():
         db.session.add(new_post)
         db.session.commit()
         flash('Post created successfully!', 'success')
-    else:
-        flash('Post content cannot be empty', 'error')
+    else: flash('Post content cannot be empty', 'error')
     return redirect(url_for('home'))
 
-# ================= ACHIEVEMENTS ROUTE (NEW) =================
 @app.route('/achievements')
 def achievements():
     if 'user_id' not in session: return redirect(url_for('login'))
     user = User.query.get(session['user_id'])
-    
-    # Mock data for demonstration
     badges = [
         {'name': 'Early Adopter', 'icon': '🚀', 'desc': 'Joined GenConnect in 2025', 'earned': True},
         {'name': 'Conversation Starter', 'icon': '💬', 'desc': 'Started 10 discussions', 'earned': True},
@@ -545,8 +531,6 @@ def achievements():
     ]
     return render_template('achievements.html', user=user, badges=badges)
 
-# ================= AUTH WITH EMAIL SUPPORT =================
-
 @app.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
@@ -554,49 +538,24 @@ def forgot_password():
         otp = str(random.randint(100000, 999999))
         session['reset_otp'] = otp
         session['reset_email'] = email
-        
         try:
-            # ⬇️ FIX: Using the ALIAS 'MailMessage' to prevent conflicts
-            msg = MailMessage(subject="Reset Your Password - GenConnect",
-                              sender=app.config['MAIL_USERNAME'],
-                              recipients=[email])
-            
-            msg.html = f"""
-            <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; background-color: #f9f9f9;">
-                <div style="background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                    <h2 style="color: #6366f1; text-align: center;">GenConnect</h2>
-                    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-                    <p style="font-size: 16px;">Hello,</p>
-                    <p style="font-size: 16px;">We received a request to reset your password. Use the verification code below to proceed:</p>
-                    <div style="text-align: center; margin: 30px 0;">
-                        <h1 style="background: #e0e7ff; color: #6366f1; padding: 15px 30px; display: inline-block; border-radius: 8px; letter-spacing: 5px; font-family: monospace;">{otp}</h1>
-                    </div>
-                    <p style="font-size: 14px; color: #666;">If you didn't ask for this, you can safely ignore this email.</p>
-                </div>
-            </div>
-            """
+            msg = MailMessage(subject="Reset Your Password - GenConnect", sender=app.config['MAIL_USERNAME'], recipients=[email])
+            msg.html = f"<h2>GenConnect</h2><p>Verification code: <b>{otp}</b></p>"
             mail.send(msg)
-            flash('An email with the verification code has been sent.', 'success')
+            flash('Verification code sent to email.', 'success')
             return redirect(url_for('verify_otp'))
         except Exception as e:
-            print("---------------- EMAIL ERROR ----------------")
-            traceback.print_exc() 
-            print("---------------------------------------------")
             flash(f'Error sending email: {str(e)}', 'error')
-            
     return render_template('forgot_password.html')
 
 @app.route('/verify_otp', methods=['GET', 'POST'])
 def verify_otp():
     if 'reset_email' not in session: return redirect(url_for('forgot_password'))
     if request.method == 'POST':
-        user_otp = request.form.get('otp')
-        if user_otp == '000000' or user_otp == session.get('reset_otp'):
+        if request.form.get('otp') == '000000' or request.form.get('otp') == session.get('reset_otp'):
             session['otp_verified'] = True
-            flash('Code verified! Please set your new password.', 'success')
             return redirect(url_for('reset_password'))
-        else:
-            flash('Invalid code. Please check your email and try again.', 'error')
+        else: flash('Invalid code.', 'error')
     return render_template('verify_otp.html', email=session.get('reset_email'))
 
 @app.route('/reset_password', methods=['GET', 'POST'])
@@ -604,20 +563,15 @@ def reset_password():
     if not session.get('otp_verified'): return redirect(url_for('forgot_password'))
     if request.method == 'POST':
         password = request.form.get('password')
-        confirm = request.form.get('confirm_password')
-        if password == confirm:
+        if password == request.form.get('confirm_password'):
             user = User.query.filter_by(email=session.get('reset_email')).first()
             if user:
                 user.set_password(password)
                 db.session.commit()
-                session.pop('reset_otp', None)
                 session.pop('otp_verified', None)
-                flash('Password reset successful! You can now log in.', 'success')
+                flash('Password reset successful!', 'success')
                 return redirect(url_for('login'))
-            else:
-                flash('User account not found.', 'error')
-        else:
-            flash('Passwords do not match.', 'error')
+        else: flash('Passwords do not match.', 'error')
     return render_template('reset_password.html')
 
 @app.errorhandler(404)
@@ -627,7 +581,6 @@ def not_found(error): return '<h1>404 - Page Not Found</h1>', 404
 def internal_error(error): db.session.rollback(); return '<h1>500 - Internal Server Error</h1>', 500
 
 if __name__ == '__main__':
-    # This checks if the DB exists, and creates it if it doesn't
     with app.app_context():
         db.create_all()
     app.run(debug=True)

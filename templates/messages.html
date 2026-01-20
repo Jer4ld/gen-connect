@@ -8,6 +8,8 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f5; }
         .container { display: flex; height: 100vh; }
+        
+        /* Sidebar Styles */
         .sidebar { position: fixed; left: 0; top: 0; width: 250px; height: 100vh; background-color: white; border-right: 1px solid #e5e7eb; padding: 20px 0; z-index: 100; }
         .sidebar-logo { padding: 0 30px 20px; border-bottom: 1px solid #e5e7eb; margin-bottom: 20px; }
         .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 600; color: #6366f1; text-decoration: none; }
@@ -17,57 +19,57 @@
         .sidebar-nav a:hover { background-color: #f9fafb; }
         .sidebar-nav a.active { background-color: #eff6ff; color: #2563eb; border-right: 3px solid #2563eb; }
         .sidebar-nav svg { width: 22px; height: 22px; }
+
+        /* Messages Container */
         .messages-container { margin-left: 250px; flex: 1; display: flex; height: 100vh; background-color: #f9fafb; }
+        
+        /* Conversations List (Left Side) */
         .conversations-sidebar { width: 280px; background: white; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column; position: relative; }
         .conversations-header { padding: 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
         .conversations-header h2 { font-size: 20px; font-weight: 700; color: #111827; }
         .header-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.2s; color: #6b7280; }
         .header-icon:hover { background-color: #f3f4f6; }
-        .conversation-menu { position: absolute; top: 60px; right: 15px; background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px 0; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); display: none; z-index: 1000; min-width: 180px; }
-        .conversation-menu.active { display: block; }
-        .menu-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; cursor: pointer; transition: background-color 0.2s; }
-        .menu-item:hover { background-color: #f9fafb; }
-        .conversations-list { overflow-y: auto; flex: 1; }
-        .conversation-item { display: flex; align-items: center; gap: 12px; padding: 15px 20px; border-bottom: 1px solid #f3f4f6; text-decoration: none; color: inherit; cursor: pointer; }
+        
+        .conversations-list { flex: 1; overflow-y: auto; }
+        .conversation-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid #f3f4f6; text-decoration: none; color: inherit; cursor: pointer; }
         .conversation-item:hover { background-color: #f9fafb; }
         .conversation-avatar { width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 16px; flex-shrink: 0; }
         .conversation-name { font-weight: 600; color: #111827; font-size: 15px; }
-        .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; }
-        .empty-state h3 { font-size: 20px; color: #111827; margin-bottom: 10px; }
-        .empty-state p { color: #6b7280; }
-        .notification-toast { position: fixed; top: 20px; right: 20px; background: white; padding: 16px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); display: none; align-items: center; gap: 12px; z-index: 3000; min-width: 300px; animation: slideIn 0.3s ease; }
-        .notification-toast.active { display: flex; }
-        .notification-toast.success { border-left: 4px solid #10b981; }
-        .notification-toast.error { border-left: 4px solid #ef4444; }
-        .notification-icon svg { width: 20px; height: 20px; color: #10b981; }
-        .notification-content { flex: 1; }
-        .notification-title { font-weight: 600; font-size: 14px; color: #111827; margin-bottom: 2px; }
-        .notification-message { font-size: 13px; color: #6b7280; }
-        @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center; }
+
+        /* Empty State (Right Side) */
+        .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #6b7280; background: white; }
+        .empty-icon svg { width: 64px; height: 64px; color: #e5e7eb; margin-bottom: 20px; }
+        .empty-text { font-size: 18px; font-weight: 500; color: #374151; }
+
+        /* Floating Dropdown Menus */
+        .dropdown-menu { position: absolute; top: 60px; right: 15px; background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px 0; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); display: none; z-index: 1000; min-width: 180px; }
+        .dropdown-menu.active { display: block; }
+        .menu-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; cursor: pointer; transition: background 0.2s; color: #374151; font-size: 14px; }
+        .menu-item:hover { background-color: #f9fafb; }
+
+        /* Modals */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 3000; align-items: center; justify-content: center; }
         .modal.active { display: flex; }
         .modal-content { background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 450px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .modal-header h3 { font-size: 18px; font-weight: 700; color: #111827; }
-        .modal-close { cursor: pointer; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s; font-size: 24px; color: #6b7280; }
-        .modal-close:hover { background-color: #f3f4f6; }
+        .modal-close { cursor: pointer; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #6b7280; }
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; margin-bottom: 8px; color: #374151; font-weight: 500; font-size: 14px; }
         .form-group input { width: 100%; padding: 12px 15px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 15px; }
-        .form-group input:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
+        .contact-list { max-height: 200px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px; }
+        .contact-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; cursor: pointer; }
         .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
         .btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; font-weight: 500; }
         .btn-cancel { background: white; border: 1px solid #d1d5db; color: #374151; }
-        .btn-cancel:hover { background: #f9fafb; }
         .btn-submit { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-        .contact-list { max-height: 300px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px; margin-top: 10px; }
-        .contact-item { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid #f3f4f6; }
-        .contact-checkbox { width: 18px; height: 18px; cursor: pointer; }
-        .contact-avatar { width: 35px; height: 35px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 14px; }
-        .contact-name { font-size: 14px; color: #374151; }
+
+        .notification-toast { position: fixed; top: 20px; right: 20px; background: white; padding: 16px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); display: none; z-index: 5000; border-left: 4px solid #10b981; }
+        .notification-toast.active { display: flex; }
     </style>
 </head>
 <body>
+
 <div class="container">
     <aside class="sidebar">
         <div class="sidebar-logo">
@@ -80,7 +82,7 @@
             <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg><span>Explore Activities</span></a></li>
             <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Community</span></a></li>
             <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>Create</span></a></li>
-            <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Notification</span></a></li>
+            <li><a href="/notifications"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Notification</span></a></li>
             <li><a href="/messages" class="active"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Messages</span></a></li>
             <li><a href="/profile"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a></li>
             <li><a href="/logout"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></a></li>
@@ -91,19 +93,18 @@
         <div class="conversations-sidebar">
             <div class="conversations-header">
                 <h2>Messages</h2>
-                <div class="header-icon" id="conversationMenuBtn" title="More Options"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg></div>
+                <div class="header-icon" id="conversationMenuBtn" title="More Options" onclick="toggleDropdown('conversationMenu')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg></div>
             </div>
             
-            <div class="conversation-menu" id="conversationMenu">
-                <div class="menu-item" onclick="openAddContactModal()"><span>Add Contact</span></div>
-                <div class="menu-item" onclick="openNewGroupModal()"><span>New Group</span></div>
+            <div class="dropdown-menu" id="conversationMenu">
+                <div class="menu-item" onclick="openModal('addContactModal')">Add Contact</div>
+                <div class="menu-item" onclick="openModal('newGroupModal')">New Group</div>
             </div>
 
             <div class="conversations-list">
                 {% if conversations %}
                     {% for conv in conversations %}
-                    <a href="/messages/{{ conv.id }}?is_group={{ 'true' if conv.is_group else 'false' }}" 
-                       class="conversation-item">
+                    <a href="/messages/{{ conv.id }}?is_group={{ 'true' if conv.is_group else 'false' }}" class="conversation-item">
                         <div class="conversation-avatar">{{ conv.name[0].upper() }}</div>
                         <div class="conversation-name">{{ conv.name }}</div>
                     </a>
@@ -115,106 +116,79 @@
         </div>
 
         <div class="empty-state">
-            <h3>Select a conversation</h3>
-            <p>Choose a contact from the list to start messaging</p>
+            <div class="empty-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div class="empty-text">Select a conversation to start chatting</div>
         </div>
     </div>
 </div>
 
-<div class="notification-toast" id="notificationToast">
-    <div class="notification-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
-    <div class="notification-content"><div class="notification-title" id="notificationTitle"></div><div class="notification-message" id="notificationMessage"></div></div>
-</div>
-
 <div class="modal" id="addContactModal">
     <div class="modal-content">
-        <div class="modal-header">
-            <h3>Add Contact</h3>
-            <span class="modal-close" onclick="closeAddContactModal()">×</span>
-        </div>
+        <div class="modal-header"><h3>Add Contact</h3><span class="modal-close" onclick="closeModal('addContactModal')">×</span></div>
         <form id="addContactForm">
-            <div class="form-group">
-                <label for="contactUsername">Username</label>
-                <input type="text" id="contactUsername" name="username" placeholder="Enter username" required>
-            </div>
-            <div class="modal-actions">
-                <button type="button" class="btn btn-cancel" onclick="closeAddContactModal()">Cancel</button>
-                <button type="submit" class="btn btn-submit" id="addContactBtn">Add Contact</button>
-            </div>
+            <div class="form-group"><label>Username</label><input type="text" name="username" placeholder="Enter username" required></div>
+            <div class="modal-actions"><button type="button" class="btn btn-cancel" onclick="closeModal('addContactModal')">Cancel</button><button type="submit" class="btn btn-submit">Add Contact</button></div>
         </form>
     </div>
 </div>
 
 <div class="modal" id="newGroupModal">
     <div class="modal-content">
-        <div class="modal-header"><h3>Create Group</h3><span class="modal-close" onclick="closeNewGroupModal()">×</span></div>
+        <div class="modal-header"><h3>Create Group</h3><span class="modal-close" onclick="closeModal('newGroupModal')">×</span></div>
         <form id="newGroupForm">
-            <div class="form-group"><label for="groupName">Group Name</label><input type="text" id="groupName" name="group_name" required></div>
-            <div class="form-group"><label>Select Members</label><div class="contact-list" id="contactList">
-                {% if conversations %}
-                    {% for conv in conversations %}
-                        {% if not conv.is_group %}
-                        <label class="contact-item"><input type="checkbox" class="contact-checkbox" name="members" value="{{ conv.id }}"><div class="contact-avatar" style="width:30px; height:30px; font-size:12px;">{{ conv.name[0].upper() }}</div><span class="contact-name">{{ conv.name }}</span></label>
-                        {% endif %}
-                    {% endfor %}
-                {% endif %}
+            <div class="form-group"><label>Group Name</label><input type="text" name="group_name" required></div>
+            <div class="form-group"><label>Select Members</label><div class="contact-list">
+                {% for c in contacts %}
+                <label class="contact-item"><input type="checkbox" name="members" value="{{ c.id }}"> <span style="margin-left:8px;">{{ c.username }}</span></label>
+                {% endfor %}
             </div></div>
-            <div class="modal-actions"><button type="button" class="btn btn-cancel" onclick="closeNewGroupModal()">Cancel</button><button type="submit" class="btn btn-submit" id="createGroupBtn">Create Group</button></div>
+            <div class="modal-actions"><button type="button" class="btn btn-cancel" onclick="closeModal('newGroupModal')">Cancel</button><button type="submit" class="btn btn-submit">Create</button></div>
         </form>
     </div>
 </div>
 
+<div class="notification-toast" id="notificationToast"><strong id="notificationTitle"></strong>: <span id="notificationMessage"></span></div>
+
 <script>
-function showNotification(type, title, message) {
-    const toast = document.getElementById('notificationToast');
-    document.getElementById('notificationTitle').textContent = title;
-    document.getElementById('notificationMessage').textContent = message;
-    toast.classList.add(type, 'active');
-    setTimeout(() => { toast.classList.remove('active', type); }, 3000);
-}
-
-document.getElementById('conversationMenuBtn').onclick = (e) => { e.stopPropagation(); document.getElementById('conversationMenu').classList.toggle('active'); };
-document.onclick = (e) => { if (!e.target.closest('#conversationMenuBtn') && !e.target.closest('#conversationMenu')) document.getElementById('conversationMenu').classList.remove('active'); };
-
-function openAddContactModal() { document.getElementById('addContactModal').classList.add('active'); }
-function closeAddContactModal() { document.getElementById('addContactModal').classList.remove('active'); document.getElementById('addContactForm').reset(); }
-function openNewGroupModal() { document.getElementById('newGroupModal').classList.add('active'); }
-function closeNewGroupModal() { document.getElementById('newGroupModal').classList.remove('active'); document.getElementById('newGroupForm').reset(); }
-
-document.getElementById('addContactForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const username = document.getElementById('contactUsername').value.trim();
-    if (!username) { showNotification('error', 'Error', 'Username required'); return; }
+    function toggleDropdown(id) {
+        document.querySelectorAll('.dropdown-menu').forEach(m => { if(m.id !== id) m.classList.remove('active'); });
+        document.getElementById(id).classList.toggle('active');
+    }
     
-    const formData = new FormData();
-    formData.append('username', username);
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-    try {
-        const res = await fetch('/add_contact', { method: 'POST', body: formData });
-        const data = await res.json();
-        if (data.success) { 
-            // ⬇️ CHANGE THIS LINE: Use data.message instead of 'Contact added!'
-            showNotification('success', 'Status', data.message); 
-            setTimeout(() => window.location.reload(), 2000); 
-        }
-        else showNotification('error', 'Error', data.message);
-    } catch (err) { showNotification('error', 'Error', 'Failed to send request'); }
-});
+    window.onclick = function(e) { if (!e.target.closest('.header-icon')) { document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('active')); } };
 
-// Find the newGroupForm listener in messages.html
-document.getElementById('newGroupForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    try {
-        const res = await fetch('/create_group', { method: 'POST', body: new FormData(this) });
-        const data = await res.json();
-        if (data.success) { 
-            // ⬇️ CHANGE THIS LINE: Use data.message instead of 'Group created!'
-            showNotification('success', 'Status', data.message); 
-            setTimeout(() => window.location.reload(), 2000); 
-        }
-        else showNotification('error', 'Error', data.message);
-    } catch (err) { showNotification('error', 'Error', 'Failed to create group'); }
-});
+    function showNotification(type, title, message) {
+        const toast = document.getElementById('notificationToast');
+        document.getElementById('notificationTitle').textContent = title;
+        document.getElementById('notificationMessage').textContent = message;
+        toast.classList.add('active');
+        setTimeout(() => toast.classList.remove('active'), 3000);
+    }
+
+    document.getElementById('newGroupForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        try {
+            const res = await fetch('/create_group', { method: 'POST', body: new FormData(this) });
+            const data = await res.json();
+            if (data.success) { showNotification('success', 'Group Created', data.message); setTimeout(() => window.location.reload(), 2000); }
+            else { showNotification('error', 'Error', data.message); }
+        } catch(err) { showNotification('error', 'Error', 'Failed to create group'); }
+    });
+
+    document.getElementById('addContactForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        try {
+            const res = await fetch('/add_contact', { method: 'POST', body: new FormData(this) });
+            const data = await res.json();
+            if (data.success) { showNotification('success', 'Status', data.message); setTimeout(() => window.location.reload(), 2500); }
+            else { showNotification('error', 'Error', data.message); }
+        } catch(err) { showNotification('error', 'Error', 'Failed to send request'); }
+    });
 </script>
 </body>
 </html>
