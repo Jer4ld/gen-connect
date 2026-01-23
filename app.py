@@ -352,15 +352,124 @@ def create_group():
 @app.route('/promote_admin/<int:group_id>/<int:target_user_id>', methods=['POST'])
 def promote_admin(group_id, target_user_id):
     if 'user_id' not in session: return jsonify({'success': False}), 401
+    
     caller = CommunityMember.query.filter_by(user_id=session['user_id'], community_id=group_id).first()
     if not caller or not caller.is_admin:
         return jsonify({'success': False, 'message': 'Unauthorized'})
+    
     target = CommunityMember.query.filter_by(user_id=target_user_id, community_id=group_id).first()
     if target:
         target.is_admin = True
-        db.session.add(Notification(recipient_id=target_user_id, sender_id=session['user_id'], type='admin_promotion', message=f"You have been promoted to admin in group: {Community.query.get(group_id).name}"))
+        
+        # 1. Send personal notification (Existing)
+        group_name = Community.query.get(group_id).name
+        db.session.add(Notification(
+            recipient_id=target_user_id, 
+            sender_id=session['user_id'], 
+            type='admin_promotion', 
+            message=f"You have been promoted to admin in group: {group_name}"
+        ))
+
+        # 2. NEW: Add System Message to Group Chat
+        target_user = User.query.get(target_user_id)
+        sys_msg = Message(
+            sender_id=session['user_id'], 
+            community_id=group_id, 
+            content=f"🔔 <b>{target_user.username}</b> was promoted to Admin.", 
+            is_read=True
+        )
+        db.session.add(sys_msg)
+
         db.session.commit()
         return jsonify({'success': True})
+    
+    return jsonify({'success': False, 'message': 'Member not found'})
+
+@app.route('/remove_members', methods=['POST'])
+def remove_members():
+    if 'user_id' not in session: return jsonify({'success': False}), 401
+    
+    group_id = request.form.get('group_id')
+    member_ids = request.form.getlist('member_ids') # Get list of selected IDs
+    
+    # 1. Verify Admin Status
+    caller = CommunityMember.query.filter_by(user_id=session['user_id'], community_id=group_id).first()
+    if not caller or not caller.is_admin:
+        return jsonify({'success': False, 'message': 'Unauthorized'})
+    
+    removed_names = []
+    
+    for m_id in member_ids:
+        # Prevent admin from removing themselves here
+        if int(m_id) == session['user_id']: continue
+        
+        member = CommunityMember.query.filter_by(user_id=m_id, community_id=group_id).first()
+        if member:
+            user = User.query.get(m_id)
+            if user:
+                removed_names.append(user.username)
+                
+                # 2. Remove the member
+                db.session.delete(member)
+                
+                # 3. Notify the specific user
+                group_name = Community.query.get(group_id).name
+                db.session.add(Notification(
+                    recipient_id=m_id, 
+                    sender_id=session['user_id'], 
+                    type='group_removal', 
+                    message=f"You have been removed from the group: {group_name}"
+                ))
+
+    # 4. Add System Message to Group Chat
+    if removed_names:
+        names_str = ", ".join(removed_names)
+        sys_msg = Message(
+            sender_id=session['user_id'], 
+            community_id=group_id, 
+            content=f"🚫 <b>{names_str}</b> removed from the group.", 
+            is_read=True
+        )
+        db.session.add(sys_msg)
+        db.session.commit()
+        return jsonify({'success': True, 'message': f'Removed {len(removed_names)} members'})
+    
+    return jsonify({'success': False, 'message': 'No members removed'})
+
+@app.route('/dismiss_admin/<int:group_id>/<int:target_user_id>', methods=['POST'])
+def dismiss_admin(group_id, target_user_id):
+    if 'user_id' not in session: return jsonify({'success': False}), 401
+    
+    caller = CommunityMember.query.filter_by(user_id=session['user_id'], community_id=group_id).first()
+    if not caller or not caller.is_admin:
+        return jsonify({'success': False, 'message': 'Unauthorized'})
+    
+    target = CommunityMember.query.filter_by(user_id=target_user_id, community_id=group_id).first()
+    if target:
+        target.is_admin = False
+        
+        # 1. Send personal notification
+        group_name = Community.query.get(group_id).name
+        db.session.add(Notification(
+            recipient_id=target_user_id, 
+            sender_id=session['user_id'], 
+            type='admin_dismissal', 
+            message=f"You have been dismissed as admin in group: {group_name}"
+        ))
+
+        # 2. NEW: Add System Message to Group Chat
+        target_user = User.query.get(target_user_id)
+        sys_msg = Message(
+            sender_id=session['user_id'], 
+            community_id=group_id, 
+            content=f"🔔 <b>{target_user.username}</b> was dismissed as Admin.", 
+            is_read=True
+        )
+        db.session.add(sys_msg)
+
+        db.session.commit()
+        return jsonify({'success': True})
+    
     return jsonify({'success': False, 'message': 'Member not found'})
 
 @app.route('/edit_group_name/<int:group_id>', methods=['POST'])
@@ -460,6 +569,36 @@ def edit_message(message_id):
         db.session.commit()
         return jsonify({'success': True})
     return jsonify({'success': False})
+
+@app.route('/search_users')
+def search_users():
+    if 'user_id' not in session: return jsonify({'results': []}), 401
+    
+    query = request.args.get('q', '').strip()
+    if not query: return jsonify({'results': []})
+    
+    # Search for users where username OR fullname matches the query
+    # excludes the current user from results
+    users = User.query.filter(
+        and_(
+            User.id != session['user_id'],
+            or_(
+                User.username.ilike(f'%{query}%'),
+                User.fullname.ilike(f'%{query}%')
+            )
+        )
+    ).limit(10).all()
+    
+    results = []
+    for user in users:
+        results.append({
+            'id': user.id,
+            'username': user.username,
+            'fullname': user.fullname or "",
+            'profile_picture': user.profile_picture or 'default.jpg'
+        })
+        
+    return jsonify({'results': results})
 
 @app.route('/logout')
 def logout():

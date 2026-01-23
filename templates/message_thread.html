@@ -138,6 +138,25 @@
         /* ⬇️ ADMIN & MODAL STYLES (Added to support the features) */
         .member-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f3f4f6; }
         .badge-admin { background: #fee2e2; color: #ef4444; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        /* New Badge Style */
+        .badge-member { 
+            background: #e5e7eb; 
+            color: #374151; 
+            font-size: 10px; 
+            padding: 2px 6px; 
+            border-radius: 4px; 
+            font-weight: bold; 
+            border: 1px solid #d1d5db;
+        }
+
+        /* Red Button for Dangerous Actions */
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+        }
         .badge-admin.hidden { visibility: hidden; }
         .promote-link { font-size: 11px; color: #6366f1; cursor: pointer; text-decoration: underline; }
     </style>
@@ -170,6 +189,15 @@
                 <div class="header-icon" id="conversationMenuBtn" title="More Options" onclick="toggleDropdown('conversationMenu')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg></div>
             </div>
             
+            <div style="padding: 0 20px 10px; position: relative;">
+                <div style="background:#f3f4f6; padding:8px 12px; border-radius:8px; display:flex; align-items:center; gap:8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#9ca3af"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="text" id="userSearchInput" placeholder="Search users..." style="border:none; background:transparent; outline:none; width:100%; font-size:14px;">
+                </div>
+                
+                <div id="searchResults" style="display:none; position:absolute; top:100%; left:20px; right:20px; background:white; border:1px solid #e5e7eb; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); max-height:300px; overflow-y:auto; z-index:1000; margin-top:5px;">
+                    </div>
+            </div>
             <div class="dropdown-menu" id="conversationMenu">
                 <div class="menu-item" onclick="openAddContactModal()"><span>Add Contact</span></div>
                 <div class="menu-item" onclick="openNewGroupModal()"><span>New Group</span></div>
@@ -218,6 +246,7 @@
                     <div class="menu-item" onclick="openGroupInfo()">Group Info</div>
                     {% if user_is_admin %}
                     <div class="menu-item" onclick="openEditName()">Edit Group Name</div>
+                    <div class="menu-item danger" onclick="openRemoveMembersModal()" style="color: #ef4444;">Remove Users</div>
                     {% endif %}
                     <div class="menu-item danger" onclick="confirmDeleteGroup()" style="color:#ef4444;">Delete & Exit Group</div>
                 {% else %}
@@ -335,14 +364,40 @@
             {% for member in group_members %}
                 <div class="member-row" style="padding: 10px;">
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <div class="badge-admin {% if not member.is_admin %}hidden{% endif %}">ADMIN</div>
+                        {% if member.is_admin %}
+                            <div class="badge-admin">ADMIN</div>
+                        {% else %}
+                            <div class="badge-member">MEMBER</div>
+                        {% endif %}
+                        
                         <span style="font-size:14px;">{{ member.username }}</span>
                     </div>
-                    {% if user_is_admin and not member.is_admin %}
-                    <span class="promote-link" onclick="promoteAdmin('{{ member.id }}')">Promote Admin</span>
+                    
+                    {% if user_is_admin and member.id != current_user.id %}
+                        {% if not member.is_admin %}
+                            <span class="promote-link" onclick="triggerPromote('{{ member.id }}', '{{ member.username }}')">Promote Admin</span>
+                        {% else %}
+                            <span class="promote-link" style="color: #ef4444;" onclick="triggerDismiss('{{ member.id }}', '{{ member.username }}')">Dismiss Admin</span>
+                        {% endif %}
                     {% endif %}
                 </div>
             {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="confirmationModal">
+    <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-header">
+            <h3 id="confirmTitle">Confirm Action</h3>
+            <span class="modal-close" onclick="closeModal('confirmationModal')">×</span>
+        </div>
+        <div style="margin-bottom: 25px;">
+            <p id="confirmMessage" style="color: #4b5563; font-size: 15px; line-height: 1.5;">Are you sure?</p>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-cancel" onclick="closeModal('confirmationModal')">Cancel</button>
+            <button class="btn" id="confirmActionBtn">Confirm</button>
         </div>
     </div>
 </div>
@@ -383,6 +438,35 @@
             <div class="form-group"><label>Name</label><input type="text" id="groupName" name="group_name" required></div>
             <div class="form-group"><label>Members</label><div class="contact-list">{% for c in contacts %}<label class="contact-item"><input type="checkbox" name="members" value="{{ c.id }}"> <span style="margin-left:8px">{{ c.username }}</span></label>{% endfor %}</div></div>
             <div class="modal-actions"><button type="button" class="btn btn-cancel" onclick="closeNewGroupModal()">Cancel</button><button type="submit" class="btn btn-submit" id="createGroupBtn">Create</button></div>
+        </form>
+    </div>
+</div>
+
+<div class="modal" id="removeMembersModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Remove Users</h3>
+            <span class="modal-close" onclick="closeModal('removeMembersModal')">×</span>
+        </div>
+        <form id="removeMembersForm">
+            <input type="hidden" name="group_id" value="{{ contact.id }}">
+            <div class="form-group">
+                <label>Select members to remove:</label>
+                <div class="contact-list" style="max-height: 250px;">
+                    {% for member in group_members %}
+                        {% if member.id != current_user.id %}
+                        <label class="contact-item">
+                            <input type="checkbox" name="member_ids" value="{{ member.id }}" class="remove-checkbox"> 
+                            <span style="margin-left:8px">{{ member.username }}</span>
+                        </label>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-cancel" onclick="closeModal('removeMembersModal')">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="triggerBulkRemove()">Remove Selected</button>
+            </div>
         </form>
     </div>
 </div>
@@ -429,11 +513,113 @@
     function openEditName() { document.getElementById('editNameModal').classList.add('active'); }
     function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-    // ⬇️ NEW ADMIN ACTIONS
-    async function promoteAdmin(userId) {
-        const res = await fetch('/promote_admin/{{ contact.id }}/' + userId, { method: 'POST' });
-        if((await res.json()).success) { showNotification('success', 'Promoted', 'User is now admin'); setTimeout(() => window.location.reload(), 1000); }
+    // ⬇️ NEW ADMIN ACTIONS & CONFIRMATION LOGIC
+    let pendingAction = null;
+    let pendingUserId = null;
+
+    // Open the selection modal
+    function openRemoveMembersModal() {
+        // Reset checkboxes
+        document.querySelectorAll('.remove-checkbox').forEach(cb => cb.checked = false);
+        toggleDropdown('optionsMenu'); // Close the menu
+        document.getElementById('removeMembersModal').classList.add('active');
     }
+
+    // Trigger the confirmation for bulk removal
+    function triggerBulkRemove() {
+        const checkboxes = document.querySelectorAll('.remove-checkbox:checked');
+        if (checkboxes.length === 0) {
+            showNotification('error', 'Selection', 'Please select at least one user.');
+            return;
+        }
+
+        pendingAction = 'bulk_remove';
+        
+        // Custom confirmation message
+        const count = checkboxes.length;
+        document.getElementById('confirmTitle').innerText = "Remove Users";
+        document.getElementById('confirmMessage').innerText = `Are you sure you want to remove ${count} selected user(s) from the group?`;
+        
+        const btn = document.getElementById('confirmActionBtn');
+        btn.className = 'btn btn-danger';
+        btn.innerText = "Remove Users";
+        
+        closeModal('removeMembersModal');
+        document.getElementById('confirmationModal').classList.add('active');
+    }
+
+    function triggerPromote(userId, username) {
+        pendingAction = 'promote';
+        pendingUserId = userId;
+        
+        document.getElementById('confirmTitle').innerText = "Promote Member";
+        document.getElementById('confirmMessage').innerText = `Are you sure you want to promote ${username} to Admin? They will be able to manage the group settings.`;
+        
+        const btn = document.getElementById('confirmActionBtn');
+        btn.className = 'btn btn-submit';
+        btn.innerText = "Promote";
+        
+        closeModal('groupInfoModal');
+        document.getElementById('confirmationModal').classList.add('active');
+    }
+
+    function triggerDismiss(userId, username) {
+        pendingAction = 'dismiss';
+        pendingUserId = userId;
+        
+        document.getElementById('confirmTitle').innerText = "Dismiss Admin";
+        document.getElementById('confirmMessage').innerText = `Are you sure you want to remove ${username} as Admin? They will become a regular member.`;
+        
+        const btn = document.getElementById('confirmActionBtn');
+        btn.className = 'btn btn-danger';
+        btn.innerText = "Dismiss";
+        
+        closeModal('groupInfoModal');
+        document.getElementById('confirmationModal').classList.add('active');
+    }
+
+    // ⬇️ UPDATE: Central Confirmation Handler
+    document.getElementById('confirmActionBtn').addEventListener('click', async function() {
+        let url = '';
+        let body = null;
+        let isFormData = false;
+
+        if (pendingAction === 'promote') {
+            url = '/promote_admin/{{ contact.id }}/' + pendingUserId;
+        } else if (pendingAction === 'dismiss') {
+            url = '/dismiss_admin/{{ contact.id }}/' + pendingUserId;
+        } else if (pendingAction === 'bulk_remove') {
+            // Handle Bulk Remove
+            url = '/remove_members';
+            body = new FormData(document.getElementById('removeMembersForm'));
+            isFormData = true;
+        }
+
+        if (!url) return;
+
+        try {
+            const options = { method: 'POST' };
+            if (isFormData) options.body = body;
+
+            const res = await fetch(url, options);
+            const data = await res.json();
+            
+            closeModal('confirmationModal');
+            
+            if (data.success) {
+                showNotification('success', 'Success', data.message || 'Action completed successfully');
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                showNotification('error', 'Error', data.message || 'Action failed');
+                // Re-open modals if failed based on action type
+                if(pendingAction === 'bulk_remove') setTimeout(() => document.getElementById('removeMembersModal').classList.add('active'), 500);
+                else setTimeout(() => openGroupInfo(), 500);
+            }
+        } catch (e) {
+            console.error(e);
+            showNotification('error', 'Error', 'Something went wrong');
+        }
+    });
 
     async function confirmDeleteGroup() {
         if(confirm("Are you sure you want to delete and exit this group?")) {
@@ -545,6 +731,7 @@
             if((await res.json()).success) { document.getElementById('msg-' + id).remove(); if(pinnedMessageId === id) unpinMessage(); showNotification("Success", "Message deleted"); }
         }
     }
+    
 
     document.getElementById('messageForm').addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -631,6 +818,69 @@
         }
     });
     
+    // ⬇️ NEW: Live Search Logic
+    const searchInput = document.getElementById('userSearchInput');
+    const searchResults = document.getElementById('searchResults');
+    let searchTimeout = null;
+
+    if(searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            const query = e.target.value.trim();
+            
+            if (searchTimeout) clearTimeout(searchTimeout);
+            
+            if (query.length === 0) {
+                searchResults.style.display = 'none';
+                searchResults.innerHTML = '';
+                return;
+            }
+
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const res = await fetch(`/search_users?q=${encodeURIComponent(query)}`);
+                    const data = await res.json();
+                    
+                    searchResults.innerHTML = '';
+                    
+                    if (data.results.length > 0) {
+                        searchResults.style.display = 'block';
+                        data.results.forEach(user => {
+                            const div = document.createElement('div');
+                            div.style.cssText = 'padding:10px; display:flex; align-items:center; gap:10px; cursor:pointer; border-bottom:1px solid #f3f4f6;';
+                            div.onmouseover = () => div.style.backgroundColor = '#f9fafb';
+                            div.onmouseout = () => div.style.backgroundColor = 'white';
+                            
+                            div.onclick = () => window.location.href = `/profile/${user.username}`;
+                            
+                            div.innerHTML = `
+                                <div style="width:30px; height:30px; border-radius:50%; background:#e5e7eb; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                                    <img src="/static/uploads/${user.profile_picture}" onerror="this.style.display='none'" style="width:100%; height:100%; object-fit:cover;">
+                                    <span style="font-size:12px; font-weight:bold; color:#6b7280; display:${user.profile_picture !== 'default.jpg' ? 'none' : 'block'}">${user.username[0].toUpperCase()}</span>
+                                </div>
+                                <div style="flex:1;">
+                                    <div style="font-size:13px; font-weight:600; color:#1f2937;">${user.username}</div>
+                                    <div style="font-size:11px; color:#6b7280;">${user.fullname}</div>
+                                </div>
+                            `;
+                            searchResults.appendChild(div);
+                        });
+                    } else {
+                        searchResults.style.display = 'block';
+                        searchResults.innerHTML = '<div style="padding:15px; text-align:center; color:#9ca3af; font-size:13px;">No users found</div>';
+                    }
+                } catch (err) {
+                    console.error("Search failed", err);
+                }
+            }, 300);
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.style.display = 'none';
+            }
+        });
+    }
+
     const area = document.getElementById('messagesArea');
     if(area) area.scrollTop = area.scrollHeight;
 </script>
