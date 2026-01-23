@@ -20,7 +20,7 @@
         .sidebar-nav svg { width: 22px; height: 22px; }
         .messages-container { margin-left: 250px; flex: 1; display: flex; height: 100vh; background-color: #f9fafb; }
         .conversations-sidebar { width: 280px; background: white; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column; position: relative; }
-        .conversations-header { padding: 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
+        .conversations-header { padding: 20px 20px 10px 20px; display: flex; justify-content: space-between; align-items: center; }
         .conversations-header h2 { font-size: 20px; font-weight: 700; color: #111827; }
         .header-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.2s; color: #6b7280; }
         .header-icon:hover { background-color: #f3f4f6; }
@@ -189,14 +189,14 @@
                 <div class="header-icon" id="conversationMenuBtn" title="More Options" onclick="toggleDropdown('conversationMenu')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg></div>
             </div>
             
-            <div style="padding: 0 20px 10px; position: relative;">
+            <div style="padding: 0 20px 20px 20px; border-bottom: 1px solid #e5e7eb; position: relative;">
                 <div style="background:#f3f4f6; padding:8px 12px; border-radius:8px; display:flex; align-items:center; gap:8px;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#9ca3af"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    <input type="text" id="userSearchInput" placeholder="Search users..." style="border:none; background:transparent; outline:none; width:100%; font-size:14px;">
+                    <input type="text" id="userSearchInput" placeholder="Search users/add users" style="border:none; background:transparent; outline:none; width:100%; font-size:14px;">
                 </div>
                 
                 <div id="searchResults" style="display:none; position:absolute; top:100%; left:20px; right:20px; background:white; border:1px solid #e5e7eb; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); max-height:300px; overflow-y:auto; z-index:1000; margin-top:5px;">
-                    </div>
+                </div>
             </div>
             <div class="dropdown-menu" id="conversationMenu">
                 <div class="menu-item" onclick="openAddContactModal()"><span>Add Contact</span></div>
@@ -516,6 +516,7 @@
     // ⬇️ NEW ADMIN ACTIONS & CONFIRMATION LOGIC
     let pendingAction = null;
     let pendingUserId = null;
+    let pendingUsername = null; // New for search add
 
     // Open the selection modal
     function openRemoveMembersModal() {
@@ -578,6 +579,24 @@
         document.getElementById('confirmationModal').classList.add('active');
     }
 
+    // ⬇️ NEW TRIGGER FOR SEARCH RESULTS
+    function triggerAddContactFromSearch(userId, username) {
+        pendingAction = 'add_contact_search';
+        pendingUserId = userId;
+        pendingUsername = username;
+
+        document.getElementById('confirmTitle').innerText = "Add Contact";
+        document.getElementById('confirmMessage').innerText = `Are you sure you want to send a contact request to ${username}?`;
+
+        const btn = document.getElementById('confirmActionBtn');
+        btn.className = 'btn btn-submit';
+        btn.innerText = "Send Request";
+
+        document.getElementById('confirmationModal').classList.add('active');
+        searchResults.style.display = 'none'; // Hide search results
+    }
+
+
     // ⬇️ UPDATE: Central Confirmation Handler
     document.getElementById('confirmActionBtn').addEventListener('click', async function() {
         let url = '';
@@ -592,6 +611,12 @@
             // Handle Bulk Remove
             url = '/remove_members';
             body = new FormData(document.getElementById('removeMembersForm'));
+            isFormData = true;
+        } else if (pendingAction === 'add_contact_search') {
+            // Handle Add Contact from search
+            url = '/add_contact';
+            body = new FormData();
+            body.append('username', pendingUsername);
             isFormData = true;
         }
 
@@ -608,12 +633,14 @@
             
             if (data.success) {
                 showNotification('success', 'Success', data.message || 'Action completed successfully');
-                setTimeout(() => window.location.reload(), 1000);
+                if (pendingAction !== 'add_contact_search') {
+                     setTimeout(() => window.location.reload(), 1000);
+                }
             } else {
                 showNotification('error', 'Error', data.message || 'Action failed');
                 // Re-open modals if failed based on action type
                 if(pendingAction === 'bulk_remove') setTimeout(() => document.getElementById('removeMembersModal').classList.add('active'), 500);
-                else setTimeout(() => openGroupInfo(), 500);
+                else if (pendingAction === 'promote' || pendingAction === 'dismiss') setTimeout(() => openGroupInfo(), 500);
             }
         } catch (e) {
             console.error(e);
@@ -850,8 +877,10 @@
                             div.onmouseover = () => div.style.backgroundColor = '#f9fafb';
                             div.onmouseout = () => div.style.backgroundColor = 'white';
                             
+                            // Main click goes to profile
                             div.onclick = () => window.location.href = `/profile/${user.username}`;
                             
+                            // ⬇️ UPDATED HTML structure to include Plus Button
                             div.innerHTML = `
                                 <div style="width:30px; height:30px; border-radius:50%; background:#e5e7eb; display:flex; align-items:center; justify-content:center; overflow:hidden;">
                                     <img src="/static/uploads/${user.profile_picture}" onerror="this.style.display='none'" style="width:100%; height:100%; object-fit:cover;">
@@ -860,6 +889,12 @@
                                 <div style="flex:1;">
                                     <div style="font-size:13px; font-weight:600; color:#1f2937;">${user.username}</div>
                                     <div style="font-size:11px; color:#6b7280;">${user.fullname}</div>
+                                </div>
+                                <div class="add-user-btn" style="padding: 8px; cursor:pointer; color:#6366f1; border-radius:50%; display:flex; align-items:center; justify-content:center; transition:background 0.2s;"
+                                     onclick="event.stopPropagation(); triggerAddContactFromSearch('${user.id}', '${user.username}')"
+                                     onmouseover="this.style.backgroundColor='#e0e7ff'"
+                                     onmouseout="this.style.backgroundColor='transparent'">
+                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                                 </div>
                             `;
                             searchResults.appendChild(div);
