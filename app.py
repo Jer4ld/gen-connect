@@ -938,7 +938,15 @@ def reset_password():
 # Inside class User(db.Model):
 last_daily_claim = db.Column(db.DateTime, nullable=True)
 
+@app.route('/ranking')
+def ranking():
+    if 'user_id' not in session: return redirect(url_for('login'))
+    return "<h1>Ranking</h1><p>This feature is coming soon!</p>"
 
+@app.route('/rewards')
+def rewards():
+    if 'user_id' not in session: return redirect(url_for('login'))
+    return "<h1>Rewards</h1><p>This feature is coming soon!</p>"
 
 @app.errorhandler(404)
 def not_found(error): return '<h1>404 - Page Not Found</h1>', 404
