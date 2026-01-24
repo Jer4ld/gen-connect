@@ -10,7 +10,7 @@
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f5; }
         .container { display: flex; min-height: 100vh; }
 
-        /* Sidebar Styles - Fixed compact layout */
+        /* Sidebar Styles (Fixed Left) */
         .sidebar { position: fixed; left: 0; top: 0; width: 250px; height: 100vh; background-color: white; border-right: 1px solid #e5e7eb; padding: 20px 0; z-index: 100; }
         .sidebar-logo { padding: 0 30px 20px; border-bottom: 1px solid #e5e7eb; margin-bottom: 20px; }
         
@@ -24,26 +24,99 @@
         .sidebar-nav a.active { background-color: #eff6ff; color: #2563eb; border-right: 3px solid #2563eb; }
         .sidebar-nav svg { width: 20px; height: 20px; flex-shrink: 0; }
 
-        /* Main Content Layout */
-        .main-content { margin-left: 250px; flex: 1; padding: 40px; background-color: #f9fafb; min-height: 100vh; }
-        .page-header { margin-bottom: 30px; }
-        .page-header h2 { font-size: 24px; color: #111827; font-weight: 700; }
+        /* Main Content Layout (Centered Notification Box) */
+        .main-content { 
+            margin-left: 250px; 
+            flex: 1; 
+            padding: 40px 20px; 
+            background-color: #f9fafb; 
+            min-height: 100vh;
+            display: flex;
+            justify-content: center; /* Center horizontally */
+            align-items: flex-start; /* Start from top */
+        }
+
+        .notification-wrapper {
+            width: 100%;
+            max-width: 700px; /* Limits width for the centered look */
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+        }
+
+        /* Header with Mark as Read */
+        .notif-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 20px 30px;
+            border-bottom: 1px solid #f3f4f6;
+            background: white;
+        }
         
-        /* Notification Cards */
-        .notif-list { display: flex; flex-direction: column; gap: 15px; max-width: 800px; }
-        .notif-card { background: white; padding: 20px; border-radius: 12px; border: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .notif-header h2 { font-size: 20px; color: #111827; font-weight: 700; margin: 0; }
         
-        .notif-info h4 { font-size: 14px; color: #6366f1; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .notif-info p { font-size: 15px; color: #374151; }
+        .mark-read-btn {
+            font-size: 13px;
+            color: #2563eb;
+            font-weight: 500;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .mark-read-btn:hover { background-color: #eff6ff; }
+
+        /* Notification List */
+        .notif-list { display: flex; flex-direction: column; }
         
-        /* ⬇️ FIX: Clean CSS class for rejected requests to stop VS Code errors */
+        .notif-card { 
+            padding: 20px 30px; 
+            border-bottom: 1px solid #f3f4f6; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start; 
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .notif-card:last-child { border-bottom: none; }
+        .notif-card:hover { background-color: #f9fafb; }
+
+        /* Unread Styling */
+        .notif-card.unread { background-color: #f0f9ff; } /* Light blue bg for unread */
+        .notif-card.unread::after {
+            content: '';
+            position: absolute;
+            top: 25px;
+            right: 20px;
+            width: 8px;
+            height: 8px;
+            background-color: #2563eb; /* Blue dot */
+            border-radius: 50%;
+        }
+
+        .notif-info { flex: 1; padding-right: 15px; }
+        .notif-info h4 { font-size: 14px; color: #6366f1; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
+        .notif-info p { font-size: 15px; color: #374151; line-height: 1.4; }
+        
+        /* Reject Status Color */
         .notif-info h4.rejected { color: #ef4444; }
         
-        .btn-group { display: flex; gap: 10px; }
-        .btn { padding: 8px 16px; border-radius: 8px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; }
+        /* Buttons */
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        .btn { padding: 8px 16px; border-radius: 6px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
         .accept-btn { background: #10b981; color: white; }
-        .reject-btn { background: #f3f4f6; color: #374151; }
+        .accept-btn:hover { opacity: 0.9; }
+        .reject-btn { background: #fee2e2; color: #ef4444; }
+        .reject-btn:hover { background: #fecaca; }
         
+        .time-stamp { font-size: 12px; color: #9ca3af; margin-top: 5px; display: block; }
+
         .empty-state { text-align: center; padding: 60px 20px; color: #9ca3af; }
     </style>
 </head>
@@ -71,51 +144,90 @@
     </aside>
 
     <main class="main-content">
-        <div class="page-header">
-            <h2>Your Notifications</h2>
-        </div>
+        <div class="notification-wrapper">
+            <div class="notif-header">
+                <h2>Notifications</h2>
+                <button class="mark-read-btn" onclick="markAllAsRead()">Mark all as read</button>
+            </div>
 
-        <div class="notif-list">
-            {% for n in notifications if n.status == 'pending' or n.type in ['request_accepted', 'group_joined', 'request_rejected'] %}
-            <div class="notif-card" id="notif-{{ n.id }}">
-                <div class="notif-info">
-                    <h4 class="{% if n.type == 'request_rejected' %}rejected{% endif %}">
-                        {{ n.type.replace('_', ' ') }}
-                    </h4>
-                    <p>{{ n.message }}</p>
-                </div>
-                
-                {% if n.status == 'pending' and n.type not in ['request_accepted', 'group_joined', 'request_rejected'] %}
-                <div class="btn-group">
-                    <button class="btn accept-btn" data-id="{{ n.id }}" onclick="respondToInvite(this, 'accept')">Accept</button>
-                    <button class="btn reject-btn" data-id="{{ n.id }}" onclick="respondToInvite(this, 'reject')">Decline</button>
+            <div class="notif-list">
+                {% for n in notifications if n.status == 'pending' or n.type in ['request_accepted', 'group_joined', 'request_rejected', 'group_invite'] %}
+                <div class="notif-card {% if n.status == 'pending' or (n.is_read is defined and not n.is_read) %}unread{% endif %}" id="notif-{{ n.id }}">
+                    <div class="notif-info">
+                        <h4 class="{% if n.type == 'request_rejected' %}rejected{% endif %}">
+                            {{ n.type.replace('_', ' ') }}
+                        </h4>
+                        <p>{{ n.message }}</p>
+                        
+                        {% if n.status == 'pending' and n.type not in ['request_accepted', 'group_joined', 'request_rejected'] %}
+                        <div class="btn-group">
+                            <button class="btn accept-btn" data-id="{{ n.id }}" onclick="respondToInvite(this, 'accept')">Accept</button>
+                            <button class="btn reject-btn" data-id="{{ n.id }}" onclick="respondToInvite(this, 'reject')">Decline</button>
+                        </div>
+                        {% else %}
+                        <span class="time-stamp">{{ n.created_at.strftime('%H:%M') }}</span>
+                        {% endif %}
+                    </div>
                 </div>
                 {% else %}
-                <div style="font-size: 12px; color: #9ca3af;">{{ n.created_at.strftime('%H:%M') }}</div>
-                {% endif %}
+                <div class="empty-state">
+                    <p>No new notifications at the moment.</p>
+                </div>
+                {% endfor %}
             </div>
-            {% else %}
-            <div class="empty-state">
-                <p>No new notifications at the moment.</p>
-            </div>
-            {% endfor %}
         </div>
     </main>
 </div>
 
 <script>
+    // 1. Real-time Respond Logic (Accept/Reject)
     async function respondToInvite(buttonElement, action) {
         const notifId = buttonElement.getAttribute('data-id');
+        const card = document.getElementById(`notif-${notifId}`);
+        
+        // Immediate visual feedback
+        buttonElement.disabled = true;
+        buttonElement.innerText = "Processing...";
+
         try {
             const response = await fetch(`/respond_notification/${notifId}/${action}`, { method: 'POST' });
             const data = await response.json();
+            
             if (data.success) {
-                const card = document.getElementById(`notif-${notifId}`);
+                // Fade out card
                 card.style.opacity = '0';
-                setTimeout(() => card.remove(), 300);
+                setTimeout(() => {
+                    card.remove();
+                    // Check if list is empty to show empty state
+                    const list = document.querySelector('.notif-list');
+                    if (list.children.length === 0) {
+                        list.innerHTML = '<div class="empty-state"><p>No new notifications at the moment.</p></div>';
+                    }
+                }, 300);
+            } else {
+                alert("Action failed: " + data.message);
+                buttonElement.disabled = false;
             }
         } catch (err) {
             console.error("Error:", err);
+            buttonElement.disabled = false;
+        }
+    }
+
+    // 2. Mark All As Read Logic
+    async function markAllAsRead() {
+        // Visual Update first for responsiveness
+        const unreadCards = document.querySelectorAll('.notif-card.unread');
+        unreadCards.forEach(card => {
+            card.classList.remove('unread');
+        });
+
+        // Backend Update
+        try {
+            // Note: You need to implement this route in app.py if it doesn't exist
+            await fetch('/mark_notifications_read', { method: 'POST' });
+        } catch (err) {
+            console.error("Failed to mark as read on server", err);
         }
     }
 </script>

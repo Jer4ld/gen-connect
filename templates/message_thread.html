@@ -7,7 +7,7 @@
     <title>Chat with {{ displayName }} - GenConnect</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f5; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f5; transition: font-size 0.2s; }
         .container { display: flex; height: 100vh; }
         .sidebar { position: fixed; left: 0; top: 0; width: 250px; height: 100vh; background-color: white; border-right: 1px solid #e5e7eb; padding: 20px 0; z-index: 100; }
         .sidebar-logo { padding: 0 30px 20px; border-bottom: 1px solid #e5e7eb; margin-bottom: 20px; }
@@ -32,7 +32,7 @@
         .conversation-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid #f3f4f6; text-decoration: none; color: inherit; cursor: pointer; }
         .conversation-item:hover { background-color: #f9fafb; }
         .conversation-item.active { background-color: #eff6ff; }
-        .conversation-avatar { width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 16px; flex-shrink: 0; }
+        .conversation-avatar { width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 16px; flex-shrink: 0; overflow: hidden;}
         .conversation-name { font-weight: 600; color: #111827; font-size: 15px; }
         
         .chat-area { flex: 1; display: flex; flex-direction: column; background: white; position: relative; }
@@ -58,7 +58,7 @@
         .menu-item:hover { background-color: #f9fafb; }
         .menu-item.danger { color: #ef4444; }
 
-        .messages-area { flex: 1; overflow-y: auto; padding: 20px; background: #f9fafb; }
+        .messages-area { flex: 1; overflow-y: auto; padding: 20px; background: #f9fafb; transition: background 0.3s; }
         .message { display: flex; gap: 10px; margin-bottom: 15px; animation: fadeIn 0.3s ease; position: relative; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .message.sent { flex-direction: row-reverse; }
@@ -117,7 +117,10 @@
         .btn-cancel { background: white; border: 1px solid #d1d5db; color: #374151; }
         .btn-submit { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
         .contact-list { max-height: 300px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px; margin-top: 10px; }
-        .contact-item { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid #f3f4f6; }
+        
+        .contact-item { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid #f3f4f6; cursor: pointer; }
+        .contact-item:hover { background-color: #f9fafb; }
+        
         .contact-checkbox { width: 18px; height: 18px; cursor: pointer; }
         .contact-avatar { width: 35px; height: 35px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 14px; }
         .contact-name { font-size: 14px; color: #374151; }
@@ -131,40 +134,30 @@
         .info-icon { margin-right: 10px; width: 20px; text-align: center; }
         .double-tick { color: #53bdeb; font-weight: bold; } 
         .grey-tick { color: #8696a0; font-weight: bold; }
-        .notification-toast { position: fixed; top: 20px; right: 20px; background: white; padding: 16px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); display: none; align-items: center; gap: 12px; z-index: 5000; animation: slideIn 0.3s ease; }
+        .notification-toast { position: fixed; top: 20px; right: 20px; background: white; padding: 16px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); display: none; z-index: 5000; border-left: 4px solid #10b981; }
         .notification-toast.active { display: flex; }
-        .notification-toast.success { border-left: 4px solid #10b981; }
-        .notification-toast.error { border-left: 4px solid #ef4444; }
-        .notification-icon svg { width: 20px; height: 20px; color: #10b981; }
-        .notification-content { flex: 1; }
-        .notification-title { font-weight: 600; font-size: 14px; color: #111827; margin-bottom: 2px; }
-        .notification-message { font-size: 13px; color: #6b7280; }
-        @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-        /* ⬇️ ADMIN & MODAL STYLES (Added to support the features) */
         .member-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f3f4f6; }
         .badge-admin { background: #fee2e2; color: #ef4444; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
-        /* New Badge Style */
-        .badge-member { 
-            background: #e5e7eb; 
-            color: #374151; 
-            font-size: 10px; 
-            padding: 2px 6px; 
-            border-radius: 4px; 
-            font-weight: bold; 
-            border: 1px solid #d1d5db;
-        }
-
-        /* Red Button for Dangerous Actions */
-        .btn-danger {
-            background: #ef4444;
-            color: white;
-        }
-        .btn-danger:hover {
-            background: #dc2626;
-        }
         .badge-admin.hidden { visibility: hidden; }
         .promote-link { font-size: 11px; color: #6366f1; cursor: pointer; text-decoration: underline; }
+
+        .wallpaper-grid { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .color-circle { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; border: 2px solid #e5e7eb; transition: transform 0.2s; }
+        .color-circle:hover { transform: scale(1.1); border-color: #6366f1; }
+
+        /* Text Size Classes */
+        .text-large .message-text { font-size: 18px !important; line-height: 1.6; }
+        .text-large .message-bubble { padding: 15px 18px; }
+        
+        .text-xl .message-text { font-size: 24px !important; line-height: 1.6; }
+        .text-xl .message-bubble { padding: 20px 24px; }
+        .text-xl .conversation-name { font-size: 18px; }
+        .text-xl .chat-user-info h3 { font-size: 20px; }
+
+        /* Accessibility Button Style */
+        .access-btn { width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; color: #6b7280; border: 1px solid #e5e7eb; margin-right: 10px; font-size: 16px; transition: all 0.2s; }
+        .access-btn:hover { background-color: #f3f4f6; color: #6366f1; border-color: #6366f1; }
     </style>
 </head>
 <body>
@@ -202,8 +195,9 @@
                 </div>
                 
                 <div id="searchResults" style="display:none; position:absolute; top:100%; left:20px; right:20px; background:white; border:1px solid #e5e7eb; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); max-height:300px; overflow-y:auto; z-index:1000; margin-top:5px;">
-                    </div>
+                </div>
             </div>
+
             <div class="dropdown-menu" id="conversationMenu">
                 <div class="menu-item" onclick="openAddContactModal()"><span>Add Contact</span></div>
                 <div class="menu-item" onclick="openNewGroupModal()"><span>New Group</span></div>
@@ -233,8 +227,13 @@
                         {% if contact.username is defined %}<p>● Active</p>{% endif %}
                     </div>
                 </div>
-                <div class="action-icon" id="moreOptionsBtn" title="More Options" onclick="toggleDropdown('optionsMenu')">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                
+                <div style="display: flex; align-items: center;">
+                    <div class="access-btn" title="Change Text Size" onclick="cycleTextSize()">Aa</div>
+                    
+                    <div class="action-icon" id="moreOptionsBtn" title="More Options" onclick="toggleDropdown('optionsMenu')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                    </div>
                 </div>
             </div>
 
@@ -250,6 +249,8 @@
             <div class="dropdown-menu" id="optionsMenu">
                 {% if is_group %}
                     <div class="menu-item" onclick="openGroupInfo()">Group Info</div>
+                    <div class="menu-item" onclick="openWallpaperModal()">Change Wallpaper</div>
+                    
                     {% if user_is_admin %}
                     <div class="menu-item" onclick="openEditName()">Edit Group Name</div>
                     <div class="menu-item" onclick="openAddMembersModal()">Add Users</div>
@@ -257,6 +258,7 @@
                     {% endif %}
                     <div class="menu-item danger" onclick="confirmDeleteGroup()" style="color:#ef4444;">Delete & Exit Group</div>
                 {% else %}
+                    <div class="menu-item" onclick="openWallpaperModal()">Change Wallpaper</div>
                     <div class="menu-item" id="btn-remove-contact" onclick="removeContact('{{ contact.id }}')">Remove Contact</div>
                     <div class="menu-item report-option" id="btn-report-user">Report User</div>
                 {% endif %}
@@ -317,6 +319,9 @@
             </div>
 
             <div class="message-input-area">
+                <div id="icebreakerContainer" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 5px;">
+                    </div>
+
                 <div class="reply-preview-bar" id="replyPreview">
                     <div class="reply-preview-content">
                         <span class="reply-preview-name" id="replyTargetUser">Replying to message</span>
@@ -327,12 +332,23 @@
 
                 <form id="messageForm" class="message-input-container" enctype="multipart/form-data">
                     <input type="file" id="fileInput" name="file" style="display: none;">
+                    
+                    <button type="button" class="attachment-button" onclick="toggleIcebreakers()" title="Get conversation ideas">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2v-1.26C6.19 14.47 5 12.38 5 10a7 7 0 0 1 7-7z"/></svg>
+                    </button>
+
                     <button type="button" class="attachment-button" onclick="document.getElementById('fileInput').click()">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     </button>
+                    
                     <div class="input-wrapper">
                         <textarea id="messageInput" name="content" placeholder="Type a message..." rows="1"></textarea>
+                        
+                        <div id="voiceInputBtn" style="cursor: pointer; color: #6b7280; padding: 5px;" onclick="toggleVoiceInput()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                        </div>
                     </div>
+
                     <input type="hidden" name="receiver_id" value="{{ contact.id }}">
                     <input type="hidden" name="is_group" value="{{ 'true' if is_group else 'false' }}">
                     <button type="submit" class="send-button" id="submitBtn">
@@ -361,6 +377,36 @@
 <div class="notification-toast" id="notificationToast">
     <div class="notification-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
     <div class="notification-content"><div class="notification-title" id="notificationTitle"></div><div class="notification-message" id="notificationMessage"></div></div>
+</div>
+
+<div class="modal" id="wallpaperModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Change Wallpaper</h3>
+            <span class="modal-close" onclick="closeModal('wallpaperModal')">×</span>
+        </div>
+        <div style="margin-bottom:15px; font-weight:500;">Solid Colors</div>
+        <div class="wallpaper-grid">
+            <div class="color-circle" style="background:#e5e7eb" onclick="setWallpaper('color', '#f9fafb')"></div>
+            <div class="color-circle" style="background:#fee2e2" onclick="setWallpaper('color', '#fee2e2')"></div>
+            <div class="color-circle" style="background:#dbeafe" onclick="setWallpaper('color', '#dbeafe')"></div>
+            <div class="color-circle" style="background:#dcfce7" onclick="setWallpaper('color', '#dcfce7')"></div>
+            <div class="color-circle" style="background:#fef3c7" onclick="setWallpaper('color', '#fef3c7')"></div>
+            <div class="color-circle" style="background:#f3e8ff" onclick="setWallpaper('color', '#f3e8ff')"></div>
+        </div>
+        <div style="margin:15px 0; font-weight:500;">Custom Image</div>
+        
+        <label for="wallpaperInput" class="btn btn-submit" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; cursor:pointer; margin-bottom:15px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            Choose Photos
+        </label>
+        <input type="file" id="wallpaperInput" accept="image/*" style="display:none;">
+        
+        <div class="modal-actions">
+            <button class="btn btn-cancel" onclick="resetWallpaper()">Reset Default</button>
+            <button class="btn btn-submit" onclick="closeModal('wallpaperModal')">Done</button>
+        </div>
+    </div>
 </div>
 
 <div class="modal" id="groupInfoModal">
@@ -440,10 +486,24 @@
 
 <div class="modal" id="newGroupModal">
     <div class="modal-content">
-        <div class="modal-header"><h3>Create Group</h3><span class="modal-close" onclick="closeNewGroupModal()">×</span></div>
+        <div class="modal-header"><h3>Create Group</h3><span class="modal-close" onclick="closeModal('newGroupModal')">×</span></div>
         <form id="newGroupForm">
-            <div class="form-group"><label>Name</label><input type="text" id="groupName" name="group_name" required></div>
-            <div class="form-group"><label>Members</label><div class="contact-list">{% for c in contacts %}<label class="contact-item"><input type="checkbox" name="members" value="{{ c.id }}"> <span style="margin-left:8px">{{ c.username }}</span></label>{% endfor %}</div></div>
+            <div class="form-group"><label>Group Name</label><input type="text" name="group_name" required></div>
+            <div class="form-group"><label>Select Members</label><div class="contact-list">{% for c in contacts %}
+                <label class="contact-item" style="display: flex; align-items: center; gap: 12px; padding: 10px; cursor: pointer; border-bottom: 1px solid #f9fafb;">
+                    <input type="checkbox" name="members" value="{{ c.id }}" style="width: 16px; height: 16px; cursor: pointer;">
+                    
+                    <div class="conversation-avatar" style="width: 36px; height: 36px; font-size: 14px;">
+                        {% if c.profile_picture and c.profile_picture != 'default.jpg' %}
+                            <img src="{{ url_for('static', filename='uploads/' + c.profile_picture) }}" alt="{{ c.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                            {{ c.username[0].upper() }}
+                        {% endif %}
+                    </div>
+                    
+                    <span style="font-size: 14px; font-weight: 500; color: #374151;">{{ c.username }}</span>
+                </label>
+            {% endfor %}</div></div>
             <div class="modal-actions"><button type="button" class="btn btn-cancel" onclick="closeNewGroupModal()">Cancel</button><button type="submit" class="btn btn-submit" id="createGroupBtn">Create</button></div>
         </form>
     </div>
@@ -462,9 +522,18 @@
                 <div class="contact-list" style="max-height: 250px;">
                     {% for member in group_members %}
                         {% if member.id != current_user.id %}
-                        <label class="contact-item">
-                            <input type="checkbox" name="member_ids" value="{{ member.id }}" class="remove-checkbox"> 
-                            <span style="margin-left:8px">{{ member.username }}</span>
+                        <label class="contact-item" style="display: flex; align-items: center; gap: 12px; padding: 10px; cursor: pointer; border-bottom: 1px solid #f9fafb;">
+                            <input type="checkbox" name="member_ids" value="{{ member.id }}" class="remove-checkbox" style="width: 16px; height: 16px; cursor: pointer;">
+                            
+                            <div class="conversation-avatar" style="width: 36px; height: 36px; font-size: 14px;">
+                                {% if member.user.profile_picture and member.user.profile_picture != 'default.jpg' %}
+                                    <img src="{{ url_for('static', filename='uploads/' + member.user.profile_picture) }}" alt="{{ member.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% else %}
+                                    {{ member.username[0].upper() }}
+                                {% endif %}
+                            </div>
+                            
+                            <span style="font-size: 14px; font-weight: 500; color: #374151;">{{ member.username }}</span>
                         </label>
                         {% endif %}
                     {% endfor %}
@@ -495,14 +564,14 @@
                     {% for c in contacts %}
                         {% if c.id not in existing_ids %}
                             {% set has_candidates = true %}
-                            <label class="contact-item" style="cursor: pointer; padding: 8px 5px;">
-                                <input type="checkbox" name="member_ids" value="{{ c.id }}" class="add-checkbox" style="width: 16px; height: 16px; margin-right: 12px; cursor: pointer;">
+                            <label class="contact-item" style="display: flex; align-items: center; gap: 12px; padding: 10px; cursor: pointer; border-bottom: 1px solid #f9fafb;">
+                                <input type="checkbox" name="member_ids" value="{{ c.id }}" class="add-checkbox" style="width: 16px; height: 16px; cursor: pointer;">
                                 
-                                <div style="width: 36px; height: 36px; border-radius: 50%; overflow: hidden; margin-right: 12px; border: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: center; background: #f3f4f6;">
+                                <div class="conversation-avatar" style="width: 36px; height: 36px; font-size: 14px;">
                                     {% if c.profile_picture and c.profile_picture != 'default.jpg' %}
                                         <img src="{{ url_for('static', filename='uploads/' + c.profile_picture) }}" alt="{{ c.username }}" style="width: 100%; height: 100%; object-fit: cover;">
                                     {% else %}
-                                        <span style="font-size: 14px; font-weight: 600; color: #6b7280;">{{ c.username[0].upper() }}</span>
+                                        {{ c.username[0].upper() }}
                                     {% endif %}
                                 </div>
                                 
@@ -561,25 +630,148 @@
         document.querySelectorAll('.reaction-bar').forEach(r => r.classList.remove('active')); 
     });
 
+    // ⬇️ NEW: Text Resizer Logic
+    const fontSizes = ['', 'text-large', 'text-xl'];
+    let currentFontIndex = 0;
+    
+    function cycleTextSize() {
+        const body = document.body;
+        // Remove current class
+        if (fontSizes[currentFontIndex]) {
+            body.classList.remove(fontSizes[currentFontIndex]);
+        }
+        // Advance index
+        currentFontIndex = (currentFontIndex + 1) % fontSizes.length;
+        // Add new class
+        if (fontSizes[currentFontIndex]) {
+            body.classList.add(fontSizes[currentFontIndex]);
+        }
+    }
+
+    // ⬇️ NEW: Voice Dictation Logic
+    function toggleVoiceInput() {
+        if (!('webkitSpeechRecognition' in window)) {
+            alert("Voice input is not supported in this browser. Try Chrome.");
+            return;
+        }
+        
+        const recognition = new webkitSpeechRecognition();
+        recognition.lang = 'en-US';
+        recognition.start();
+        
+        const icon = document.getElementById('voiceInputBtn');
+        icon.style.color = '#ef4444'; // Red to indicate recording
+        
+        recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript;
+            const input = document.getElementById('messageInput');
+            input.value += (input.value ? ' ' : '') + transcript;
+            icon.style.color = '#6b7280'; // Reset color
+        };
+        
+        recognition.onerror = function(event) {
+            console.error(event.error);
+            icon.style.color = '#6b7280';
+        };
+    }
+
+    // ⬇️ UPDATED: Expanded Icebreaker List (50+ Questions)
+    const icebreakers = [
+        // Nostalgia & History
+        "What was your favorite toy growing up?",
+        "What was the first music concert you ever went to?",
+        "How much did a movie ticket cost when you were a teenager?",
+        "What was your first job, and did you like it?",
+        "Did you have a nickname growing up?",
+        "What is the biggest change in the world you've witnessed?",
+        "Tell me about your best friend from primary school.",
+        "What was your favorite subject in school?",
+        "Did you ever get into trouble as a kid?",
+        "What was your favorite home-cooked meal?",
+
+        // Technology & Modern Life
+        "What app do you use the most on your phone?",
+        "What is one piece of technology you can't live without?",
+        "Do you prefer texting or calling?",
+        "What do you think about social media?",
+        "Is there a slang word today you don't understand?",
+        "What was the first computer you ever saw?",
+        "Do you prefer reading physical books or e-books?",
+        "What is the funniest thing you've seen on the internet recently?",
+
+        // Life Advice & Values
+        "What is the best piece of advice you've ever received?",
+        "What is one thing you wish you knew when you were 20?",
+        "What are you most proud of in your life?",
+        "What does a 'perfect day' look like to you?",
+        "Who is your role model?",
+        "What is a skill you think everyone should have?",
+        "How do you handle stress?",
+        "What makes a good friend?",
+
+        // Fun & Hypothetical
+        "If you could have dinner with anyone (dead or alive), who would it be?",
+        "If you could travel anywhere right now, where would you go?",
+        "What is your favorite movie of all time?",
+        "Do you have a hidden talent?",
+        "Are you a morning person or a night owl?",
+        "What is your favorite ice cream flavor?",
+        "If you won the lottery, what is the first thing you'd buy?",
+        "Do you collect anything?",
+        "What is the best gift you've ever given?"
+    ];
+
+    function toggleIcebreakers() {
+        const container = document.getElementById('icebreakerContainer');
+        
+        if (container.innerHTML !== '') {
+            container.innerHTML = ''; // Clear if already shown
+            return;
+        }
+        
+        // Pick 3 random
+        const shuffled = icebreakers.sort(() => 0.5 - Math.random());
+        const selected = shuffled.slice(0, 3);
+        
+        selected.forEach(text => {
+            const chip = document.createElement('div');
+            chip.innerText = text;
+            chip.style.cssText = "background: #eff6ff; color: #2563eb; padding: 6px 12px; border-radius: 20px; font-size: 13px; cursor: pointer; white-space: nowrap; border: 1px solid #dbeafe; transition: background 0.2s;";
+            chip.onmouseover = () => chip.style.background = "#dbeafe";
+            chip.onmouseout = () => chip.style.background = "#eff6ff";
+            
+            chip.onclick = () => {
+                document.getElementById('messageInput').value = text;
+                container.innerHTML = ''; // Hide after selection
+                document.getElementById('messageInput').focus();
+            };
+            container.appendChild(chip);
+        });
+    }
+
     // ⬇️ NEW MODAL HELPERS
     function openGroupInfo() { document.getElementById('groupInfoModal').classList.add('active'); }
     function openEditName() { document.getElementById('editNameModal').classList.add('active'); }
+    function openWallpaperModal() { 
+        document.getElementById('wallpaperModal').classList.add('active'); 
+        toggleDropdown('optionsMenu');
+    }
     function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
     // ⬇️ NEW ADMIN ACTIONS & CONFIRMATION LOGIC
     let pendingAction = null;
     let pendingUserId = null;
-    let pendingUsername = null; // New for search add
+    let pendingUsername = null; 
 
     // Open the selection modal
     function openRemoveMembersModal() {
         // Reset checkboxes
         document.querySelectorAll('.remove-checkbox').forEach(cb => cb.checked = false);
-        toggleDropdown('optionsMenu'); // Close the menu
+        toggleDropdown('optionsMenu'); 
         document.getElementById('removeMembersModal').classList.add('active');
     }
 
-    // ⬇️ NEW: Open Add Members Modal
+    // Open Add Members Modal
     function openAddMembersModal() {
         document.querySelectorAll('.add-checkbox').forEach(cb => cb.checked = false);
         toggleDropdown('optionsMenu');
@@ -593,40 +785,31 @@
             showNotification('error', 'Selection', 'Please select at least one user.');
             return;
         }
-
         pendingAction = 'bulk_remove';
-        
-        // Custom confirmation message
         const count = checkboxes.length;
         document.getElementById('confirmTitle').innerText = "Remove Users";
         document.getElementById('confirmMessage').innerText = `Are you sure you want to remove ${count} selected user(s) from the group?`;
-        
         const btn = document.getElementById('confirmActionBtn');
         btn.className = 'btn btn-danger';
         btn.innerText = "Remove Users";
-        
         closeModal('removeMembersModal');
         document.getElementById('confirmationModal').classList.add('active');
     }
 
-    // ⬇️ NEW: Trigger Add Members Confirmation
+    // Trigger Add Members Confirmation
     function triggerAddMembers() {
         const checkboxes = document.querySelectorAll('.add-checkbox:checked');
         if (checkboxes.length === 0) {
             showNotification('error', 'Selection', 'Please select at least one user.');
             return;
         }
-
         pendingAction = 'add_members';
-        
         const count = checkboxes.length;
         document.getElementById('confirmTitle').innerText = "Add Users";
         document.getElementById('confirmMessage').innerText = `Are you sure you want to add ${count} selected user(s) to the group?`;
-        
         const btn = document.getElementById('confirmActionBtn');
         btn.className = 'btn btn-submit';
         btn.innerText = "Add Users";
-        
         closeModal('addMembersModal');
         document.getElementById('confirmationModal').classList.add('active');
     }
@@ -634,14 +817,11 @@
     function triggerPromote(userId, username) {
         pendingAction = 'promote';
         pendingUserId = userId;
-        
         document.getElementById('confirmTitle').innerText = "Promote Member";
         document.getElementById('confirmMessage').innerText = `Are you sure you want to promote ${username} to Admin? They will be able to manage the group settings.`;
-        
         const btn = document.getElementById('confirmActionBtn');
         btn.className = 'btn btn-submit';
         btn.innerText = "Promote";
-        
         closeModal('groupInfoModal');
         document.getElementById('confirmationModal').classList.add('active');
     }
@@ -649,37 +829,30 @@
     function triggerDismiss(userId, username) {
         pendingAction = 'dismiss';
         pendingUserId = userId;
-        
         document.getElementById('confirmTitle').innerText = "Dismiss Admin";
         document.getElementById('confirmMessage').innerText = `Are you sure you want to remove ${username} as Admin? They will become a regular member.`;
-        
         const btn = document.getElementById('confirmActionBtn');
         btn.className = 'btn btn-danger';
         btn.innerText = "Dismiss";
-        
         closeModal('groupInfoModal');
         document.getElementById('confirmationModal').classList.add('active');
     }
 
-    // ⬇️ NEW TRIGGER FOR SEARCH RESULTS
+    // NEW TRIGGER FOR SEARCH RESULTS
     function triggerAddContactFromSearch(userId, username) {
         pendingAction = 'add_contact_search';
         pendingUserId = userId;
         pendingUsername = username;
-
         document.getElementById('confirmTitle').innerText = "Add Contact";
         document.getElementById('confirmMessage').innerText = `Are you sure you want to send a contact request to ${username}?`;
-
         const btn = document.getElementById('confirmActionBtn');
         btn.className = 'btn btn-submit';
         btn.innerText = "Send Request";
-
         document.getElementById('confirmationModal').classList.add('active');
-        document.getElementById('searchResults').style.display = 'none'; // Hide results
+        document.getElementById('searchResults').style.display = 'none'; 
     }
 
-
-    // ⬇️ UPDATE: Central Confirmation Handler
+    // ⬇️ CENTRAL CONFIRMATION HANDLER
     document.getElementById('confirmActionBtn').addEventListener('click', async function() {
         let url = '';
         let body = null;
@@ -694,7 +867,6 @@
             body = new FormData(document.getElementById('removeMembersForm'));
             isFormData = true;
         } else if (pendingAction === 'add_members') {
-            // ⬇️ NEW: Handle Add Members to Group
             url = '/add_group_members';
             body = new FormData(document.getElementById('addMembersForm'));
             isFormData = true;
@@ -723,7 +895,6 @@
                 }
             } else {
                 showNotification('error', 'Error', data.message || 'Action failed');
-                // Re-open modals if failed based on action type
                 if(pendingAction === 'bulk_remove') setTimeout(() => document.getElementById('removeMembersModal').classList.add('active'), 500);
                 else if(pendingAction === 'add_members') setTimeout(() => document.getElementById('addMembersModal').classList.add('active'), 500);
                 else if (pendingAction === 'promote' || pendingAction === 'dismiss') setTimeout(() => openGroupInfo(), 500);
@@ -733,6 +904,72 @@
             showNotification('error', 'Error', 'Something went wrong');
         }
     });
+
+    // ⬇️ NEW: Wallpaper Logic
+    const chatArea = document.getElementById('messagesArea');
+    const currentChatId = "{{ contact.id }}";
+    const wpKey = `wallpaper_${currentChatId}`;
+
+    function loadWallpaper() {
+        const saved = localStorage.getItem(wpKey);
+        if(saved) {
+            if(saved.startsWith('data:image') || saved.startsWith('http')) {
+                chatArea.style.backgroundImage = `url("${saved}")`;
+                chatArea.style.backgroundSize = 'cover';
+                chatArea.style.backgroundPosition = 'center';
+                chatArea.style.backgroundAttachment = 'fixed';
+                chatArea.style.backgroundColor = 'transparent';
+            } else {
+                chatArea.style.backgroundImage = 'none';
+                chatArea.style.backgroundColor = saved;
+            }
+        }
+    }
+
+    function setWallpaper(type, value) {
+        if(type === 'color') {
+            chatArea.style.backgroundImage = 'none';
+            chatArea.style.backgroundColor = value;
+            localStorage.setItem(wpKey, value);
+            // ⬇️ ADDED: Validation message
+            showNotification('success', 'Wallpaper Updated', 'Background color has been set.');
+        }
+    }
+
+    document.getElementById('wallpaperInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if(file) {
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const res = evt.target.result;
+                chatArea.style.backgroundImage = `url("${res}")`;
+                chatArea.style.backgroundSize = 'cover';
+                chatArea.style.backgroundPosition = 'center';
+                chatArea.style.backgroundAttachment = 'fixed';
+                chatArea.style.backgroundColor = 'transparent';
+                try {
+                    localStorage.setItem(wpKey, res);
+                    // ⬇️ ADDED: Validation message
+                    showNotification('success', 'Wallpaper Updated', 'Your custom image has been set as the background.');
+                } catch(e) {
+                    alert("Image too large to save as default, but applied for this session.");
+                }
+            };
+            reader.readAsDataURL(file);
+            e.target.value = '';
+        }
+    });
+
+    function resetWallpaper() {
+        localStorage.removeItem(wpKey);
+        chatArea.style.backgroundImage = 'none';
+        chatArea.style.backgroundColor = '#f9fafb';
+        closeModal('wallpaperModal');
+        showNotification('success', 'Wallpaper Reset', 'Background restored to default.');
+    }
+
+    // Call immediately
+    loadWallpaper();
 
     async function confirmDeleteGroup() {
         if(confirm("Are you sure you want to delete and exit this group?")) {
