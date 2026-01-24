@@ -3,237 +3,328 @@
 {% block title %}{{ user.username }} - GenConnect{% endblock %}
 
 {% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
 <style>
-    /* --- RESET & BASE --- */
+    /* --- RESET & ANIMATIONS --- */
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
     body { 
-        background-color: #f0f4f8; /* Premium Cool Grey Background */
-        font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif; 
+        /* IT CLASSROOM BACKGROUND */
+        background: 
+            linear-gradient(rgba(248, 250, 252, 0.92), rgba(248, 250, 252, 0.92)),
+            url('https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1600&fit=crop'); /* Computer Lab Image */
+        background-size: cover;
+        background-attachment: fixed;
+        background-position: center;
+        
+        font-family: 'Outfit', -apple-system, sans-serif; 
         color: #1e293b;
+        transition: font-size 0.2s ease;
     }
+
+    /* --- SENIOR MODE STYLES (Accessibility Feature) --- */
+    body.senior-mode { font-size: 19px !important; }
+    body.senior-mode h1, body.senior-mode .big-num { font-size: 1.3em !important; }
+    body.senior-mode p, body.senior-mode span, body.senior-mode a, body.senior-mode div { font-weight: 500 !important; line-height: 1.6 !important; }
+    body.senior-mode .card-desc { 
+                -webkit-line-clamp: 6 !important; 
+                line-clamp: 6 !important; 
+            }
 
     .container { display: flex; min-height: 100vh; }
 
-    /* --- SIDEBAR (Restored & Polished) --- */
+    /* --- SIDEBAR (Glass Effect) --- */
     .sidebar {
         position: fixed; left: 0; top: 0; width: 260px; height: 100vh;
-        background-color: white; border-right: 1px solid #e2e8f0; 
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        border-right: 1px solid rgba(226, 232, 240, 0.6);
         padding: 24px 0; z-index: 100;
-        box-shadow: 4px 0 24px rgba(0,0,0,0.02);
+        display: flex; flex-direction: column;
     }
     
     .sidebar-logo { 
         padding: 0 32px 24px; 
-        border-bottom: 1px solid #f1f5f9; 
         margin-bottom: 24px; 
-        display: flex;
-        align-items: center; gap: 12px; 
-        color: #4f46e5; /* Indigo-600 */
-        font-weight: 600; 
-        font-size: 22px; 
-        letter-spacing: -0.5px;
+        display: flex; align-items: center; gap: 12px; 
+        color: #4f46e5; font-weight: 800; font-size: 24px; letter-spacing: -0.5px;
     }
-    .sidebar-logo svg { width: 28px; height: 28px; color: #4f46e5; }
+    .sidebar-logo svg { width: 32px; height: 32px; color: #4f46e5; filter: drop-shadow(0 4px 6px rgba(79, 70, 229, 0.3)); }
 
-    .sidebar-nav { list-style: none; padding: 0 16px; }
-    .sidebar-nav li { margin-bottom: 4px; }
+    .sidebar-nav { list-style: none; padding: 0 16px; flex: 1; }
+    .sidebar-nav li { margin-bottom: 6px; }
     .sidebar-nav a { 
         display: flex; align-items: center; gap: 16px; 
-        padding: 12px 20px; border-radius: 12px;
+        padding: 14px 20px; border-radius: 16px;
         text-decoration: none; color: #64748b; 
-        transition: all 0.2s ease; font-size: 15px; font-weight: 600; 
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+        font-size: 15px; font-weight: 600; 
     }
-    .sidebar-nav a:hover { background-color: #f8fafc; color: #0f172a; transform: translateX(4px); }
+    .sidebar-nav a:hover { background-color: white; color: #0f172a; transform: translateX(5px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     .sidebar-nav a.active { 
-        background-color: #eef2ff; color: #4f46e5; 
-        box-shadow: 0 2px 5px rgba(79, 70, 229, 0.05);
+        background: linear-gradient(135deg, #eef2ff 0%, #ffffff 100%); 
+        color: #4f46e5; 
+        box-shadow: 0 4px 15px rgba(79, 70, 229, 0.1);
+        border: 1px solid #e0e7ff;
     }
     .sidebar-nav svg { width: 20px; height: 20px; }
 
     /* --- MAIN CONTENT --- */
-    .main-content { margin-left: 260px; flex: 1; padding: 40px; }
+    .main-content { margin-left: 260px; flex: 1; padding: 40px; animation: fadeIn 0.6s ease-out; }
     .profile-container { max-width: 1100px; margin: 0 auto; }
 
-    /* --- 1. PROFILE HEADER --- */
-    .profile-card {
-        background: white; border-radius: 20px; padding: 30px;
-        border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        display: flex; align-items: flex-start; gap: 30px; margin-bottom: 30px;
+    /* --- HERO PROFILE HEADER --- */
+    .profile-hero {
+        background: white; border-radius: 24px; 
+        border: 1px solid white;
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
+        overflow: hidden; margin-bottom: 30px;
+        position: relative;
     }
 
-    .profile-avatar {
-        width: 150px; height: 150px; 
-        border-radius: 50%; overflow: hidden;
-        border: 4px solid white; 
-        box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.2); 
-        flex-shrink: 0; position: relative;
+    .hero-banner {
+        height: 220px; width: 100%;
+        background-color: #cbd5e1;
+        position: relative;
     }
-    .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
-
-    .header-details { flex: 1; padding-top: 10px; }
-    
-    .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
-    .profile-name-group h1 { font-size: 32px; font-weight: 800; color: #0f172a; letter-spacing: -1px; margin: 0; }
-    .profile-badge { 
-        display: inline-block; background: #f1f5f9; color: #64748b; 
-        font-size: 12px; font-weight: 700; text-transform: uppercase; 
-        padding: 4px 10px; border-radius: 20px; margin-top: 5px;
+    .hero-banner img { width: 100%; height: 100%; object-fit: cover; }
+    .hero-banner::after {
+        content: ""; position: absolute; bottom: 0; left: 0; width: 100%; height: 100px;
+        background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
     }
 
-    .btn-edit {
-        background-color: #4f46e5; color: white; border: none; padding: 10px 24px;
-        border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; 
+    .hero-content {
+        padding: 0 40px 30px 40px;
+        display: flex; justify-content: space-between; align-items: flex-end;
+        position: relative; margin-top: -60px;
+    }
+
+    .identity-group { display: flex; align-items: flex-end; gap: 24px; }
+
+    .avatar-wrapper {
+        width: 140px; height: 140px;
+        border-radius: 50%; border: 5px solid white;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        background: white; overflow: hidden;
+        position: relative; z-index: 2;
+    }
+    .avatar-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+
+    .user-text { padding-bottom: 10px; z-index: 2; }
+    .username { font-size: 36px; font-weight: 800; color: #0f172a; line-height: 1; margin-bottom: 6px; text-shadow: 2px 2px 0px white; }
+    .user-badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: #0f172a; color: white; 
+        font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+        padding: 6px 14px; border-radius: 20px; box-shadow: 0 4px 10px rgba(15, 23, 42, 0.3);
+    }
+
+    .hero-actions {
+        display: flex; gap: 12px; padding-bottom: 15px;
+    }
+
+    .btn-action {
+        padding: 10px 20px; border-radius: 12px; font-weight: 600; font-size: 14px;
         text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
-        transition: all 0.2s; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+        transition: all 0.2s; cursor: pointer; border: none;
     }
-    .btn-edit:hover { background-color: #4338ca; transform: translateY(-2px); }
-    .btn-secondary { background-color: white; color: #0f172a; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-    .btn-secondary:hover { background-color: #f8fafc; border-color: #cbd5e1; }
-
-    .profile-stats { display: flex; gap: 40px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #f1f5f9; }
-    .stat-item { display: flex; flex-direction: column; }
-    .stat-val { font-size: 20px; font-weight: 800; color: #0f172a; }
-    .stat-label { font-size: 13px; font-weight: 600; color: #64748b; text-transform: uppercase; }
-
-    /* --- 2. TABS --- */
-    .profile-tabs {
-        display: flex; gap: 10px; margin-bottom: 30px; 
-        background: white; padding: 6px; border-radius: 12px;
-        border: 1px solid #e2e8f0; width: fit-content;
+    .btn-primary { 
+        background: #4f46e5; color: white; 
+        box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
     }
-    .tab-button {
-        background: transparent; color: #64748b; border: none; padding: 10px 24px;
-        border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;
-    }
-    .tab-button:hover { color: #0f172a; background: #f8fafc; }
-    .tab-button.active { background-color: #4f46e5; color: white; box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2); }
-
-    /* --- 3. ACHIEVEMENTS DASHBOARD (Red & Yellow) --- */
-    .achievements-dashboard {
-        display: grid; grid-template-columns: 1fr 1.6fr; gap: 24px;
-        margin-bottom: 30px; text-decoration: none;
-    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4); }
     
-    /* Red Box */
-    .achieve-box {
-        background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
-        border-radius: 16px; padding: 24px; color: white;
-        display: flex; flex-direction: column; justify-content: center;
-        box-shadow: 0 10px 25px -5px rgba(220, 38, 38, 0.3);
-        transition: transform 0.2s; cursor: pointer; position: relative; overflow: hidden;
+    .btn-glass { 
+        background: rgba(255, 255, 255, 0.8); border: 1px solid #e2e8f0; color: #334155; 
     }
-    .achieve-box:hover { transform: translateY(-3px); }
-    .achieve-box::after { content: '🏆'; font-size: 100px; position: absolute; right: -20px; bottom: -20px; opacity: 0.15; transform: rotate(-15deg); }
-    
-    .achieve-title { font-size: 11px; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; opacity: 0.8; }
-    .achieve-rank { font-size: 32px; font-weight: 800; margin: 8px 0 12px; }
-    .xp-bar { background: rgba(255,255,255,0.2); height: 8px; border-radius: 4px; overflow: hidden; }
-    .xp-fill { background: #fbbf24; height: 100%; width: 75%; border-radius: 4px; }
-    .xp-text { font-size: 13px; margin-top: 8px; font-weight: 600; display: flex; justify-content: space-between; }
+    .btn-glass:hover { background: #f8fafc; border-color: #94a3b8; }
+    .btn-mini { font-size: 12px; padding: 4px 10px; background: #e0e7ff; color: #4338ca; border-radius: 6px; font-weight: 700; text-decoration: none; }
 
-    /* Yellow Box */
-    .badges-box {
-        background: linear-gradient(135deg, #fffbeb 0%, #fff7ed 100%);
-        border: 1px solid #fcd34d; border-radius: 16px; padding: 24px;
-        display: flex; flex-direction: column; justify-content: center;
-        box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.15);
-        transition: transform 0.2s; cursor: pointer; position: relative;
-    }
-    .badges-box:hover { transform: translateY(-3px); }
-    .badges-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .badges-title { font-size: 14px; font-weight: 800; color: #92400e; text-transform: uppercase; letter-spacing: 0.5px; }
-    .view-all-link { font-size: 12px; font-weight: 700; color: #b45309; display: flex; align-items: center; gap: 4px; }
-    
-    .badges-row { display: flex; gap: 20px; }
-    .badge-item {
-        background: white; width: 64px; height: 64px; border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 30px; border: 3px solid #fbbf24;
-        box-shadow: 0 4px 10px rgba(217, 119, 6, 0.1);
-        transition: transform 0.2s; position: relative;
-    }
-    .badge-item:hover { transform: scale(1.1); box-shadow: 0 8px 15px rgba(217, 119, 6, 0.2); }
-    .badge-label { position: absolute; bottom: -25px; font-size: 11px; font-weight: 600; color: #92400e; width: 100px; text-align: center; opacity: 0; transition: 0.2s; pointer-events: none; }
-    .badge-item:hover .badge-label { opacity: 1; bottom: -20px; }
+    /* --- LAYOUT GRID --- */
+    .profile-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-top: 30px; }
+    .content-column { display: flex; flex-direction: column; gap: 30px; }
+    .sidebar-column { display: flex; flex-direction: column; gap: 24px; position: sticky; top: 30px; height: fit-content; }
 
-    /* --- 4. OVERVIEW LAYOUT (Banner & Bio) --- */
-    .overview-top-section { 
-        display: grid; grid-template-columns: 1.2fr 2fr; gap: 24px; margin-bottom: 40px; 
+    /* --- DASHBOARD --- */
+    .glass-panel {
+        background: white; border-radius: 20px; padding: 24px;
+        border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.03);
     }
-    
-    /* Banner Card - Image Focus */
-    .banner-card { 
-        width: 100%; height: 260px; border-radius: 16px; overflow: hidden; 
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border: 4px solid white;
-        transition: transform 0.2s;
-    }
-    .banner-card:hover { transform: scale(1.01); }
-    .banner-card img { width: 100%; height: 100%; object-fit: cover; }
-    
-    /* Bio Card - Content Focus */
-    .bio-card { 
-        background: white; border: 1px solid #e2e8f0; border-radius: 16px; 
-        padding: 30px; height: 260px; overflow-y: auto; 
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+
+    .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+    /* --- NEW DASHBOARD STYLES --- */
+    .dash-item {
+        background: rgba(255, 255, 255, 0.6); /* More transparent glass */
+        backdrop-filter: blur(10px);
+        border-radius: 24px; /* Rounder corners */
+        padding: 24px;
+        position: relative; overflow: hidden; transition: all 0.3s;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        text-decoration: none; color: inherit;
         display: flex; flex-direction: column;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
     }
-    .bio-header { 
-        display: flex; align-items: center; gap: 15px; margin-bottom: 20px; 
-        padding-bottom: 15px; border-bottom: 1px solid #f1f5f9; 
+    .dash-item:hover { transform: translateY(-3px); background: rgba(255, 255, 255, 0.8); box-shadow: 0 12px 40px rgba(31, 38, 135, 0.1); }
+
+    /* Level Card Specifics */
+    .level-section { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+    .level-icon { font-size: 40px; }
+    .level-details { display: flex; flex-direction: column; }
+    .big-num { font-size: 36px; font-weight: 800; line-height: 1; color: #1e293b; }
+    .sub-text { font-size: 14px; color: #64748b; font-weight: 500; }
+    .card-separator { border: 0; height: 1px; background: rgba(100, 116, 139, 0.2); margin: 0 0 20px 0; }
+    .badge-section { display: flex; align-items: center; justify-content: space-between; }
+    .badge-stack { display: flex; }
+    /* Add this to your .dash-item class for the Level box */
+    .level-box {
+        background: white;
+        border: 1px solid #e0e7ff; /* Very light indigo border */
+        box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.1); /* Indigo tinted shadow */
     }
-    .mini-avatar { width: 42px; height: 42px; border-radius: 10px; background: #eef2ff; display: flex; align-items: center; justify-content: center; color: #4f46e5; }
+    .level-icon {
+        /* Make the icon background a soft indigo */
+        background: #eef2ff; 
+        color: #4f46e5;
+    }
+    /* Add this to your .dash-item class for the Reward box */
+    .reward-box {
+        background: white;
+        border-bottom: 4px solid #fbbf24; /* Gold bottom border creates "value" feel */
+    }
+    .coin-icon-large {
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        color: #78350f; /* Dark brown text for contrast on gold */
+        box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3); /* Glowing gold shadow */
+    }
+    .btn-exchange {
+        /* A premium purple gradient for the button */
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        color: white;
+    }
+
     
-    .bio-row { margin-bottom: 16px; font-size: 14px; line-height: 1.6; }
-    .bio-label { 
-        color: #64748b; font-weight: 700; font-size: 11px; text-transform: uppercase; 
-        letter-spacing: 0.5px; display: block; margin-bottom: 4px;
+    /* --- BADGE STYLES UPDATED FOR FIX --- */
+    .mini-badge { 
+        width: 44px; height: 44px; border-radius: 50%; background: white; 
+        border: 3px solid white; box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        display: flex; align-items: center; justify-content: center; font-size: 22px;
+        margin-right: -12px; position: relative;
     }
-    .bio-content { color: #1e293b; font-weight: 500; }
     
-    /* Social/Extra Icons in Bio (Fills whitespace) */
-    .bio-social { display: flex; gap: 10px; margin-top: auto; padding-top: 15px; border-top: 1px dashed #e2e8f0; }
-    .social-pill { background: #f8fafc; padding: 6px 12px; border-radius: 6px; font-size: 12px; color: #64748b; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+    /* ADDED: Classes for badge colors to fix VS Code linting error */
+    .bg-rank-1 { background-color: #f87171; }
+    .bg-rank-2 { background-color: #fbbf24; }
+    .bg-rank-3 { background-color: #60a5fa; }
 
-    /* --- 5. CONTENT GRID --- */
-    .section-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; }
-    .section-title { font-size: 18px; font-weight: 800; color: #0f172a; margin: 0; }
-    .section-link { font-size: 13px; color: #4f46e5; font-weight: 600; text-decoration: none; }
+    .badge-view-all { font-size: 14px; font-weight: 600; color: #4f46e5; display: flex; align-items: center; gap: 4px; }
 
-    .grid-layout { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
-    
-    .card-item { 
-        background: white; border: 1px solid #e2e8f0; border-radius: 16px; 
-        overflow: hidden; transition: all 0.2s; position: relative;
+    /* Reward Card Specifics */
+    .points-section { display: flex; align-items: center; gap: 16px; margin: 24px 0; }
+    .coin-icon-large {
+        width: 50px; height: 50px;
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        color: #92400e; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 800; font-size: 28px;
+        border: 3px solid #fcd34d;
+        box-shadow: 0 4px 10px rgba(251, 191, 36, 0.4);
     }
-    .card-item:hover { transform: translateY(-5px); box-shadow: 0 15px 30px -5px rgba(0,0,0,0.1); border-color: #cbd5e1; }
-    .card-image { width: 100%; height: 160px; object-fit: cover; }
-    .card-content { padding: 20px; }
-    .card-title { font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 8px; line-height: 1.3; }
-    .card-desc { font-size: 13px; color: #64748b; line-height: 1.5; margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px solid #f1f5f9; }
-    .card-meta { display: flex; gap: 15px; color: #64748b; font-size: 12px; font-weight: 600; }
-    .btn-mini { font-size: 12px; color: #4f46e5; font-weight: 700; text-decoration: none; }
+    .points-num { font-size: 36px; font-weight: 800; color: #1e293b; line-height: 1; }
+    .points-label { font-size: 14px; font-weight: 600; color: #64748b; }
+    
+    .btn-exchange {
+        background: linear-gradient(135deg, #eef2ff 0%, #c7d2fe 100%);
+        color: #3730a3;
+        border: none; padding: 12px 20px; border-radius: 12px;
+        font-weight: 700; font-size: 15px; width: 100%;
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+        cursor: pointer; transition: all 0.2s;
+        box-shadow: 0 4px 12px rgba(199, 210, 254, 0.4);
+    }
+    .btn-exchange:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(199, 210, 254, 0.6); }
+    .gift-icon { font-size: 18px; }
 
-    /* Comment List */
-    .comments-list { display: flex; flex-direction: column; gap: 15px; }
-    .comment-item { padding: 20px; background: white; border: 1px solid #e2e8f0; border-radius: 12px; display: flex; gap: 15px; transition: 0.2s; }
-    .comment-item:hover { box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-    .comment-content h4 { font-size: 14px; color: #4f46e5; margin-bottom: 4px; font-weight: 700; }
-    .comment-content p { font-size: 14px; color: #334155; line-height: 1.5; }
-    .comment-date { font-size: 12px; color: #94a3b8; margin-top: 8px; font-weight: 500; }
+    /* --- STATS BAR --- */
+    .stats-bar {
+        display: flex; gap: 20px; justify-content: space-between;
+        background: #f8fafc; padding: 15px 25px; border-radius: 16px;
+        border: 1px solid #f1f5f9;
+    }
+    .stat-box { display: flex; flex-direction: column; cursor: pointer; transition: 0.2s; align-items: center; }
+    .stat-box:hover .stat-num { color: #4f46e5; }
+    .stat-num { font-size: 18px; font-weight: 800; color: #1e293b; }
+    .stat-label { font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; }
 
+    /* --- SKILL SWAP FEATURE --- */
+    .tags-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .skill-pill {
+        padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;
+        cursor: pointer; transition: 0.2s; position: relative; overflow: hidden;
+    }
+    .pill-green { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+    .pill-blue { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+    .pill-purple { background: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff; }
+    
+    /* Hover effect for "Request Help" */
+    .skill-pill:hover::after {
+        content: "Request Help";
+        position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+        background: inherit;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 800; animation: fadeIn 0.2s;
+    }
+    
+    /* --- TABS & CARDS --- */
+    .tabs-nav {
+        display: flex; gap: 25px; border-bottom: 2px solid #e2e8f0; margin-bottom: 24px;
+    }
+    .tab-link {
+        padding: 0 5px 12px; font-weight: 700; color: #94a3b8; cursor: pointer;
+        font-size: 15px; position: relative; transition: 0.2s;
+    }
+    .tab-link:hover { color: #475569; }
+    .tab-link.active { color: #4f46e5; }
+    .tab-link.active::after {
+        content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 2px; background: #4f46e5;
+    }
+
+    .content-card {
+        background: white; border-radius: 16px; border: 1px solid #e2e8f0;
+        overflow: hidden; margin-bottom: 20px; display: flex;
+        transition: 0.2s;
+    }
+    .content-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); border-color: #cbd5e1; }
+    
+    .card-thumb { width: 180px; height: auto; object-fit: cover; }
+    .card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+    .card-h { font-size: 17px; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
+    .card-p { font-size: 14px; color: #64748b; line-height: 1.5; margin-bottom: 12px; flex: 1; }
+    .card-ft { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 12px; font-size: 12px; font-weight: 600; color: #94a3b8; }
+
+    /* Saved/Communities List Style */
+    .list-item {
+        display: flex; align-items: center; gap: 15px; padding: 15px;
+        background: white; border: 1px solid #e2e8f0; border-radius: 12px;
+        margin-bottom: 15px; transition: 0.2s;
+    }
+    .list-item:hover { border-color: #4f46e5; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1); }
+    .list-icon { 
+        width: 50px; height: 50px; background: #f1f5f9; border-radius: 10px; 
+        display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0;
+    }
+    
+    /* Responsive */
     @media (max-width: 1024px) {
-        .overview-top-section, .achievements-dashboard { grid-template-columns: 1fr; }
-        .banner-card, .bio-card { height: auto; min-height: 200px; }
-    }
-    @media (max-width: 768px) {
-        .profile-header { flex-direction: column; align-items: center; text-align: center; }
-        .header-top { justify-content: center; }
-        .sidebar { width: 70px; }
-        .sidebar-nav a span { display: none; }
-        .main-content { margin-left: 70px; padding: 20px; }
-        .header-details { padding-top: 0; width: 100%; }
-        .profile-stats { justify-content: center; }
+        .profile-grid { grid-template-columns: 1fr; }
+        .sidebar-column { display: none; } 
+        .hero-content { flex-direction: column; align-items: center; text-align: center; margin-top: -50px; }
+        .content-card { flex-direction: column; }
+        .card-thumb { width: 100%; height: 160px; }
+        .dash-grid { grid-template-columns: 1fr; } /* Stack cards on smaller screens */
     }
 </style>
 {% endblock %}
@@ -242,7 +333,8 @@
 {% set user_badges = [
     {'icon': '🚀', 'name': 'Rocket Starter'},
     {'icon': '🤝', 'name': 'Community Helper'},
-    {'icon': '🔥', 'name': 'Top Writer'}
+    {'icon': '💻', 'name': 'Code Wizard'},
+    {'icon': '🎓', 'name': 'Mentor'}
 ] %}
 
 <div class="container">
@@ -253,12 +345,20 @@
         </div>
         <ul class="sidebar-nav">
             <li><a href="{{ url_for('home') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a></li>
-            <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg><span>Explore Activities</span></a></li>
+            <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg><span>Activities</span></a></li>
             <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Community</span></a></li>
             <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>Create</span></a></li>
-            <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Notification</span></a></li>
-            <li><a href="{{ url_for('messages') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Messages</span></a></li>
+            <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Alerts</span></a></li>
+            <li><a href="{{ url_for('messages') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Chat</span></a></li>
             <li><a href="{{ url_for('profile') }}" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a></li>
+            
+            <li style="margin-top: auto; padding-top: 20px; border-top: 1px solid #f1f5f9;">
+                <a href="#" onclick="toggleSeniorMode()" style="color: #059669;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+                    <span>Senior Mode (Aa+)</span>
+                </a>
+            </li>
+            
             <li><a href="{{ url_for('logout') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></a></li>
         </ul>
     </aside>
@@ -266,227 +366,246 @@
     <main class="main-content">
         <div class="profile-container">
             
-            <div class="profile-card">
-                <div class="profile-avatar">
-                    {% if user.profile_picture and user.profile_picture != 'default.jpg' %}
-                        <img src="{{ user.profile_picture }}" alt="{{ user.username }}">
-                    {% else %}
-                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop" alt="{{ user.username }}">
-                    {% endif %}
+            <div class="profile-hero">
+                <div class="hero-banner">
+                    <img src="{{ user.banner_image if user.banner_image != 'default_banner.jpg' else 'https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?w=1200&fit=crop' }}" alt="Banner">
                 </div>
-                <div class="header-details">
-                    <div class="header-top">
-                        <div class="profile-name-group">
-                            <h1>{{ user.username }}</h1>
-                            <span class="profile-badge">{{ user.member_type }}</span>
+                <div class="hero-content">
+                    <div class="identity-group">
+                        <div class="avatar-wrapper">
+                            {% if user.profile_picture and user.profile_picture != 'default.jpg' %}
+                                <img src="{{ user.profile_picture }}" alt="User">
+                            {% else %}
+                                <img src="https://images.unsplash.com/photo-1595152772835-219674b2a8a6?w=400&h=400&fit=crop" alt="IT Student">
+                            {% endif %}
                         </div>
+                        <div class="user-text">
+                            <h1 class="username">{{ user.username }}</h1>
+                            <div class="user-badge">
+                                {{ user.member_type }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="hero-actions">
                         {% if is_own_profile %}
-                            <a href="{{ url_for('edit_profile') }}" class="btn-edit">
+                            <a href="{{ url_for('edit_profile') }}" class="btn-action btn-glass">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                                 Edit Profile
                             </a>
                         {% else %}
-                            <div style="display:flex; gap:10px;">
-                                <button class="btn-edit">Follow</button>
-                                <a href="{{ url_for('messages', target_id=user.id) }}" class="btn-edit btn-secondary">Message</a>
-                            </div>
+                            <button class="btn-action btn-primary">Follow</button>
+                            <a href="{{ url_for('messages', target_id=user.id) }}" class="btn-action btn-glass">Message</a>
                         {% endif %}
-                    </div>
-                    
-                    <div class="profile-stats">
-                        <div class="stat-item">
-                            <span class="stat-val">{{ user.get_post_count() }}</span>
-                            <span class="stat-label">Posts</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-val">{{ user.get_follower_count() }}</span>
-                            <span class="stat-label">Followers</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-val">{{ user.get_following_count() }}</span>
-                            <span class="stat-label">Following</span>
-                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="profile-tabs">
-                <button class="tab-button active" data-tab="overview">Overview</button>
-                <button class="tab-button" data-tab="posts">Your Posts</button>
-                <button class="tab-button" data-tab="comments">Comments</button>
-                <button class="tab-button" data-tab="saved">Saved</button>
-            </div>
-
-            <div class="profile-content-area">
+            <div class="profile-grid">
                 
-                <div id="overview-content" class="tab-content">
+                <div class="content-column">
                     
-                    <a href="{{ url_for('achievements') }}" class="achievements-dashboard">
-                        <div class="achieve-box">
-                            <span class="achieve-title">Current Level</span>
-                            <div class="achieve-rank">Level 5</div>
-                            <div class="xp-bar"><div class="xp-fill"></div></div>
-                            <div class="xp-text"><span>1,240 XP</span> <span>2,000 XP</span></div>
-                        </div>
-                        <div class="badges-box">
-                            <div class="badges-header">
-                                <span class="badges-title">🏆 Top Badges</span>
-                                <span class="view-all-link">View All <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg></span>
-                            </div>
-                            <div class="badges-row">
-                                {% for badge in user_badges %}
-                                <div class="badge-item">
-                                    {{ badge.icon }}
-                                    <span class="badge-label">{{ badge.name }}</span>
+                    <div class="dash-grid">
+                        
+                        <a href="{{ url_for('achievements') }}" class="dash-item">
+                            <span class="dash-label">Level & Top Badges</span>
+                            <div class="level-section">
+                                <div class="level-icon">🚀</div>
+                                <div class="level-details">
+                                    <div class="big-num">Lvl 5</div>
+                                    <span class="sub-text">Mentor</span>
                                 </div>
-                                {% endfor %}
                             </div>
-                        </div>
-                    </a>
-
-                    <div class="overview-top-section">
-                        <div class="banner-card">
-                            <img src="{{ user.banner_image if user.banner_image != 'default_banner.jpg' else 'https://images.unsplash.com/photo-1454496522488-7a8e488e8606?w=800&fit=crop' }}" alt="Banner">
-                        </div>
-                        <div class="bio-card">
-                            <div class="bio-header">
-                                <div class="mini-avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+                            <hr class="card-separator">
+                            <div class="badge-section">
+                                <div class="badge-stack">
+                                    {% for badge in user_badges[:3] %}
+                                        <div class="mini-badge bg-rank-{{ loop.index }}" title="{{ badge.name }}">
+                                            {{ badge.icon }}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <span class="badge-view-all">View All →</span>
+                            </div>
+                        </a>
+                        
+                        <a href="{{ url_for('achievements') }}" class="dash-item">
+                            <span class="dash-label">Exchange Reward</span>
+                            <div class="points-section">
+                                <div class="coin-icon-large">$</div>
                                 <div>
-                                    <h3 style="font-size:16px; font-weight:700; margin:0;">About {{ user.username }}</h3>
-                                    <span style="font-size:12px; color:#64748b;">Member since 2025</span>
+                                    <div class="points-num">{{ user.points }}</div>
+                                    <span class="points-label">GenPoints</span>
                                 </div>
                             </div>
-                            <div class="bio-row">
-                                <span class="bio-label">Bio</span>
-                                <span class="bio-content">{{ user.bio or "No bio available yet." }}</span>
-                            </div>
-                            <div class="bio-row">
-                                <span class="bio-label">Interests</span>
-                                <span class="bio-content">{{ user.interests or "None selected" }}</span>
-                            </div>
-                            <div class="bio-social">
-                                <span class="social-pill">📍 Singapore</span>
-                                <span class="social-pill">🔗 Connect</span>
-                            </div>
+                            <button class="btn-exchange">
+                                <span class="gift-icon">🎁</span> Exchange Rewards →
+                            </button>
+                        </a>
+
+                    </div>
+
+                    <div>
+                        <div class="tabs-nav">
+                            <div class="tab-link active" onclick="switchTab('posts', event)">Your Posts</div>
+                            <div class="tab-link" onclick="switchTab('communities', event)">Communities</div>
+                            <div class="tab-link" onclick="switchTab('saved', event)">Saved</div>
                         </div>
-                    </div>
 
-                    <div class="section-header">
-                        <h2 class="section-title">Joined Communities</h2>
-                        <a href="#" class="section-link">Find More</a>
-                    </div>
-                    
-                    <div class="grid-layout">
-                        {% if user.community_memberships %}
-                            {% for membership in user.community_memberships %}
-                            <div class="card-item">
-                                <img src="{{ membership.community.image_url if membership.community.image_url else 'https://source.unsplash.com/random/400x300/?nature,technology' }}" class="card-image">
-                                <div class="card-content">
-                                    <h3 class="card-title">{{ membership.community.name }}</h3>
-                                    <p class="card-desc">{{ membership.community.description }}</p>
-                                    <div class="card-footer">
-                                        <span class="card-meta">120 Members</span>
-                                        <a href="#" class="btn-mini">View</a>
-                                    </div>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        {% else %}
-                            <div class="card-item">
-                                <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=400&h=300&fit=crop" class="card-image">
-                                <div class="card-content">
-                                    <h3 class="card-title">Digital Ethics Forum</h3>
-                                    <p class="card-desc">Discussing the moral challenges and societal impact of new technology.</p>
-                                    <div class="card-footer"><span class="card-meta">2.4k Members</span><a href="#" class="btn-mini">Join</a></div>
-                                </div>
-                            </div>
-                            <div class="card-item">
-                                <img src="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400&h=300&fit=crop" class="card-image">
-                                <div class="card-content">
-                                    <h3 class="card-title">Budgeting & Beyond</h3>
-                                    <p class="card-desc">Practical wisdom from seniors on saving and investing.</p>
-                                    <div class="card-footer"><span class="card-meta">890 Members</span><a href="#" class="btn-mini">Join</a></div>
-                                </div>
-                            </div>
-                            <div class="card-item" style="border: 2px dashed #cbd5e1; background: transparent; display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 20px;">
-                                <div style="color: #64748b; font-weight: 600; margin-bottom: 10px;">Find more communities</div>
-                                <a href="#" class="btn-edit">Explore</a>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div id="posts-content" class="tab-content" style="display: none;">
-                    <div class="grid-layout">
-                        {% if user.posts %}
-                            {% for post in user.posts %}
-                            <div class="card-item">
-                                {% if post.image_url %}
-                                <img src="{{ post.image_url }}" class="card-image">
-                                {% else %}
-                                <img src="https://source.unsplash.com/random/400x300/?activity" class="card-image">
-                                {% endif %}
-                                <div class="card-content">
-                                    <p class="card-desc">{{ post.content }}</p>
-                                    <div class="card-footer">
-                                        <div class="card-meta">
-                                            <span>❤️ {{ post.get_like_count() }}</span>
-                                            <span>💬 {{ post.get_comment_count() }}</span>
+                        <div id="tab-posts">
+                            {% if user.posts %}
+                                {% for post in user.posts %}
+                                <div class="content-card">
+                                    <img src="{{ post.image_url if post.image_url else 'https://source.unsplash.com/random/400x300/?tech,coding' }}" class="card-thumb">
+                                    <div class="card-body">
+                                        <div class="card-h">Posted an update</div>
+                                        <p class="card-p">{{ post.content }}</p>
+                                        <div class="card-ft">
+                                            <span>{{ post.created_at.strftime('%B %d, %Y') }}</span>
+                                            <span>❤️ {{ post.get_like_count() }} &nbsp; 💬 {{ post.get_comment_count() }}</span>
                                         </div>
                                     </div>
                                 </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="content-card">
+                                    <img src="https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=400&fit=crop" class="card-thumb">
+                                    <div class="card-body">
+                                        <div class="card-h">Debugging Late Night ☕</div>
+                                        <p class="card-p">Finally fixed that database connection error! Turns out it was just a missing comma in the connection string. Classic.</p>
+                                        <div class="card-ft">
+                                            <span>2 hours ago</span>
+                                            <span>❤️ 85 &nbsp; 💬 14</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="content-card">
+                                    <img src="https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=400&fit=crop" class="card-thumb">
+                                    <div class="card-body">
+                                        <div class="card-h">Hackathon Ready</div>
+                                        <p class="card-p">Building a new app to help seniors track their medication easily. Looking for UI designers to join the team!</p>
+                                        <div class="card-ft">
+                                            <span>Yesterday</span>
+                                            <span>❤️ 120 &nbsp; 💬 32</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div id="tab-communities" style="display: none;">
+                            <div class="list-item">
+                                <div class="list-icon" style="color: #3b82f6;">🐍</div>
+                                <div>
+                                    <div style="font-weight: 700; color: #0f172a;">Python Developers SG</div>
+                                    <div style="font-size: 13px; color: #64748b;">A group for Python enthusiasts to share code.</div>
+                                </div>
+                                <button class="btn-action btn-glass" style="margin-left:auto; padding: 6px 12px; font-size:12px;">View</button>
                             </div>
-                            {% endfor %}
-                        {% else %}
-                            <div class="card-item">
-                                <img src="https://images.unsplash.com/photo-1492571350019-22de08371fd3?w=400&fit=crop" class="card-image">
-                                <div class="card-content">
-                                    <h3 class="card-title">Weekend Archery</h3>
-                                    <p class="card-desc">Had a great time teaching the local youth group about precision and focus.</p>
-                                    <div class="card-footer"><div class="card-meta"><span>❤️ 42</span><span>💬 12</span></div></div>
+                            <div class="list-item">
+                                <div class="list-icon" style="color: #10b981;">🛡️</div>
+                                <div>
+                                    <div style="font-weight: 700; color: #0f172a;">CyberSecurity Juniors</div>
+                                    <div style="font-size: 13px; color: #64748b;">Learning about ethical hacking and safety.</div>
+                                </div>
+                                <button class="btn-action btn-glass" style="margin-left:auto; padding: 6px 12px; font-size:12px;">View</button>
+                            </div>
+                            <div class="list-item">
+                                <div class="list-icon" style="color: #6366f1;">⚛️</div>
+                                <div>
+                                    <div style="font-weight: 700; color: #0f172a;">React & Frontend</div>
+                                    <div style="font-size: 13px; color: #64748b;">Discussing the latest in web development.</div>
+                                </div>
+                                <button class="btn-action btn-glass" style="margin-left:auto; padding: 6px 12px; font-size:12px;">View</button>
+                            </div>
+                        </div>
+
+                        <div id="tab-saved" style="display: none;">
+                            <div class="content-card">
+                                <div class="card-body">
+                                    <div class="card-h">📄 SQL Cheat Sheet 2025</div>
+                                    <p class="card-p">Comprehensive guide to Joins, Unions, and Indexing optimization.</p>
+                                    <div class="card-ft"><span>Saved from DataScienceHub</span></div>
                                 </div>
                             </div>
-                        {% endif %}
+                            <div class="content-card">
+                                <div class="card-body">
+                                    <div class="card-h">🎥 VS Code Extensions You Need</div>
+                                    <p class="card-p">Video tutorial on the best extensions for productivity and formatting.</p>
+                                    <div class="card-ft"><span>Saved from TechTube</span></div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
-                <div id="comments-content" class="tab-content" style="display: none;">
-                    <div class="comments-list">
-                        {% if user.comments %}
-                            {% for comment in user.comments %}
-                            <div class="comment-item">
-                                <div class="mini-avatar">{{ user.username[0] }}</div>
-                                <div class="comment-content">
-                                    <h4>Commented on a post</h4>
-                                    <p>"{{ comment.content }}"</p>
-                                    <div class="comment-date">{{ comment.created_at.strftime('%Y-%m-%d') }}</div>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        {% else %}
-                            <div class="comment-item">
-                                <div class="mini-avatar">?</div>
-                                <div class="comment-content">
-                                    <h4>Commented on "Community Garden"</h4>
-                                    <p>"This is exactly what I was looking for! I'd love to contribute."</p>
-                                    <div class="comment-date">2 days ago</div>
-                                </div>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
+                <div class="sidebar-column">
+                    
+                    <div class="glass-panel">
+                        <div class="stats-bar" style="margin: 0 0 20px 0; width: 100%; padding: 15px;">
+                            <div class="stat-box"><span class="stat-num">{{ user.get_post_count() }}</span><span class="stat-label">Posts</span></div>
+                            <div class="stat-box"><span class="stat-num">{{ user.get_follower_count() }}</span><span class="stat-label">Followers</span></div>
+                            <div class="stat-box"><span class="stat-num">{{ user.get_following_count() }}</span><span class="stat-label">Following</span></div>
+                        </div>
 
-                <div id="saved-content" class="tab-content" style="display: none;">
-                    <div class="grid-layout">
-                        <div class="card-item">
-                            <img src="https://images.unsplash.com/photo-1611095790444-1dfa35e37b52?w=400&h=300&fit=crop" class="card-image">
-                            <div class="card-content">
-                                <h3 class="card-title">Understanding Gen Z Slang</h3>
-                                <p class="card-desc">A comprehensive guide for seniors to understand what 'no cap' and 'bet' mean.</p>
-                                <div class="card-footer"><span class="card-meta">Saved 1 week ago</span></div>
+                        <div class="bio-section">
+                            <h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> About</h3>
+                            <p class="bio-text">{{ user.bio or "IT Student passionate about bridging the digital divide. I love coding in Python and teaching seniors how to use smartphones safely!" }}</p>
+                            
+                            <h3 style="margin-top:20px; font-size:14px; text-transform: uppercase; color:#64748b;">Ask me about</h3>
+                            <div class="tags-container">
+                                {% if user.interests %}
+                                    {% for interest in user.interests.split(',') %}
+                                        <span class="skill-pill {% if loop.index % 3 == 0 %}pill-blue{% elif loop.index % 3 == 1 %}pill-green{% else %}pill-purple{% endif %}">
+                                            {{ interest }}
+                                        </span>
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="skill-pill pill-blue">Web Dev</span>
+                                    <span class="skill-pill pill-green">Cybersecurity</span>
+                                    <span class="skill-pill pill-purple">Tech Support</span>
+                                    <span class="skill-pill pill-blue">Python</span>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
+
+                    <div class="glass-panel">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                            <h3 style="font-size:15px; font-weight:700;">Upcoming Events</h3>
+                            <span class="btn-mini" style="cursor:pointer;">+ Create</span>
+                        </div>
+                        
+                        <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:12px; margin-bottom:10px; display:flex; gap:12px;">
+                            <div style="background:#eff6ff; color:#2563eb; padding:5px 10px; border-radius:8px; text-align:center; min-width:50px; display:flex; flex-direction:column; justify-content:center;">
+                                <span style="font-size:10px; font-weight:700; text-transform:uppercase;">Dec</span>
+                                <span style="font-size:18px; font-weight:800;">12</span>
+                            </div>
+                            <div>
+                                <h4 style="font-size:14px; font-weight:700; color:#1e293b; margin-bottom:4px;">Python for Seniors</h4>
+                                <div style="font-size:12px; color:#64748b; display:flex; align-items:center; gap:4px;">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                    Community Hall A
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel">
+                        <h3 style="font-size:15px; font-weight:700; margin-bottom:15px;">Active Communities</h3>
+                        <div style="display:flex; flex-direction:column; gap:12px;">
+                            <div style="display:flex; gap:10px; align-items:center;">
+                                <div style="width:36px; height:36px; background:#e0e7ff; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#4f46e5; font-weight:bold;">T</div>
+                                <div style="font-size:14px; font-weight:600;">Tech Support Group</div>
+                            </div>
+                            <div style="display:flex; gap:10px; align-items:center;">
+                                <div style="width:36px; height:36px; background:#dcfce7; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#166534; font-weight:bold;">G</div>
+                                <div style="font-size:14px; font-weight:600;">Gen Z Coders</div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
             </div>
@@ -495,14 +614,37 @@
 </div>
 
 <script>
-document.querySelectorAll('.tab-button').forEach(button => {
-    button.addEventListener('click', function() {
-        const tabName = this.getAttribute('data-tab');
-        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-        this.classList.add('active');
-        document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
-        document.getElementById(tabName + '-content').style.display = 'block';
-    });
-});
+    function switchTab(tabName, event) {
+        // 1. Remove active class from all tabs
+        document.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active'));
+        
+        // 2. Hide all content divs
+        ['posts', 'communities', 'saved'].forEach(name => {
+            const el = document.getElementById('tab-' + name);
+            if(el) el.style.display = 'none';
+        });
+        
+        // 3. Add active class to clicked tab
+        if(event) event.currentTarget.classList.add('active');
+        
+        // 4. Show the selected content
+        const target = document.getElementById('tab-' + tabName);
+        if(target) {
+            target.style.display = 'block';
+            target.style.animation = 'fadeIn 0.5s ease';
+        }
+    }
+
+    function toggleSeniorMode() {
+        document.body.classList.toggle('senior-mode');
+        // Optional: Save preference to localStorage
+        const isSenior = document.body.classList.contains('senior-mode');
+        localStorage.setItem('seniorMode', isSenior);
+    }
+
+    // Check preference on load
+    if(localStorage.getItem('seniorMode') === 'true') {
+        document.body.classList.add('senior-mode');
+    }
 </script>
 {% endblock %}
