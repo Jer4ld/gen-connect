@@ -1,297 +1,289 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - GenConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-soft: #f0f2ff;
+            --primary-hover: #4338ca;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --white: #ffffff;
+        }
 
-{% block title %}Sign Up - GenConnect{% endblock %}
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-{% block extra_css %}
-<style>
-    body {
-        background-color: #f3f4f6;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-        padding: 40px 0;
-    }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            background-image: radial-gradient(#e2e8f0 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
 
-    .signup-container {
-        background: white;
-        border-radius: 16px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        padding: 40px;
-        width: 100%;
-        max-width: 500px;
-        margin: 20px;
-        border: 1px solid #e5e7eb;
-    }
+        .page-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-    .logo-section {
-        text-align: center;
-        margin-bottom: 30px;
-    }
+        .auth-card {
+            background: var(--white);
+            width: 100%;
+            max-width: 1000px;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            overflow: hidden;
+            min-height: 720px; /* Increased slightly for the extra vertical field */
+            border: 1px solid var(--border-color);
+        }
 
-    .logo-section svg {
-        width: 40px;
-        height: 40px;
-        color: #2563eb;
-        margin-bottom: 10px;
-    }
+        .card-visual {
+            flex: 1;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.94), rgba(124, 58, 237, 0.9)),
+                        url('https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            padding: 48px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            color: white;
+        }
 
-    .logo-section h1 {
-        font-size: 26px;
-        color: #111827;
-        margin-bottom: 5px;
-        font-weight: 700;
-    }
+        .brand-mark { 
+            font-size: 24px; 
+            font-weight: 800; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px;
+        }
 
-    .logo-section p {
-        color: #6b7280;
-        font-size: 14px;
-    }
+        .quote-box h2 { 
+            font-size: 30px; 
+            font-weight: 700; 
+            line-height: 1.2; 
+            margin-bottom: 16px; 
+        }
 
-    .form-group {
-        margin-bottom: 20px;
-    }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            border-radius: 100px;
+            font-size: 14px;
+            font-weight: 600;
+        }
 
-    .form-group label {
-        display: block;
-        margin-bottom: 6px;
-        color: #374151;
-        font-weight: 600;
-        font-size: 13px;
-    }
+        .card-form {
+            flex: 1.2;
+            padding: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
 
-    .form-input {
-        width: 100%;
-        padding: 10px 14px;
-        border: 1px solid #d1d5db;
-        border-radius: 6px;
-        font-size: 14px;
-        background-color: #fff;
-        transition: all 0.2s;
-    }
+        .header-text h1 { font-size: 28px; font-weight: 800; color: var(--text-main); margin-bottom: 8px; }
+        .header-text p { color: var(--text-muted); font-size: 15px; margin-bottom: 30px; }
+        .header-text a { color: var(--primary); text-decoration: none; font-weight: 700; }
 
-    /* Additional style for the dropdown to match inputs */
-    select.form-input {
-        appearance: none;
-        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-        background-repeat: no-repeat;
-        background-position: right 1rem center;
-        background-size: 1em;
-    }
+        .input-group { margin-bottom: 18px; }
+        .label { 
+            display: block; font-size: 12px; font-weight: 700; 
+            color: var(--text-main); margin-bottom: 6px; 
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
 
-    .form-input:focus {
-        outline: none;
-        border-color: #2563eb;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-    }
+        .input-field {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
 
-    .strength-bar {
-        height: 4px;
-        background-color: #e5e7eb;
-        border-radius: 2px;
-        margin-top: 8px;
-        overflow: hidden;
-    }
+        .input-field:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
 
-    .strength-bar-fill {
-        height: 100%;
-        width: 0;
-        transition: all 0.3s;
-        border-radius: 2px;
-    }
-
-    .strength-weak { width: 33%; background-color: #ef4444; }
-    .strength-medium { width: 66%; background-color: #f59e0b; }
-    .strength-strong { width: 100%; background-color: #10b981; }
-
-    .password-strength-text {
-        font-size: 11px;
-        color: #6b7280;
-        margin-top: 4px;
-        text-align: right;
-    }
-
-    .terms-check {
-        display: flex;
-        align-items: start;
-        gap: 10px;
-        margin-bottom: 25px;
-        font-size: 13px;
-        color: #6b7280;
-        line-height: 1.4;
-    }
-
-    .terms-check input[type="checkbox"] {
-        margin-top: 3px;
-        cursor: pointer;
-    }
-
-    .terms-check a {
-        color: #2563eb;
-        text-decoration: none;
-    }
-
-    .terms-check a:hover {
-        text-decoration: underline;
-    }
-
-    .btn-signup {
-        width: 100%;
-        padding: 12px;
-        background-color: #2563eb;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-size: 15px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background-color 0.2s;
-    }
-
-    .btn-signup:hover {
-        background-color: #1d4ed8;
-    }
-
-    .divider {
-        text-align: center;
-        margin: 25px 0;
-        position: relative;
-    }
-
-    .divider::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 0;
-        right: 0;
-        height: 1px;
-        background-color: #e5e7eb;
-    }
-
-    .divider span {
-        background: white;
-        padding: 0 10px;
-        color: #9ca3af;
-        font-size: 12px;
-        position: relative;
-    }
-
-    .login-link {
-        text-align: center;
-        margin-top: 10px;
-        color: #6b7280;
-        font-size: 14px;
-    }
-
-    .login-link a {
-        color: #2563eb;
-        font-weight: 600;
-        text-decoration: none;
-    }
-
-    .login-link a:hover {
-        text-decoration: underline;
-    }
-</style>
-{% endblock %}
-
-{% block content %}
-<div class="signup-container">
-    <div class="logo-section">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-            <path d="M2 17l10 5 10-5"/>
-            <path d="M2 12l10 5 10-5"/>
-        </svg>
-        <h1>Create Account</h1>
-        <p>Join GenConnect today</p>
-    </div>
-
-    <form method="POST" action="{{ url_for('signup') }}" id="signupForm">
+        .role-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 4px;
+        }
+        .role-item { position: relative; cursor: pointer; }
+        .role-item input { position: absolute; opacity: 0; cursor: pointer; width: 100%; height: 100%; z-index: 1; }
         
-        <div class="form-group">
-            <label for="email">Email Address</label>
-            <input type="text" id="email" name="email" class="form-input" placeholder="Mobile Number or Email" required>
-        </div>
+        .role-box {
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            transition: 0.2s;
+            background: white;
+        }
 
-        <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" class="form-input" placeholder="Create a strong password" required minlength="8">
-            <div class="strength-bar">
-                <div class="strength-bar-fill" id="strengthBar"></div>
+        .role-item input:checked + .role-box {
+            border-color: var(--primary);
+            background: var(--primary-soft);
+            color: var(--primary);
+        }
+
+        .role-name { font-size: 14px; font-weight: 700; }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
+
+        .form-footer {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .auth-card { flex-direction: column; max-width: 480px; }
+            .card-visual { padding: 32px; min-height: 180px; }
+            .quote-box { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-wrapper">
+    <div class="auth-card">
+        <div class="card-visual">
+            <div class="brand-mark">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                GenConnect
             </div>
-            <div class="password-strength-text" id="strengthText">Weak</div>
+            
+            <div class="quote-box">
+                <h2>The bridge between generations is built with shared stories.</h2>
+                <div class="badge">
+                    <span>✨ Join 5,000+ members</span>
+                </div>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label for="fullname">Full Name</label>
-            <input type="text" id="fullname" name="fullname" class="form-input" placeholder="Full Name" required>
+        <div class="card-form">
+            <div class="header-text">
+                <h1>Create an account</h1>
+                <p>Already have an account? <a href="/login">Log in</a></p>
+            </div>
+
+            <form action="/signup" method="POST" id="signupForm">
+                <div class="input-group">
+                    <label class="label">I am joining as a...</label>
+                    <div class="role-selector">
+                        <label class="role-item">
+                            <input type="radio" name="role" value="youth" checked>
+                            <div class="role-box">
+                                <div style="font-size: 20px;">🎓</div>
+                                <div class="role-name">Youth</div>
+                            </div>
+                        </label>
+                        <label class="role-item">
+                            <input type="radio" name="role" value="senior">
+                            <div class="role-box">
+                                <div style="font-size: 20px;">👓</div>
+                                <div class="role-name">Senior</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="label">Full Name</label>
+                    <input type="text" name="fullname" class="input-field" placeholder="e.g. John Tan" required>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="input-group">
+                        <label class="label">Username</label>
+                        <input type="text" name="username" class="input-field" placeholder="johnny88" required>
+                    </div>
+                    <div class="input-group">
+                        <label class="label">Email</label>
+                        <input type="email" name="email" class="input-field" placeholder="name@email.com" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="label">Password</label>
+                    <input type="password" name="password" id="password" class="input-field" placeholder="Min. 8 characters" required>
+                </div>
+                
+                <div class="input-group">
+                    <label class="label">Confirm Password</label>
+                    <input type="password" name="confirm_password" id="confirm_password" class="input-field" placeholder="Repeat password" required>
+                </div>
+
+                <button type="submit" class="submit-btn">Get Started</button>
+
+                <p class="form-footer">
+                    By signing up, you agree to our <b>Terms of Service</b> and <b>Privacy Policy</b>.
+                </p>
+            </form>
         </div>
-
-        <div class="form-group">
-            <label for="username">Username</label>
-            <input type="text" id="username" name="username" class="form-input" placeholder="Choose a username" required minlength="3">
-        </div>
-
-        <div class="form-group">
-            <label for="member_type">Youth or Senior</label>
-            <select id="member_type" name="member_type" class="form-input" required>
-                <option value="" disabled selected>Select</option>
-                <option value="Youth Member">Youth Member</option>
-                <option value="Senior Member">Senior Member</option>
-            </select>
-        </div>
-
-        <div class="terms-check">
-            <input type="checkbox" id="terms" name="terms" required>
-            <label for="terms">
-                I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
-            </label>
-        </div>
-
-        <button type="submit" class="btn-signup" id="submitBtn">Sign Up</button>
-    </form>
-
-    <div class="divider">
-        <span>OR</span>
-    </div>
-
-    <div class="login-link">
-        Already have an account? <a href="{{ url_for('login') }}">Log in</a>
     </div>
 </div>
 
 <script>
-    const passwordInput = document.getElementById('password');
-    const strengthBar = document.getElementById('strengthBar');
-    const strengthText = document.getElementById('strengthText');
     const form = document.getElementById('signupForm');
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirm_password');
 
-    // Password strength checker
-    passwordInput.addEventListener('input', function() {
-        const password = this.value;
-        let strength = 0;
-
-        if (password.length > 5) strength++;
-        if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
-        if (password.match(/[0-9]/)) strength++;
-        if (password.match(/[^a-zA-Z0-9]/)) strength++;
-
-        strengthBar.className = 'strength-bar-fill';
-        
-        if (strength <= 1) {
-            strengthBar.classList.add('strength-weak');
-            strengthText.textContent = 'Weak';
-            strengthText.style.color = '#ef4444';
-        } else if (strength <= 3) {
-            strengthBar.classList.add('strength-medium');
-            strengthText.textContent = 'Medium';
-            strengthText.style.color = '#f59e0b';
+    function validatePassword() {
+        if (password.value !== confirmPassword.value) {
+            confirmPassword.style.borderColor = "#ef4444";
+            return false;
         } else {
-            strengthBar.classList.add('strength-strong');
-            strengthText.textContent = 'Strong';
-            strengthText.style.color = '#10b981';
+            confirmPassword.style.borderColor = "#e2e8f0";
+            return true;
         }
-    });
+    }
+
+    confirmPassword.onkeyup = validatePassword;
+
+    form.onsubmit = function(e) {
+        if (!validatePassword()) {
+            e.preventDefault();
+            alert("Passwords do not match!");
+        }
+    };
 </script>
-{% endblock %}
+
+</body>
+</html>
