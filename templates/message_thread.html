@@ -20,16 +20,21 @@
         .sidebar-nav svg { width: 22px; height: 22px; }
         .messages-container { margin-left: 250px; flex: 1; display: flex; height: 100vh; background-color: #f9fafb; }
         .conversations-sidebar { width: 280px; background: white; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column; position: relative; }
+        
+        /* Conversations Header */
         .conversations-header { padding: 20px 20px 10px 20px; display: flex; justify-content: space-between; align-items: center; }
         .conversations-header h2 { font-size: 20px; font-weight: 700; color: #111827; }
+        
         .header-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.2s; color: #6b7280; }
         .header-icon:hover { background-color: #f3f4f6; }
+        
         .conversations-list { flex: 1; overflow-y: auto; }
         .conversation-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid #f3f4f6; text-decoration: none; color: inherit; cursor: pointer; }
         .conversation-item:hover { background-color: #f9fafb; }
         .conversation-item.active { background-color: #eff6ff; }
         .conversation-avatar { width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 16px; flex-shrink: 0; }
         .conversation-name { font-weight: 600; color: #111827; font-size: 15px; }
+        
         .chat-area { flex: 1; display: flex; flex-direction: column; background: white; position: relative; }
         .chat-header { display: flex; align-items: center; justify-content: space-between; padding: 15px 30px; border-bottom: 1px solid #e5e7eb; background: white; z-index: 10; }
         .chat-header-info { display: flex; align-items: center; gap: 15px; }
@@ -38,6 +43,7 @@
         .chat-user-info p { font-size: 13px; color: #10b981; }
         .action-icon { width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s; color: #6b7280; }
         .action-icon:hover { background: #f3f4f6; }
+        
         .pinned-message-bar { display: none; background: #f0f2f5; padding: 8px 15px; border-bottom: 1px solid #e5e7eb; align-items: center; gap: 10px; cursor: pointer; z-index: 9; }
         .pinned-icon svg { width: 18px; height: 18px; color: #00af9c; }
         .pinned-content { flex: 1; overflow: hidden; }
@@ -196,7 +202,7 @@
                 </div>
                 
                 <div id="searchResults" style="display:none; position:absolute; top:100%; left:20px; right:20px; background:white; border:1px solid #e5e7eb; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); max-height:300px; overflow-y:auto; z-index:1000; margin-top:5px;">
-                </div>
+                    </div>
             </div>
             <div class="dropdown-menu" id="conversationMenu">
                 <div class="menu-item" onclick="openAddContactModal()"><span>Add Contact</span></div>
@@ -246,6 +252,7 @@
                     <div class="menu-item" onclick="openGroupInfo()">Group Info</div>
                     {% if user_is_admin %}
                     <div class="menu-item" onclick="openEditName()">Edit Group Name</div>
+                    <div class="menu-item" onclick="openAddMembersModal()">Add Users</div>
                     <div class="menu-item danger" onclick="openRemoveMembersModal()" style="color: #ef4444;">Remove Users</div>
                     {% endif %}
                     <div class="menu-item danger" onclick="confirmDeleteGroup()" style="color:#ef4444;">Delete & Exit Group</div>
@@ -471,6 +478,52 @@
     </div>
 </div>
 
+<div class="modal" id="addMembersModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Add Users</h3>
+            <span class="modal-close" onclick="closeModal('addMembersModal')">×</span>
+        </div>
+        <form id="addMembersForm">
+            <input type="hidden" name="group_id" value="{{ contact.id }}">
+            <div class="form-group">
+                <label>Select contacts to add:</label>
+                <div class="contact-list" style="max-height: 250px;">
+                    {% set existing_ids = group_members|map(attribute='id')|list %}
+                    {% set has_candidates = false %}
+                    
+                    {% for c in contacts %}
+                        {% if c.id not in existing_ids %}
+                            {% set has_candidates = true %}
+                            <label class="contact-item" style="cursor: pointer; padding: 8px 5px;">
+                                <input type="checkbox" name="member_ids" value="{{ c.id }}" class="add-checkbox" style="width: 16px; height: 16px; margin-right: 12px; cursor: pointer;">
+                                
+                                <div style="width: 36px; height: 36px; border-radius: 50%; overflow: hidden; margin-right: 12px; border: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: center; background: #f3f4f6;">
+                                    {% if c.profile_picture and c.profile_picture != 'default.jpg' %}
+                                        <img src="{{ url_for('static', filename='uploads/' + c.profile_picture) }}" alt="{{ c.username }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% else %}
+                                        <span style="font-size: 14px; font-weight: 600; color: #6b7280;">{{ c.username[0].upper() }}</span>
+                                    {% endif %}
+                                </div>
+                                
+                                <span style="font-size: 14px; font-weight: 500; color: #374151;">{{ c.username }}</span>
+                            </label>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if not has_candidates %}
+                        <div style="color:#9ca3af; text-align:center; padding:20px; font-size: 14px;">All your contacts are already in this group.</div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-cancel" onclick="closeModal('addMembersModal')">Cancel</button>
+                <button type="button" class="btn btn-submit" onclick="triggerAddMembers()">Add Selected</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
     let isEditing = false;
     let editingId = null;
@@ -526,6 +579,13 @@
         document.getElementById('removeMembersModal').classList.add('active');
     }
 
+    // ⬇️ NEW: Open Add Members Modal
+    function openAddMembersModal() {
+        document.querySelectorAll('.add-checkbox').forEach(cb => cb.checked = false);
+        toggleDropdown('optionsMenu');
+        document.getElementById('addMembersModal').classList.add('active');
+    }
+
     // Trigger the confirmation for bulk removal
     function triggerBulkRemove() {
         const checkboxes = document.querySelectorAll('.remove-checkbox:checked');
@@ -546,6 +606,28 @@
         btn.innerText = "Remove Users";
         
         closeModal('removeMembersModal');
+        document.getElementById('confirmationModal').classList.add('active');
+    }
+
+    // ⬇️ NEW: Trigger Add Members Confirmation
+    function triggerAddMembers() {
+        const checkboxes = document.querySelectorAll('.add-checkbox:checked');
+        if (checkboxes.length === 0) {
+            showNotification('error', 'Selection', 'Please select at least one user.');
+            return;
+        }
+
+        pendingAction = 'add_members';
+        
+        const count = checkboxes.length;
+        document.getElementById('confirmTitle').innerText = "Add Users";
+        document.getElementById('confirmMessage').innerText = `Are you sure you want to add ${count} selected user(s) to the group?`;
+        
+        const btn = document.getElementById('confirmActionBtn');
+        btn.className = 'btn btn-submit';
+        btn.innerText = "Add Users";
+        
+        closeModal('addMembersModal');
         document.getElementById('confirmationModal').classList.add('active');
     }
 
@@ -593,7 +675,7 @@
         btn.innerText = "Send Request";
 
         document.getElementById('confirmationModal').classList.add('active');
-        searchResults.style.display = 'none'; // Hide search results
+        document.getElementById('searchResults').style.display = 'none'; // Hide results
     }
 
 
@@ -608,12 +690,15 @@
         } else if (pendingAction === 'dismiss') {
             url = '/dismiss_admin/{{ contact.id }}/' + pendingUserId;
         } else if (pendingAction === 'bulk_remove') {
-            // Handle Bulk Remove
             url = '/remove_members';
             body = new FormData(document.getElementById('removeMembersForm'));
             isFormData = true;
+        } else if (pendingAction === 'add_members') {
+            // ⬇️ NEW: Handle Add Members to Group
+            url = '/add_group_members';
+            body = new FormData(document.getElementById('addMembersForm'));
+            isFormData = true;
         } else if (pendingAction === 'add_contact_search') {
-            // Handle Add Contact from search
             url = '/add_contact';
             body = new FormData();
             body.append('username', pendingUsername);
@@ -640,6 +725,7 @@
                 showNotification('error', 'Error', data.message || 'Action failed');
                 // Re-open modals if failed based on action type
                 if(pendingAction === 'bulk_remove') setTimeout(() => document.getElementById('removeMembersModal').classList.add('active'), 500);
+                else if(pendingAction === 'add_members') setTimeout(() => document.getElementById('addMembersModal').classList.add('active'), 500);
                 else if (pendingAction === 'promote' || pendingAction === 'dismiss') setTimeout(() => openGroupInfo(), 500);
             }
         } catch (e) {
