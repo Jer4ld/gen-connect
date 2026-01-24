@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}GenConnect Rewards{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* --- HERO REWARD SECTION --- */
+    .reward-hero {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border-radius: 24px; padding: 40px;
+        box-shadow: 0 20px 40px -10px rgba(0,0,0,0.05); margin-bottom: 30px;
+        display: flex; justify-content: space-between; align-items: center;
+        border: 1px solid rgba(255,255,255,0.6);
+    }
+    
+    .points-display { display: flex; align-items: center; gap: 20px; }
+    .big-coin {
+        width: 80px; height: 80px;
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        font-size: 40px; color: #92400e; border: 4px solid #fcd34d;
+        box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3);
+    }
+    
+    .daily-claim-box {
+        background: rgba(255,255,255,0.8); border: 1px solid #e2e8f0;
+        padding: 20px; border-radius: 16px; text-align: center; width: 200px;
+    }
+    .btn-claim {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white; border: none; padding: 10px 20px; border-radius: 12px;
+        font-weight: 700; width: 100%; cursor: pointer; transition: 0.2s;
+        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+    }
+    .btn-claim:disabled { background: #cbd5e1; cursor: not-allowed; box-shadow: none; }
+    .btn-claim:hover:not(:disabled) { transform: translateY(-2px); }
+
+    /* --- REWARD GRID --- */
+    .rewards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 24px; }
+    
+    .reward-card {
+        background: white; border-radius: 20px; overflow: hidden;
+        border: 1px solid #e2e8f0; transition: 0.3s;
+        display: flex; flex-direction: column;
+    }
+    .reward-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+    
+    .reward-img { width: 100%; height: 160px; object-fit: cover; }
+    .reward-body { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+    .reward-title { font-weight: 700; font-size: 16px; margin-bottom: 5px; color: #1e293b; }
+    .reward-desc { font-size: 13px; color: #64748b; margin-bottom: 15px; flex: 1; }
+    
+    .reward-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+    .cost-badge { 
+        background: #fffbeb; color: #d97706; padding: 5px 10px; 
+        border-radius: 20px; font-weight: 700; font-size: 13px; border: 1px solid #fcd34d;
+    }
+    
+    .btn-buy {
+        background: #4f46e5; color: white; border: none; padding: 8px 16px;
+        border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.2s;
+    }
+    .btn-buy:hover { background: #4338ca; }
+
+    /* --- QR MODAL --- */
+    .modal {
+        display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); 
+        z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px);
+    }
+    .modal-content {
+        background: white; padding: 40px; border-radius: 24px; text-align: center;
+        max-width: 400px; width: 90%; animation: popIn 0.3s ease;
+    }
+    @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    
+    .qr-image { width: 200px; height: 200px; margin: 20px auto; border: 2px solid #e2e8f0; border-radius: 10px; }
+    .success-icon { font-size: 40px; margin-bottom: 10px; display: block; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            <span>GenConnect</span>
+        </div>
+        <ul class="sidebar-nav">
+            <li><a href="{{ url_for('home') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a></li>
+            <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg><span>Activities</span></a></li>
+            <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Community</span></a></li>
+            <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>Create</span></a></li>
+            <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Alerts</span></a></li>
+            <li><a href="{{ url_for('messages') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Chat</span></a></li>
+            <li><a href="{{ url_for('profile') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a></li>
+            <li><a href="{{ url_for('logout') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="profile-container">
+            
+            <div class="reward-hero">
+                <div class="points-display">
+                    <div class="big-coin">$</div>
+                    <div>
+                        <h1 style="font-size:32px; font-weight:800; color:#1e293b; line-height:1;">
+                            <span id="userPoints">{{ user.points }}</span>
+                        </h1>
+                        <p style="color:#64748b; font-weight:600;">Available GenPoints</p>
+                    </div>
+                </div>
+
+                <div class="daily-claim-box">
+                    <div style="font-size:12px; font-weight:700; color:#64748b; margin-bottom:8px;">DAILY LOGIN BONUS</div>
+                    <button class="btn-claim" id="dailyBtn" onclick="claimDaily()" {% if not can_claim %}disabled{% endif %}>
+                        {% if can_claim %}
+                            Claim +50 ⚡
+                        {% else %}
+                            Claimed ✅
+                        {% endif %}
+                    </button>
+                    <div style="font-size:11px; color:#94a3b8; margin-top:5px;">Resets at 00:00 UTC</div>
+                </div>
+            </div>
+
+            <h2 style="font-size:20px; font-weight:800; color:#1e293b; margin-bottom:20px;">Redeem Rewards</h2>
+
+            <div class="rewards-grid">
+                {% for item in rewards %}
+                <div class="reward-card">
+                    <img src="{{ item.image_url }}" class="reward-img" alt="{{ item.name }}">
+                    <div class="reward-body">
+                        <div class="reward-title">{{ item.name }}</div>
+                        <div class="reward-desc">{{ item.description }}</div>
+                        <div class="reward-footer">
+                            <div class="cost-badge">{{ item.cost }} GP</div>
+                            <button class="btn-buy" onclick="redeemItem('{{ item.id }}', '{{ item.name }}', {{ item.cost }})">Redeem</button>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                 <p style="grid-column: 1/-1; text-align: center; color: #64748b;">No rewards currently available. Check back soon!</p>
+                {% endfor %}
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<div class="modal" id="qrModal">
+    <div class="modal-content">
+        <span class="success-icon">🎉</span>
+        <h2 style="font-size:24px; font-weight:800; color:#1e293b;">Redemption Success!</h2>
+        <p style="color:#64748b; font-size:14px; margin-top:5px;">Show this QR code to the store staff.</p>
+        
+        <img id="qrImageDisplay" class="qr-image" src="" alt="QR Code">
+        
+        <div style="background:#f1f5f9; padding:10px; border-radius:8px; font-family:monospace; font-weight:700; color:#334155; margin-bottom:20px;" id="textCodeDisplay">
+            GEN-XXXX-XXXX
+        </div>
+        
+        <button class="btn-buy" style="width:100%; background:#64748b;" onclick="closeModal()">Close</button>
+    </div>
+</div>
+
+<script>
+    function claimDaily() {
+        const btn = document.getElementById('dailyBtn');
+        btn.disabled = true;
+        btn.innerText = "Claiming...";
+
+        fetch("{{ url_for('claim_daily') }}", { method: "POST" })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success) {
+                document.getElementById('userPoints').innerText = data.new_balance;
+                btn.innerText = "Claimed ✅";
+            } else {
+                alert(data.message);
+                btn.innerText = "Claimed ✅";
+            }
+        })
+        .catch(err => {
+            alert("Error claiming points");
+            btn.disabled = false;
+        });
+    }
+
+    function redeemItem(id, name, cost) {
+        const currentPoints = parseInt(document.getElementById('userPoints').innerText);
+        if(currentPoints < cost) {
+            alert("Not enough GenPoints!");
+            return;
+        }
+
+        if(!confirm("Confirm redemption of " + name + " for " + cost + " points?")) return;
+
+        fetch("/redeem_reward/" + id, { method: "POST" })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success) {
+                // Update Balance
+                document.getElementById('userPoints').innerText = data.new_balance;
+                
+                // Show QR Modal
+                document.getElementById('qrImageDisplay').src = "/qr_code/" + data.code;
+                document.getElementById('textCodeDisplay').innerText = data.code;
+                document.getElementById('qrModal').style.display = 'flex';
+            } else {
+                alert(data.message);
+            }
+        });
+    }
+
+    function closeModal() {
+        document.getElementById('qrModal').style.display = 'none';
+    }
+</script>
+{% endblock %}

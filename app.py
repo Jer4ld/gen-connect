@@ -171,6 +171,13 @@ class Post(db.Model):
     def user_has_liked(self, user_id):
         return Like.query.filter_by(user_id=user_id, post_id=self.id).first() is not None
 
+    # --- ADD THESE TWO METHODS BELOW ---
+    def get_like_count(self):
+        return Like.query.filter_by(post_id=self.id).count()
+
+    def get_comment_count(self):
+        return Comment.query.filter_by(post_id=self.id).count()
+
 class Comment(db.Model):
     __tablename__ = 'comments'
     id = db.Column(db.Integer, primary_key=True)
@@ -791,6 +798,11 @@ def reset_password():
                 return redirect(url_for('login'))
         else: flash('Passwords do not match.', 'error')
     return render_template('reset_password.html')
+
+# Inside class User(db.Model):
+last_daily_claim = db.Column(db.DateTime, nullable=True)
+
+
 
 @app.errorhandler(404)
 def not_found(error): return '<h1>404 - Page Not Found</h1>', 404
