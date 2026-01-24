@@ -1,289 +1,267 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account - GenConnect</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #4f46e5;
-            --primary-soft: #f0f2ff;
-            --primary-hover: #4338ca;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border-color: #e2e8f0;
-            --white: #ffffff;
-        }
+{% extends "base.html" %}
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+{% block title %}Create Account - GenConnect{% endblock %}
 
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #f8fafc;
-            background-image: radial-gradient(#e2e8f0 1.2px, transparent 1.2px);
-            background-size: 30px 30px;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-        .page-wrapper {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+<style>
+    :root {
+        --primary: #4f46e5;
+        --primary-dark: #4338ca;
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --bg-input: #f8fafc;
+        --border-color: #e2e8f0;
+    }
 
-        .auth-card {
-            background: var(--white);
-            width: 100%;
-            max-width: 1000px;
-            border-radius: 24px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
-            display: flex;
-            overflow: hidden;
-            min-height: 720px; /* Increased slightly for the extra vertical field */
-            border: 1px solid var(--border-color);
-        }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        .card-visual {
-            flex: 1;
-            background: linear-gradient(135deg, rgba(79, 70, 229, 0.94), rgba(124, 58, 237, 0.9)),
-                        url('https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop');
-            background-size: cover;
-            background-position: center;
-            padding: 48px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            color: white;
-        }
+    body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: #f8fafc;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
 
-        .brand-mark { 
-            font-size: 24px; 
-            font-weight: 800; 
-            display: flex; 
-            align-items: center; 
-            gap: 10px;
-        }
+    /* --- HEADER --- */
+    .auth-header {
+        background: white;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 40px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1000;
+        border-bottom: 1px solid #f1f5f9;
+    }
 
-        .quote-box h2 { 
-            font-size: 30px; 
-            font-weight: 700; 
-            line-height: 1.2; 
-            margin-bottom: 16px; 
-        }
+    .header-logo {
+        font-size: 24px;
+        font-weight: 800;
+        color: var(--primary);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
 
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 8px 16px;
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(8px);
-            border-radius: 100px;
-            font-size: 14px;
-            font-weight: 600;
-        }
+    .header-btn {
+        background: var(--primary);
+        color: white;
+        text-decoration: none;
+        padding: 10px 24px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 14px;
+        transition: 0.2s;
+    }
+    .header-btn:hover { background: var(--primary-dark); }
 
-        .card-form {
-            flex: 1.2;
-            padding: 50px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
+    /* --- MAIN WRAPPER --- */
+    .main-wrapper {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 120px 20px 60px;
+    }
 
-        .header-text h1 { font-size: 28px; font-weight: 800; color: var(--text-main); margin-bottom: 8px; }
-        .header-text p { color: var(--text-muted); font-size: 15px; margin-bottom: 30px; }
-        .header-text a { color: var(--primary); text-decoration: none; font-weight: 700; }
+    /* --- CARD CONTAINER --- */
+    .auth-card {
+        background: white;
+        width: 100%;
+        max-width: 1000px;
+        border-radius: 24px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.05);
+        border: 1px solid #f1f5f9;
+        display: flex;
+        overflow: hidden;
+        min-height: 700px; /* Increased height slightly for new field */
+    }
 
-        .input-group { margin-bottom: 18px; }
-        .label { 
-            display: block; font-size: 12px; font-weight: 700; 
-            color: var(--text-main); margin-bottom: 6px; 
-            text-transform: uppercase; letter-spacing: 0.5px;
-        }
+    /* --- LEFT SIDE: VISUAL --- */
+    .card-visual {
+        flex: 1;
+        background: linear-gradient(135deg, rgba(79, 70, 229, 0.95), rgba(99, 102, 241, 0.8)),
+                    url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop');
+        background-size: cover;
+        background-position: center;
+        padding: 60px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        color: white;
+        text-align: center;
+    }
 
-        .input-field {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            font-size: 15px;
-            font-family: inherit;
-            transition: all 0.2s ease;
-        }
+    .visual-icon { 
+        font-size: 64px; 
+        margin-bottom: 24px; 
+        background: rgba(255,255,255,0.15); 
+        width: 120px; height: 120px; 
+        border-radius: 50%; 
+        display: flex; align-items: center; justify-content: center; 
+        margin-left: auto; margin-right: auto;
+        backdrop-filter: blur(10px);
+    }
+    
+    .headline { font-size: 36px; font-weight: 800; margin-bottom: 16px; line-height: 1.2; }
+    .subheadline { font-size: 18px; opacity: 0.9; max-width: 350px; margin: 0 auto; line-height: 1.6; }
 
-        .input-field:focus {
-            border-color: var(--primary);
-            outline: none;
-            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
-        }
+    /* --- RIGHT SIDE: FORM --- */
+    .card-form {
+        flex: 1.1;
+        padding: 50px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
 
-        .role-selector {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 4px;
-        }
-        .role-item { position: relative; cursor: pointer; }
-        .role-item input { position: absolute; opacity: 0; cursor: pointer; width: 100%; height: 100%; z-index: 1; }
-        
-        .role-box {
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            padding: 12px;
-            text-align: center;
-            transition: 0.2s;
-            background: white;
-        }
+    .form-header h1 { font-size: 32px; font-weight: 800; color: var(--text-main); margin-bottom: 8px; letter-spacing: -0.5px; }
+    .form-header p { color: var(--text-muted); font-size: 16px; margin-bottom: 32px; }
 
-        .role-item input:checked + .role-box {
-            border-color: var(--primary);
-            background: var(--primary-soft);
-            color: var(--primary);
-        }
+    /* --- INPUTS --- */
+    .input-group { margin-bottom: 20px; }
+    .label { 
+        display: block; font-size: 14px; font-weight: 700; color: var(--text-main); 
+        margin-bottom: 8px; 
+    }
+    
+    .input-field {
+        width: 100%; padding: 14px 18px;
+        font-size: 16px; border: 2px solid var(--border-color);
+        border-radius: 12px; transition: 0.2s; background: var(--bg-input);
+        color: var(--text-main);
+    }
+    .input-field:focus {
+        background: white; border-color: var(--primary);
+        outline: none; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+    }
 
-        .role-name { font-size: 14px; font-weight: 700; }
+    /* --- ROLE GRID --- */
+    .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .role-label { position: relative; cursor: pointer; }
+    .role-label input { position: absolute; opacity: 0; width: 0; height: 0; }
 
-        .submit-btn {
-            width: 100%;
-            padding: 14px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.2s;
-            margin-top: 10px;
-        }
+    .role-card {
+        border: 2px solid var(--border-color); border-radius: 16px; 
+        padding: 80px; text-align: center; transition: all 0.2s; 
+        background: white; height: 95%;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    
+    .role-icon { font-size: 42px; display: block; margin-bottom: 10px; }
+    .role-name { font-weight: 700; font-size: 16px; color: var(--text-muted); }
 
-        .submit-btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    /* Active State */
+    .role-label input:checked + .role-card {
+        border-color: var(--primary); background: #eef2ff;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+    }
+    .role-label input:checked + .role-card .role-name { color: var(--primary-dark); }
 
-        .form-footer {
-            text-align: center;
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: 20px;
-        }
+    /* --- BUTTON --- */
+    .btn-submit {
+        width: 100%; padding: 16px; margin-top: 15px;
+        background: var(--primary); color: white;
+        border: none; border-radius: 12px;
+        font-size: 16px; font-weight: 700; cursor: pointer;
+        transition: 0.2s;
+    }
+    .btn-submit:hover { background: var(--primary-dark); transform: translateY(-2px); }
 
-        @media (max-width: 900px) {
-            .auth-card { flex-direction: column; max-width: 480px; }
-            .card-visual { padding: 32px; min-height: 180px; }
-            .quote-box { display: none; }
-        }
-    </style>
-</head>
-<body>
+    @media (max-width: 1024px) {
+        .auth-card { flex-direction: column; max-width: 500px; }
+        .card-visual { padding: 40px; min-height: 200px; flex: none; }
+        .header-btn { display: none; }
+    }
+</style>
+{% endblock %}
 
-<div class="page-wrapper">
+{% block content %}
+
+<header class="auth-header">
+    <a href="/" class="header-logo">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        GenConnect
+    </a>
+    <a href="{{ url_for('login') }}" class="header-btn">Log In</a>
+</header>
+
+<div class="main-wrapper">
     <div class="auth-card">
+        
         <div class="card-visual">
-            <div class="brand-mark">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-                GenConnect
-            </div>
-            
-            <div class="quote-box">
-                <h2>The bridge between generations is built with shared stories.</h2>
-                <div class="badge">
-                    <span>✨ Join 5,000+ members</span>
-                </div>
+            <div class="visual-content">
+                <div class="visual-icon">🚀</div>
+                <h2 class="headline">Join the<br>Movement.</h2>
+                <p class="subheadline">Connect, learn, and grow with a community that bridges generations.</p>
             </div>
         </div>
 
         <div class="card-form">
-            <div class="header-text">
-                <h1>Create an account</h1>
-                <p>Already have an account? <a href="/login">Log in</a></p>
+            <div class="form-header">
+                <h1>Create Account</h1>
+                <p>Please enter your details to get started.</p>
             </div>
 
-            <form action="/signup" method="POST" id="signupForm">
-                <div class="input-group">
-                    <label class="label">I am joining as a...</label>
-                    <div class="role-selector">
-                        <label class="role-item">
-                            <input type="radio" name="role" value="youth" checked>
-                            <div class="role-box">
-                                <div style="font-size: 20px;">🎓</div>
-                                <div class="role-name">Youth</div>
-                            </div>
-                        </label>
-                        <label class="role-item">
-                            <input type="radio" name="role" value="senior">
-                            <div class="role-box">
-                                <div style="font-size: 20px;">👓</div>
-                                <div class="role-name">Senior</div>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-
+            <form method="POST" action="{{ url_for('signup') }}">
+                
                 <div class="input-group">
                     <label class="label">Full Name</label>
                     <input type="text" name="fullname" class="input-field" placeholder="e.g. John Tan" required>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                    <div class="input-group">
-                        <label class="label">Username</label>
-                        <input type="text" name="username" class="input-field" placeholder="johnny88" required>
+                <div class="input-group">
+                    <label class="label">I am joining as...</label>
+                    <div class="role-grid">
+                        <label class="role-label">
+                            <input type="radio" name="member_type" value="Youth Member" checked>
+                            <div class="role-card">
+                                <span class="role-icon">🎓</span>
+                                <span class="role-name">Youth</span>
+                            </div>
+                        </label>
+                        <label class="role-label">
+                            <input type="radio" name="member_type" value="Senior Member">
+                            <div class="role-card">
+                                <span class="role-icon">👓</span>
+                                <span class="role-name">Senior</span>
+                            </div>
+                        </label>
                     </div>
-                    <div class="input-group">
-                        <label class="label">Email</label>
-                        <input type="email" name="email" class="input-field" placeholder="name@email.com" required>
-                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="label">Username</label>
+                    <input type="text" name="username" class="input-field" placeholder="@username" required>
+                </div>
+
+                <div class="input-group">
+                    <label class="label">Email Address</label>
+                    <input type="email" name="email" class="input-field" placeholder="name@example.com" required>
                 </div>
 
                 <div class="input-group">
                     <label class="label">Password</label>
-                    <input type="password" name="password" id="password" class="input-field" placeholder="Min. 8 characters" required>
+                    <input type="password" name="password" class="input-field" placeholder="Min. 8 characters" required>
                 </div>
-                
+
                 <div class="input-group">
                     <label class="label">Confirm Password</label>
-                    <input type="password" name="confirm_password" id="confirm_password" class="input-field" placeholder="Repeat password" required>
+                    <input type="password" name="confirm_password" class="input-field" placeholder="Re-enter password" required>
                 </div>
 
-                <button type="submit" class="submit-btn">Get Started</button>
+                <button type="submit" class="btn-submit">Sign Up</button>
 
-                <p class="form-footer">
-                    By signing up, you agree to our <b>Terms of Service</b> and <b>Privacy Policy</b>.
-                </p>
             </form>
         </div>
     </div>
 </div>
-
-<script>
-    const form = document.getElementById('signupForm');
-    const password = document.getElementById('password');
-    const confirmPassword = document.getElementById('confirm_password');
-
-    function validatePassword() {
-        if (password.value !== confirmPassword.value) {
-            confirmPassword.style.borderColor = "#ef4444";
-            return false;
-        } else {
-            confirmPassword.style.borderColor = "#e2e8f0";
-            return true;
-        }
-    }
-
-    confirmPassword.onkeyup = validatePassword;
-
-    form.onsubmit = function(e) {
-        if (!validatePassword()) {
-            e.preventDefault();
-            alert("Passwords do not match!");
-        }
-    };
-</script>
-
-</body>
-</html>
+{% endblock %}
