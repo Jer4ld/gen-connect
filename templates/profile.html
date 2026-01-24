@@ -15,7 +15,7 @@
         /* IT CLASSROOM BACKGROUND */
         background: 
             linear-gradient(rgba(248, 250, 252, 0.92), rgba(248, 250, 252, 0.92)),
-            url('https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1600&fit=crop'); /* Computer Lab Image */
+            url('https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1600&fit=crop'); 
         background-size: cover;
         background-attachment: fixed;
         background-position: center;
@@ -25,58 +25,55 @@
         transition: font-size 0.2s ease;
     }
 
-    /* --- SENIOR MODE STYLES (Accessibility Feature) --- */
-    body.senior-mode { font-size: 19px !important; }
-    body.senior-mode h1, body.senior-mode .big-num { font-size: 1.3em !important; }
-    body.senior-mode p, body.senior-mode span, body.senior-mode a, body.senior-mode div { font-weight: 500 !important; line-height: 1.6 !important; }
-    body.senior-mode .card-desc { 
-                -webkit-line-clamp: 6 !important; 
-                line-clamp: 6 !important; 
-            }
-
+    /* --- SIDEBAR STYLES (EXACTLY LIKE MESSAGES.HTML - NO GAPS) --- */
     .container { display: flex; min-height: 100vh; }
-
-    /* --- SIDEBAR (Glass Effect) --- */
-    .sidebar {
-        position: fixed; left: 0; top: 0; width: 260px; height: 100vh;
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(12px);
-        border-right: 1px solid rgba(226, 232, 240, 0.6);
-        padding: 24px 0; z-index: 100;
+    
+    .sidebar { 
+        position: fixed; left: 0; top: 0; width: 250px; height: 100vh; 
+        background-color: white; /* Solid White */
+        border-right: 1px solid #e5e7eb; 
+        padding: 20px 0; z-index: 100; 
         display: flex; flex-direction: column;
     }
-    
+
     .sidebar-logo { 
-        padding: 0 32px 24px; 
-        margin-bottom: 24px; 
-        display: flex; align-items: center; gap: 12px; 
-        color: #4f46e5; font-weight: 800; font-size: 24px; letter-spacing: -0.5px;
+        padding: 0 30px 20px; border-bottom: 1px solid #e5e7eb; margin-bottom: 20px; 
     }
-    .sidebar-logo svg { width: 32px; height: 32px; color: #4f46e5; filter: drop-shadow(0 4px 6px rgba(79, 70, 229, 0.3)); }
+    
+    .logo { 
+        display: flex; align-items: center; gap: 10px; 
+        font-size: 20px; font-weight: 600; color: #6366f1; text-decoration: none; 
+    }
 
-    .sidebar-nav { list-style: none; padding: 0 16px; flex: 1; }
-    .sidebar-nav li { margin-bottom: 6px; }
+    /* REMOVED PADDING HERE TO REMOVE THE SPACE */
+    .sidebar-nav { list-style: none; padding: 0; margin: 0; flex: 1; }
+    .sidebar-nav li { margin: 5px 0; }
+
+    /* RECTANGULAR LINKS (No Border Radius, Edge-to-Edge) */
     .sidebar-nav a { 
-        display: flex; align-items: center; gap: 16px; 
-        padding: 14px 20px; border-radius: 16px;
-        text-decoration: none; color: #64748b; 
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-        font-size: 15px; font-weight: 600; 
+        display: flex; align-items: center; gap: 15px; 
+        padding: 12px 30px; /* Aligns with logo padding */
+        text-decoration: none; color: #374151; 
+        transition: all 0.2s; font-size: 15px; 
+        border-radius: 0; /* Ensures no curves */
     }
-    .sidebar-nav a:hover { background-color: white; color: #0f172a; transform: translateX(5px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    .sidebar-nav a.active { 
-        background: linear-gradient(135deg, #eef2ff 0%, #ffffff 100%); 
-        color: #4f46e5; 
-        box-shadow: 0 4px 15px rgba(79, 70, 229, 0.1);
-        border: 1px solid #e0e7ff;
-    }
-    .sidebar-nav svg { width: 20px; height: 20px; }
 
-    /* --- MAIN CONTENT --- */
-    .main-content { margin-left: 260px; flex: 1; padding: 40px; animation: fadeIn 0.6s ease-out; }
+    .sidebar-nav a:hover { background-color: #f9fafb; }
+
+    /* ACTIVE STATE (Blue Border on Left/Right) */
+    .sidebar-nav a.active { 
+        background-color: #eff6ff; 
+        color: #2563eb; 
+        border-right: 3px solid #2563eb; 
+    }
+
+    .sidebar-nav svg { width: 22px; height: 22px; }
+
+    /* --- MAIN CONTENT STYLES --- */
+    .main-content { margin-left: 250px; flex: 1; padding: 40px; animation: fadeIn 0.6s ease-out; }
     .profile-container { max-width: 1100px; margin: 0 auto; }
 
-    /* --- HERO PROFILE HEADER --- */
+    /* --- BANNER & HERO --- */
     .profile-hero {
         background: white; border-radius: 24px; 
         border: 1px solid white;
@@ -87,10 +84,15 @@
 
     .hero-banner {
         height: 220px; width: 100%;
-        background-color: #cbd5e1;
+        background-color: #1e293b; /* Dark Banner */
         position: relative;
     }
-    .hero-banner img { width: 100%; height: 100%; object-fit: cover; }
+    
+    .hero-banner img { 
+        width: 100%; height: 100%; object-fit: cover; 
+        filter: brightness(0.6); 
+    }
+    
     .hero-banner::after {
         content: ""; position: absolute; bottom: 0; left: 0; width: 100%; height: 100px;
         background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
@@ -122,24 +124,16 @@
         padding: 6px 14px; border-radius: 20px; box-shadow: 0 4px 10px rgba(15, 23, 42, 0.3);
     }
 
-    .hero-actions {
-        display: flex; gap: 12px; padding-bottom: 15px;
-    }
+    .hero-actions { display: flex; gap: 12px; padding-bottom: 15px; }
 
     .btn-action {
         padding: 10px 20px; border-radius: 12px; font-weight: 600; font-size: 14px;
         text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
         transition: all 0.2s; cursor: pointer; border: none;
     }
-    .btn-primary { 
-        background: #4f46e5; color: white; 
-        box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
-    }
+    .btn-primary { background: #4f46e5; color: white; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3); }
     .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4); }
-    
-    .btn-glass { 
-        background: rgba(255, 255, 255, 0.8); border: 1px solid #e2e8f0; color: #334155; 
-    }
+    .btn-glass { background: rgba(255, 255, 255, 0.8); border: 1px solid #e2e8f0; color: #334155; }
     .btn-glass:hover { background: #f8fafc; border-color: #94a3b8; }
     .btn-mini { font-size: 12px; padding: 4px 10px; background: #e0e7ff; color: #4338ca; border-radius: 6px; font-weight: 700; text-decoration: none; }
 
@@ -149,28 +143,17 @@
     .sidebar-column { display: flex; flex-direction: column; gap: 24px; position: sticky; top: 30px; height: fit-content; }
 
     /* --- DASHBOARD --- */
-    .glass-panel {
-        background: white; border-radius: 20px; padding: 24px;
-        border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-    }
-
+    .glass-panel { background: white; border-radius: 20px; padding: 24px; border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
     .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 
-    /* --- NEW DASHBOARD STYLES --- */
     .dash-item {
-        background: rgba(255, 255, 255, 0.6); /* More transparent glass */
-        backdrop-filter: blur(10px);
-        border-radius: 24px; /* Rounder corners */
-        padding: 24px;
-        position: relative; overflow: hidden; transition: all 0.3s;
-        border: 1px solid rgba(255, 255, 255, 0.4);
-        text-decoration: none; color: inherit;
-        display: flex; flex-direction: column;
+        background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(10px);
+        border-radius: 24px; padding: 24px; position: relative; overflow: hidden; transition: all 0.3s;
+        border: 1px solid rgba(255, 255, 255, 0.4); text-decoration: none; color: inherit; display: flex; flex-direction: column;
         box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
     }
     .dash-item:hover { transform: translateY(-3px); background: rgba(255, 255, 255, 0.8); box-shadow: 0 12px 40px rgba(31, 38, 135, 0.1); }
 
-    /* Level Card Specifics */
     .level-section { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
     .level-icon { font-size: 40px; }
     .level-details { display: flex; flex-direction: column; }
@@ -179,152 +162,74 @@
     .card-separator { border: 0; height: 1px; background: rgba(100, 116, 139, 0.2); margin: 0 0 20px 0; }
     .badge-section { display: flex; align-items: center; justify-content: space-between; }
     .badge-stack { display: flex; }
-    /* Add this to your .dash-item class for the Level box */
-    .level-box {
-        background: white;
-        border: 1px solid #e0e7ff; /* Very light indigo border */
-        box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.1); /* Indigo tinted shadow */
-    }
-    .level-icon {
-        /* Make the icon background a soft indigo */
-        background: #eef2ff; 
-        color: #4f46e5;
-    }
-    /* Add this to your .dash-item class for the Reward box */
-    .reward-box {
-        background: white;
-        border-bottom: 4px solid #fbbf24; /* Gold bottom border creates "value" feel */
-    }
-    .coin-icon-large {
-        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-        color: #78350f; /* Dark brown text for contrast on gold */
-        box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3); /* Glowing gold shadow */
-    }
-    .btn-exchange {
-        /* A premium purple gradient for the button */
-        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-        color: white;
-    }
 
-    
-    /* --- BADGE STYLES UPDATED FOR FIX --- */
-    .mini-badge { 
-        width: 44px; height: 44px; border-radius: 50%; background: white; 
-        border: 3px solid white; box-shadow: 0 4px 8px rgba(0,0,0,0.08);
-        display: flex; align-items: center; justify-content: center; font-size: 22px;
-        margin-right: -12px; position: relative;
-    }
-    
-    /* ADDED: Classes for badge colors to fix VS Code linting error */
+    .mini-badge { width: 44px; height: 44px; border-radius: 50%; background: white; border: 3px solid white; box-shadow: 0 4px 8px rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center; font-size: 22px; margin-right: -12px; position: relative; }
     .bg-rank-1 { background-color: #f87171; }
     .bg-rank-2 { background-color: #fbbf24; }
     .bg-rank-3 { background-color: #60a5fa; }
-
     .badge-view-all { font-size: 14px; font-weight: 600; color: #4f46e5; display: flex; align-items: center; gap: 4px; }
 
-    /* Reward Card Specifics */
     .points-section { display: flex; align-items: center; gap: 16px; margin: 24px 0; }
     .coin-icon-large {
-        width: 50px; height: 50px;
-        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-        color: #92400e; border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        font-weight: 800; font-size: 28px;
-        border: 3px solid #fcd34d;
-        box-shadow: 0 4px 10px rgba(251, 191, 36, 0.4);
+        width: 50px; height: 50px; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        color: #78350f; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        font-weight: 800; font-size: 28px; border: 3px solid #fcd34d; box-shadow: 0 4px 10px rgba(251, 191, 36, 0.4);
     }
     .points-num { font-size: 36px; font-weight: 800; color: #1e293b; line-height: 1; }
     .points-label { font-size: 14px; font-weight: 600; color: #64748b; }
     
     .btn-exchange {
-        background: linear-gradient(135deg, #eef2ff 0%, #c7d2fe 100%);
-        color: #3730a3;
-        border: none; padding: 12px 20px; border-radius: 12px;
-        font-weight: 700; font-size: 15px; width: 100%;
-        display: flex; align-items: center; justify-content: center; gap: 10px;
-        cursor: pointer; transition: all 0.2s;
+        background: linear-gradient(135deg, #eef2ff 0%, #c7d2fe 100%); color: #3730a3;
+        border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; font-size: 15px; width: 100%;
+        display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: all 0.2s;
         box-shadow: 0 4px 12px rgba(199, 210, 254, 0.4);
     }
     .btn-exchange:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(199, 210, 254, 0.6); }
     .gift-icon { font-size: 18px; }
 
-    /* --- STATS BAR --- */
-    .stats-bar {
-        display: flex; gap: 20px; justify-content: space-between;
-        background: #f8fafc; padding: 15px 25px; border-radius: 16px;
-        border: 1px solid #f1f5f9;
-    }
+    .stats-bar { display: flex; gap: 20px; justify-content: space-between; background: #f8fafc; padding: 15px 25px; border-radius: 16px; border: 1px solid #f1f5f9; }
     .stat-box { display: flex; flex-direction: column; cursor: pointer; transition: 0.2s; align-items: center; }
     .stat-box:hover .stat-num { color: #4f46e5; }
     .stat-num { font-size: 18px; font-weight: 800; color: #1e293b; }
     .stat-label { font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; }
 
-    /* --- SKILL SWAP FEATURE --- */
     .tags-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-    .skill-pill {
-        padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;
-        cursor: pointer; transition: 0.2s; position: relative; overflow: hidden;
-    }
+    .skill-pill { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; position: relative; overflow: hidden; }
     .pill-green { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
     .pill-blue { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
     .pill-purple { background: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff; }
+    .skill-pill:hover::after { content: "Request Help"; position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: inherit; display: flex; align-items: center; justify-content: center; font-weight: 800; animation: fadeIn 0.2s; }
     
-    /* Hover effect for "Request Help" */
-    .skill-pill:hover::after {
-        content: "Request Help";
-        position: absolute; left: 0; top: 0; width: 100%; height: 100%;
-        background: inherit;
-        display: flex; align-items: center; justify-content: center;
-        font-weight: 800; animation: fadeIn 0.2s;
-    }
-    
-    /* --- TABS & CARDS --- */
-    .tabs-nav {
-        display: flex; gap: 25px; border-bottom: 2px solid #e2e8f0; margin-bottom: 24px;
-    }
-    .tab-link {
-        padding: 0 5px 12px; font-weight: 700; color: #94a3b8; cursor: pointer;
-        font-size: 15px; position: relative; transition: 0.2s;
-    }
+    .tabs-nav { display: flex; gap: 25px; border-bottom: 2px solid #e2e8f0; margin-bottom: 24px; }
+    .tab-link { padding: 0 5px 12px; font-weight: 700; color: #94a3b8; cursor: pointer; font-size: 15px; position: relative; transition: 0.2s; }
     .tab-link:hover { color: #475569; }
     .tab-link.active { color: #4f46e5; }
-    .tab-link.active::after {
-        content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 2px; background: #4f46e5;
-    }
+    .tab-link.active::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 2px; background: #4f46e5; }
 
-    .content-card {
-        background: white; border-radius: 16px; border: 1px solid #e2e8f0;
-        overflow: hidden; margin-bottom: 20px; display: flex;
-        transition: 0.2s;
-    }
+    .content-card { background: white; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; margin-bottom: 20px; display: flex; transition: 0.2s; }
     .content-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); border-color: #cbd5e1; }
-    
     .card-thumb { width: 180px; height: auto; object-fit: cover; }
     .card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; }
     .card-h { font-size: 17px; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
     .card-p { font-size: 14px; color: #64748b; line-height: 1.5; margin-bottom: 12px; flex: 1; }
     .card-ft { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 12px; font-size: 12px; font-weight: 600; color: #94a3b8; }
 
-    /* Saved/Communities List Style */
-    .list-item {
-        display: flex; align-items: center; gap: 15px; padding: 15px;
-        background: white; border: 1px solid #e2e8f0; border-radius: 12px;
-        margin-bottom: 15px; transition: 0.2s;
-    }
+    .list-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: white; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 15px; transition: 0.2s; }
     .list-item:hover { border-color: #4f46e5; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1); }
-    .list-icon { 
-        width: 50px; height: 50px; background: #f1f5f9; border-radius: 10px; 
-        display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0;
-    }
+    .list-icon { width: 50px; height: 50px; background: #f1f5f9; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
     
-    /* Responsive */
+    /* SENIOR MODE OVERRIDES FOR SIDEBAR */
+    body.senior-mode .sidebar { width: 280px; }
+    body.senior-mode .main-content { margin-left: 280px; }
+    body.senior-mode .sidebar-nav a { padding: 16px 30px; font-size: 18px; }
+
     @media (max-width: 1024px) {
         .profile-grid { grid-template-columns: 1fr; }
         .sidebar-column { display: none; } 
         .hero-content { flex-direction: column; align-items: center; text-align: center; margin-top: -50px; }
         .content-card { flex-direction: column; }
         .card-thumb { width: 100%; height: 160px; }
-        .dash-grid { grid-template-columns: 1fr; } /* Stack cards on smaller screens */
+        .dash-grid { grid-template-columns: 1fr; }
     }
 </style>
 {% endblock %}
@@ -338,21 +243,26 @@
 ] %}
 
 <div class="container">
+    
     <aside class="sidebar">
         <div class="sidebar-logo">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-            <span>GenConnect</span>
+            <a href="/" class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                <span>GenConnect</span>
+            </a>
         </div>
         <ul class="sidebar-nav">
             <li><a href="{{ url_for('home') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a></li>
-            <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg><span>Activities</span></a></li>
+            <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg><span>Explore Activities</span></a></li>
             <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Community</span></a></li>
             <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>Create</span></a></li>
             <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Alerts</span></a></li>
             <li><a href="{{ url_for('messages') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Chat</span></a></li>
             <li><a href="{{ url_for('profile') }}" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a></li>
             
-            <li style="margin-top: auto; padding-top: 20px; border-top: 1px solid #f1f5f9;">
+            <li style="margin-top: 20px; border-top: 1px solid #e5e7eb;"></li>
+            
+            <li>
                 <a href="#" onclick="toggleSeniorMode()" style="color: #059669;">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
                     <span>Senior Mode (Aa+)</span>
@@ -368,7 +278,7 @@
             
             <div class="profile-hero">
                 <div class="hero-banner">
-                    <img src="{{ user.banner_image if user.banner_image != 'default_banner.jpg' else 'https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?w=1200&fit=crop' }}" alt="Banner">
+                    <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2070&auto=format&fit=crop" alt="Banner">
                 </div>
                 <div class="hero-content">
                     <div class="identity-group">
@@ -381,9 +291,7 @@
                         </div>
                         <div class="user-text">
                             <h1 class="username">{{ user.username }}</h1>
-                            <div class="user-badge">
-                                {{ user.member_type }}
-                            </div>
+                            <div class="user-badge">{{ user.member_type }}</div>
                         </div>
                     </div>
 
@@ -404,10 +312,8 @@
             <div class="profile-grid">
                 
                 <div class="content-column">
-                    
                     <div class="dash-grid">
-                        
-                        <a href="{{ url_for('achievements') }}" class="dash-item">
+                        <a href="{{ url_for('ranking') }}" class="dash-item">
                             <span class="dash-label">Level & Top Badges</span>
                             <div class="level-section">
                                 <div class="level-icon">🚀</div>
@@ -429,7 +335,7 @@
                             </div>
                         </a>
                         
-                        <a href="{{ url_for('achievements') }}" class="dash-item">
+                        <a href="{{ url_for('rewards') }}" class="dash-item">
                             <span class="dash-label">Exchange Reward</span>
                             <div class="points-section">
                                 <div class="coin-icon-large">$</div>
@@ -442,7 +348,6 @@
                                 <span class="gift-icon">🎁</span> Exchange Rewards →
                             </button>
                         </a>
-
                     </div>
 
                     <div>
@@ -536,12 +441,10 @@
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
 
                 <div class="sidebar-column">
-                    
                     <div class="glass-panel">
                         <div class="stats-bar" style="margin: 0 0 20px 0; width: 100%; padding: 15px;">
                             <div class="stat-box"><span class="stat-num">{{ user.get_post_count() }}</span><span class="stat-label">Posts</span></div>
@@ -605,9 +508,7 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
-
             </div>
         </div>
     </main>
@@ -615,19 +516,12 @@
 
 <script>
     function switchTab(tabName, event) {
-        // 1. Remove active class from all tabs
         document.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active'));
-        
-        // 2. Hide all content divs
         ['posts', 'communities', 'saved'].forEach(name => {
             const el = document.getElementById('tab-' + name);
             if(el) el.style.display = 'none';
         });
-        
-        // 3. Add active class to clicked tab
         if(event) event.currentTarget.classList.add('active');
-        
-        // 4. Show the selected content
         const target = document.getElementById('tab-' + tabName);
         if(target) {
             target.style.display = 'block';
@@ -637,12 +531,10 @@
 
     function toggleSeniorMode() {
         document.body.classList.toggle('senior-mode');
-        // Optional: Save preference to localStorage
         const isSenior = document.body.classList.contains('senior-mode');
         localStorage.setItem('seniorMode', isSenior);
     }
 
-    // Check preference on load
     if(localStorage.getItem('seniorMode') === 'true') {
         document.body.classList.add('senior-mode');
     }

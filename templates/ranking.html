@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block title %}Rankings & Badges - GenConnect{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+    /* --- RESET & BACKGROUND (MATCHING PROFILE.HTML) --- */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body { 
+        background: 
+            linear-gradient(rgba(248, 250, 252, 0.92), rgba(248, 250, 252, 0.92)),
+            url('https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1600&fit=crop'); 
+        background-size: cover; background-attachment: fixed; background-position: center;
+        font-family: 'Outfit', -apple-system, sans-serif; color: #1e293b;
+    }
+
+    /* --- SIDEBAR STYLES (MATCHING MESSAGES/PROFILE) --- */
+    .container { display: flex; min-height: 100vh; }
+    
+    .sidebar { 
+        position: fixed; left: 0; top: 0; width: 250px; height: 100vh; 
+        background-color: white; border-right: 1px solid #e5e7eb; 
+        padding: 20px 0; z-index: 100; display: flex; flex-direction: column;
+    }
+
+    .sidebar-logo { padding: 0 30px 20px; border-bottom: 1px solid #e5e7eb; margin-bottom: 20px; }
+    .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 600; color: #6366f1; text-decoration: none; }
+    
+    .sidebar-nav { list-style: none; padding: 0; margin: 0; flex: 1; }
+    .sidebar-nav li { margin: 5px 0; }
+    
+    .sidebar-nav a { 
+        display: flex; align-items: center; gap: 15px; padding: 12px 30px; 
+        text-decoration: none; color: #374151; transition: all 0.2s; font-size: 15px; 
+        border-radius: 0; 
+    }
+    .sidebar-nav a:hover { background-color: #f9fafb; }
+    .sidebar-nav a.active { background-color: #eff6ff; color: #2563eb; border-right: 3px solid #2563eb; }
+    .sidebar-nav svg { width: 22px; height: 22px; }
+
+    /* --- MAIN CONTENT --- */
+    .main-content { margin-left: 250px; flex: 1; padding: 40px; }
+    .ranking-container { max-width: 1100px; margin: 0 auto; }
+
+    .page-header { margin-bottom: 30px; }
+    .page-header h1 { font-size: 32px; font-weight: 800; color: #1e293b; margin-bottom: 5px; }
+    .page-header p { color: #64748b; font-size: 16px; }
+
+    /* --- LEVEL CARD (HERO) --- */
+    .level-hero {
+        background: white; border-radius: 24px; padding: 40px;
+        border: 1px solid #e2e8f0; margin-bottom: 30px;
+        display: flex; justify-content: space-between; align-items: center;
+        box-shadow: 0 10px 30px -5px rgba(0,0,0,0.05);
+        position: relative; overflow: hidden;
+    }
+    
+    /* Decorative Background Shape */
+    .level-hero::after {
+        content: ''; position: absolute; right: -50px; bottom: -50px;
+        width: 300px; height: 300px; border-radius: 50%;
+        background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+        z-index: 0; opacity: 0.6;
+    }
+
+    .level-info { z-index: 1; position: relative; }
+    .current-label { font-size: 13px; font-weight: 700; color: #6366f1; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+    .level-title { font-size: 48px; font-weight: 800; color: #1e293b; line-height: 1; margin-bottom: 10px; }
+    .xp-bar-container { width: 300px; height: 10px; background: #f1f5f9; border-radius: 10px; overflow: hidden; margin-top: 15px; }
+    .xp-bar-fill { height: 100%; background: #4f46e5; border-radius: 10px; width: 75%; /* Dynamic width */ }
+    .xp-text { font-size: 14px; color: #64748b; margin-top: 8px; font-weight: 500; }
+
+    .level-badge-large {
+        z-index: 1; width: 140px; height: 140px;
+        background: white; border-radius: 50%;
+        border: 8px solid #eff6ff;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        box-shadow: 0 10px 25px rgba(79, 70, 229, 0.15);
+    }
+    .lvl-digit { font-size: 48px; font-weight: 800; color: #4f46e5; line-height: 1; }
+    .lvl-txt { font-size: 14px; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
+
+    /* --- GRID LAYOUT --- */
+    .split-grid { display: grid; grid-template-columns: 3fr 2fr; gap: 30px; }
+
+    /* Leaderboard Styles */
+    .card-panel { background: white; border-radius: 20px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03); }
+    .panel-header { padding: 20px 25px; border-bottom: 1px solid #f1f5f9; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 10px; }
+    
+    .rank-row { display: flex; align-items: center; padding: 15px 25px; border-bottom: 1px solid #f8fafc; transition: 0.2s; }
+    .rank-row:last-child { border-bottom: none; }
+    .rank-row:hover { background-color: #f8fafc; }
+    
+    .rank-num { width: 30px; font-weight: 800; color: #94a3b8; font-size: 16px; }
+    .rank-1 { color: #eab308; font-size: 20px; } /* Gold */
+    .rank-2 { color: #94a3b8; font-size: 20px; } /* Silver */
+    .rank-3 { color: #b45309; font-size: 20px; } /* Bronze */
+    
+    .rank-user { flex: 1; display: flex; align-items: center; gap: 12px; }
+    .rank-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+    .rank-name { font-weight: 600; color: #334155; font-size: 15px; }
+    .rank-pts { font-weight: 700; color: #4f46e5; }
+
+    /* Badges Grid */
+    .badges-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 25px; }
+    .badge-card {
+        background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px 10px;
+        text-align: center; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+    .badge-card:hover { transform: translateY(-3px); border-color: #4f46e5; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1); }
+    .badge-img { font-size: 32px; }
+    .badge-title { font-size: 12px; font-weight: 700; color: #475569; }
+    
+    .badge-locked { opacity: 0.6; filter: grayscale(100%); background: #f1f5f9; }
+    .badge-locked .badge-img { filter: blur(2px); }
+
+    /* Senior Mode overrides */
+    body.senior-mode .main-content { margin-left: 280px; }
+    body.senior-mode .sidebar { width: 280px; }
+    
+    @media (max-width: 1024px) {
+        .split-grid { grid-template-columns: 1fr; }
+        .main-content { margin-left: 0; padding: 20px; }
+        .sidebar { display: none; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <a href="/" class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                <span>GenConnect</span>
+            </a>
+        </div>
+        <ul class="sidebar-nav">
+            <li><a href="{{ url_for('home') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a></li>
+            <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg><span>Activities</span></a></li>
+            <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Community</span></a></li>
+            <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>Create</span></a></li>
+            <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Alerts</span></a></li>
+            <li><a href="{{ url_for('messages') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Chat</span></a></li>
+            <li><a href="{{ url_for('profile') }}" class="active"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a></li>
+            
+            <li style="margin-top: 20px; border-top: 1px solid #e5e7eb;"></li>
+            <li><a href="#" onclick="toggleSeniorMode()" style="color: #059669;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg><span>Senior Mode (Aa+)</span></a></li>
+            <li><a href="{{ url_for('logout') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="ranking-container">
+            
+            <div class="page-header">
+                <h1>Leaderboard & Badges</h1>
+                <p>See where you stand in the community and track your achievements.</p>
+            </div>
+
+            <div class="level-hero">
+                <div class="level-info">
+                    <div class="current-label">Current Status</div>
+                    <div class="level-title">Mentor</div>
+                    <div class="xp-bar-container">
+                        <div class="xp-bar-fill"></div>
+                    </div>
+                    <div class="xp-text">1,250 / 2,000 XP to Level 6</div>
+                </div>
+                <div class="level-badge-large">
+                    <span class="lvl-digit">5</span>
+                    <span class="lvl-txt">LEVEL</span>
+                </div>
+            </div>
+
+            <div class="split-grid">
+                
+                <div class="card-panel">
+                    <div class="panel-header">
+                        <svg width="20" height="20" fill="none" stroke="#4f46e5" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                        Top Contributors
+                    </div>
+                    
+                    <div class="rank-row">
+                        <div class="rank-num rank-1">1</div>
+                        <div class="rank-user">
+                            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&fit=crop" class="rank-avatar">
+                            <div class="rank-name">Sarah Chen</div>
+                        </div>
+                        <div class="rank-pts">4,200 pts</div>
+                    </div>
+
+                    <div class="rank-row">
+                        <div class="rank-num rank-2">2</div>
+                        <div class="rank-user">
+                            <img src="https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=100&fit=crop" class="rank-avatar">
+                            <div class="rank-name">Marcus Wong</div>
+                        </div>
+                        <div class="rank-pts">3,850 pts</div>
+                    </div>
+
+                    <div class="rank-row">
+                        <div class="rank-num rank-3">3</div>
+                        <div class="rank-user">
+                            <img src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&fit=crop" class="rank-avatar">
+                            <div class="rank-name">Emily Davis</div>
+                        </div>
+                        <div class="rank-pts">3,120 pts</div>
+                    </div>
+
+                    <div class="rank-row" style="background-color: #f0fdf4; border-left: 4px solid #4ade80;">
+                        <div class="rank-num">12</div>
+                        <div class="rank-user">
+                            <img src="{{ user.profile_picture if user.profile_picture != 'default.jpg' else 'https://images.unsplash.com/photo-1595152772835-219674b2a8a6?w=100&fit=crop' }}" class="rank-avatar">
+                            <div class="rank-name">{{ user.username }} (You)</div>
+                        </div>
+                        <div class="rank-pts">{{ user.points }} pts</div>
+                    </div>
+                </div>
+
+                <div class="card-panel">
+                    <div class="panel-header">
+                        <svg width="20" height="20" fill="none" stroke="#eab308" stroke-width="2"><path d="M12 15l-2 5l2 5l2-5l-2-5z"/><circle cx="12" cy="9" r="7"/></svg>
+                        Your Collection
+                    </div>
+                    <div class="badges-grid">
+                        <div class="badge-card">
+                            <div class="badge-img">🚀</div>
+                            <div class="badge-title">Rocket Starter</div>
+                        </div>
+                        <div class="badge-card">
+                            <div class="badge-img">🤝</div>
+                            <div class="badge-title">Helper</div>
+                        </div>
+                        <div class="badge-card">
+                            <div class="badge-img">💻</div>
+                            <div class="badge-title">Code Wizard</div>
+                        </div>
+                        <div class="badge-card badge-locked">
+                            <div class="badge-img">👑</div>
+                            <div class="badge-title">Legend</div>
+                        </div>
+                        <div class="badge-card badge-locked">
+                            <div class="badge-img">🔥</div>
+                            <div class="badge-title">100 Days</div>
+                        </div>
+                        <div class="badge-card badge-locked">
+                            <div class="badge-img">🗣️</div>
+                            <div class="badge-title">Top Speaker</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    function toggleSeniorMode() {
+        document.body.classList.toggle('senior-mode');
+        const isSenior = document.body.classList.contains('senior-mode');
+        localStorage.setItem('seniorMode', isSenior);
+    }
+    if(localStorage.getItem('seniorMode') === 'true') {
+        document.body.classList.add('senior-mode');
+    }
+</script>
+{% endblock %}

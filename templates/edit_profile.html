@@ -9,7 +9,6 @@
     /* --- THEME CONFIG --- */
     :root {
         --primary: #4f46e5;
-        --glass-bg: rgba(255, 255, 255, 0.85);
         --text-dark: #1e293b;
         --text-muted: #64748b;
     }
@@ -26,33 +25,47 @@
 
     .container { display: flex; min-height: 100vh; }
 
-    /* --- SIDEBAR --- */
-    .sidebar {
-        position: fixed; left: 0; top: 0; width: 260px; height: 100vh;
-        background: var(--glass-bg); backdrop-filter: blur(12px);
-        border-right: 1px solid rgba(226, 232, 240, 0.6);
-        padding: 24px 0; z-index: 100; display: flex; flex-direction: column;
+    /* --- SIDEBAR STYLES --- */
+    .sidebar { 
+        position: fixed; left: 0; top: 0; width: 250px; height: 100vh; 
+        background-color: white;
+        border-right: 1px solid #e5e7eb; 
+        padding: 20px 0; z-index: 100; 
+        display: flex; flex-direction: column;
+    }
+
+    .sidebar-logo { 
+        padding: 0 30px 20px; border-bottom: 1px solid #e5e7eb; margin-bottom: 20px; 
     }
     
-    .sidebar-logo { 
-        padding: 0 32px 24px; margin-bottom: 24px; 
-        display: flex; align-items: center; gap: 12px; 
-        color: var(--primary); font-weight: 800; font-size: 24px; letter-spacing: -0.5px;
+    .logo { 
+        display: flex; align-items: center; gap: 10px; 
+        font-size: 20px; font-weight: 600; color: #6366f1; text-decoration: none; 
     }
-    .sidebar-logo svg { width: 32px; height: 32px; color: var(--primary); }
 
-    .sidebar-nav { list-style: none; padding: 0 16px; flex: 1; }
-    .sidebar-nav li { margin-bottom: 6px; }
+    .sidebar-nav { list-style: none; padding: 0; margin: 0; flex: 1; }
+    .sidebar-nav li { margin: 5px 0; }
+
     .sidebar-nav a { 
-        display: flex; align-items: center; gap: 16px; padding: 14px 20px; 
-        border-radius: 16px; text-decoration: none; color: var(--text-muted); 
-        transition: all 0.3s; font-size: 15px; font-weight: 600; 
+        display: flex; align-items: center; gap: 15px; 
+        padding: 12px 30px; 
+        text-decoration: none; color: #374151; 
+        transition: all 0.2s; font-size: 15px; 
+        border-radius: 0; 
     }
-    .sidebar-nav a:hover { background-color: white; color: #0f172a; transform: translateX(5px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    .sidebar-nav svg { width: 20px; height: 20px; }
+
+    .sidebar-nav a:hover { background-color: #f9fafb; }
+
+    .sidebar-nav a.active { 
+        background-color: #eff6ff; 
+        color: #2563eb; 
+        border-right: 3px solid #2563eb; 
+    }
+
+    .sidebar-nav svg { width: 22px; height: 22px; }
 
     /* --- MAIN CONTENT --- */
-    .main-content { margin-left: 260px; flex: 1; padding: 40px; }
+    .main-content { margin-left: 250px; flex: 1; padding: 40px; }
     
     /* --- EDIT FORM CONTAINER --- */
     .edit-container {
@@ -153,13 +166,6 @@
     }
     .btn-delete:hover { background: #dc2626; transform: translateY(-1px); }
 
-    @media (max-width: 1024px) {
-        .main-content { margin-left: 0; padding: 20px; }
-        .sidebar { display: none; }
-        .form-grid { grid-template-columns: 1fr; }
-        .danger-zone { flex-direction: column; gap: 15px; text-align: center; }
-    }
-    
     /* MODAL */
     .modal {
         display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999;
@@ -168,6 +174,13 @@
     .modal.active { display: flex; }
     .modal-box { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; }
     .modal-actions { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+
+    @media (max-width: 1024px) {
+        .main-content { margin-left: 0; padding: 20px; }
+        .sidebar { display: none; }
+        .form-grid { grid-template-columns: 1fr; }
+        .danger-zone { flex-direction: column; gap: 15px; text-align: center; }
+    }
 </style>
 {% endblock %}
 
@@ -175,8 +188,10 @@
 <div class="container">
     <aside class="sidebar">
         <div class="sidebar-logo">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-            <span>GenConnect</span>
+            <a href="/" class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                <span>GenConnect</span>
+            </a>
         </div>
         <ul class="sidebar-nav">
             <li><a href="{{ url_for('home') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a></li>
@@ -186,6 +201,7 @@
             <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Alerts</span></a></li>
             <li><a href="{{ url_for('messages') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Chat</span></a></li>
             <li><a href="{{ url_for('profile') }}" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a></li>
+            
             <li><a href="{{ url_for('logout') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></a></li>
         </ul>
     </aside>
@@ -209,8 +225,11 @@
                     Profile Image
                 </div>
                 <div class="avatar-upload-box">
-                    <img src="{{ user.profile_picture if user.profile_picture else 'https://images.unsplash.com/photo-1595152772835-219674b2a8a6?w=200&h=200&fit=crop' }}" 
-                         id="avatarPreview" class="avatar-preview">
+                    {% if user.profile_picture and user.profile_picture != 'default.jpg' %}
+                        <img src="{{ user.profile_picture }}" id="avatarPreview" class="avatar-preview" alt="Current profile picture">
+                    {% else %}
+                        <img src="https://images.unsplash.com/photo-1595152772835-219674b2a8a6?w=200&h=200&fit=crop" id="avatarPreview" class="avatar-preview" alt="Default profile picture">
+                    {% endif %}
                     
                     <div class="upload-info">
                         <h3>Your Photo</h3>
