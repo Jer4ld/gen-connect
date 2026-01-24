@@ -1,0 +1,337 @@
+{% extends "base.html" %}
+
+{% block title %}Create Post{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    /* --- Layout Fixes --- */
+    .page-container {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    /* Sidebar Styles */
+    .sidebar {
+        width: 250px;
+        background-color: white;
+        border-right: 1px solid #e5e7eb;
+        padding: 20px 0;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* --- ADDED: Logo Styles --- */
+    .sidebar-logo {
+        padding: 0 30px 20px;
+        border-bottom: 1px solid #e5e7eb;
+        margin-bottom: 20px;
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 20px;
+        font-weight: 600;
+        color: #6366f1; /* Primary color */
+        text-decoration: none;
+        font-family: inherit;
+    }
+    /* ------------------------- */
+
+    .sidebar-nav {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .sidebar-nav li {
+        margin: 5px 0;
+    }
+
+    .sidebar-nav a {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 12px 30px;
+        text-decoration: none;
+        color: #374151;
+        transition: all 0.2s;
+        font-size: 15px;
+        font-family: inherit;
+    }
+
+    .sidebar-nav a:hover {
+        background-color: #f9fafb;
+    }
+
+    .sidebar-nav a.active {
+        background-color: #eff6ff;
+        color: #2563eb;
+        border-right: 3px solid #2563eb;
+    }
+
+    /* --- Create Post Form Styles --- */
+    .main-content-area {
+        flex: 1;
+        padding: 40px;
+        background-color: #f9fafb;
+    }
+
+    .create-post-card {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        padding: 40px;
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 30px;
+        color: #111827;
+        font-family: inherit; 
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-control-lg {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 15px;
+        font-size: 16px;
+        width: 100%;
+        transition: border-color 0.2s;
+        font-family: inherit; 
+    }
+
+    .form-control-lg::placeholder {
+        color: #9ca3af;
+        opacity: 1;
+    }
+
+    .form-control-lg:focus {
+        border-color: #2563eb;
+        outline: none;
+    }
+
+    .media-buttons {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 25px;
+        justify-content: flex-end;
+    }
+
+    .media-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        background: white;
+        cursor: pointer;
+        font-weight: 500;
+        color: #374151;
+        transition: all 0.2s;
+        font-family: inherit;
+    }
+
+    .media-btn:hover {
+        background-color: #f9fafb;
+        border-color: #d1d5db;
+    }
+
+    .action-buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    .btn-cancel {
+        padding: 10px 24px;
+        border: 1px solid #2563eb;
+        background: white;
+        color: #2563eb;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        font-family: inherit;
+    }
+
+    .btn-post {
+        padding: 10px 30px;
+        background: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+    }
+
+    .btn-post:hover {
+        background: #1d4ed8;
+    }
+
+    input[type="file"] {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <a href="/" class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
+                </svg>
+                <span>GenConnect</span>
+            </a>
+        </div>
+        
+        <ul class="sidebar-nav">
+            <li>
+                <a href="{{ url_for('home') }}">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                    <span>Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <circle cx="12" cy="10" r="3"/>
+                        <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/>
+                    </svg>
+                    <span>Explore Activities</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <span>Community</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('create_post') }}" class="active">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="16" x2="12" y2="12"/>
+                        <line x1="12" y1="8" x2="12.01" y2="8"/>
+                    </svg>
+                    <span>Create</span>
+                </a>
+            </li>
+            <li>
+                <a href="/notifications">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    <span>Notification</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('messages') }}">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    <span>Messages</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('profile') }}">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <span>Profile</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('logout') }}">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    <span>Logout</span>
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <main class="main-content-area">
+        <div class="create-post-card">
+            <h1 class="page-title">Create post</h1>
+            
+            <form action="{{ url_for('create_post') }}" method="POST" enctype="multipart/form-data">
+                
+                <div class="media-buttons">
+                    <label class="media-btn">
+                        <i class="fas fa-image"></i> Add Photos
+                        <input type="file" name="media_file" accept="image/*" onchange="showFileName(this)">
+                    </label>
+                    <label class="media-btn">
+                        <i class="fas fa-video"></i> Add Videos
+                        <input type="file" name="media_file" accept="video/*" onchange="showFileName(this)">
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <input type="text" name="title" class="form-control-lg" placeholder="Title*">
+                </div>
+
+                <div class="form-group">
+                    <textarea name="content" class="form-control-lg" rows="8" placeholder="Body text (optional)" style="resize: none;" required></textarea>
+                </div>
+
+                <div id="file-selected-msg" style="color: #2563eb; font-weight: 500; display: none; margin-bottom: 20px;">
+                    <i class="fas fa-check-circle"></i> <span id="filename-text"></span>
+                </div>
+
+                <div class="action-buttons">
+                    <a href="{{ url_for('home') }}" class="btn-cancel">Cancel</a>
+                    <button type="submit" class="btn-post">Post</button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+<script>
+    function showFileName(input) {
+        if (input.files && input.files[0]) {
+            document.getElementById('filename-text').textContent = "Selected: " + input.files[0].name;
+            document.getElementById('file-selected-msg').style.display = 'block';
+        }
+    }
+</script>
+{% endblock %}

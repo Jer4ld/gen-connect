@@ -4,10 +4,10 @@ GenConnect - Main Application File (app.py)
 
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
-# ⬇️ FIX: We alias 'Message' to 'MailMessage' to stop Python from getting confused
 from flask_mail import Mail, Message as MailMessage 
 from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.utils import secure_filename 
+from werkzeug.utils import secure_filename
+from flask import send_from_directory
 from datetime import datetime
 from sqlalchemy import or_, and_
 from sqlalchemy.exc import IntegrityError
@@ -31,7 +31,17 @@ app.config['MAIL_PASSWORD'] = 'abxvtnbhstipemhg'  # No spaces
 app.config['MAIL_DEFAULT_SENDER'] = 'liewqien5@gmail.com'
 app.config['MAIL_DEBUG'] = True
 
-mail = Mail(app) 
+mail = Mail(app)
+
+# Upload Config
+UPLOAD_FOLDER = 'uploads'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'mp4', 'mov', 'avi'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 # =======================================================
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -145,22 +155,31 @@ class Contact(db.Model):
 class Post(db.Model):
     __tablename__ = 'posts'
     id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=True)
     content = db.Column(db.Text, nullable=False)
-    image_url = db.Column(db.String(255), nullable=True)
+    
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    comments = db.relationship('Comment', backref='post', lazy=True, cascade='all, delete-orphan')
-    likes = db.relationship('Like', backref='post', lazy=True, cascade='all, delete-orphan')
-    def get_like_count(self): return Like.query.filter_by(post_id=self.id).count()
-    def get_comment_count(self): return Comment.query.filter_by(post_id=self.id).count()
+    
+    media_file = db.Column(db.String(255), nullable=True)
+    media_type = db.Column(db.String(10), nullable=True) # 'image' or 'video'
+    
+    comments = db.relationship('Comment', backref='post', lazy=True, cascade="all, delete-orphan")
+    likes = db.relationship('Like', backref='post', lazy=True, cascade="all, delete-orphan")
+
+    def user_has_liked(self, user_id):
+        return Like.query.filter_by(user_id=user_id, post_id=self.id).first() is not None
 
 class Comment(db.Model):
     __tablename__ = 'comments'
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
+    
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Like(db.Model):
     __tablename__ = 'likes'
@@ -643,18 +662,78 @@ def delete_account():
         db.session.rollback()
         return redirect(url_for('edit_profile'))
 
-@app.route('/create_post', methods=['POST'])
+# Route to serve uploaded media
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+# Create Post Page
+@app.route('/create_post', methods=['GET', 'POST'])
 def create_post():
     if 'user_id' not in session: return redirect(url_for('login'))
-    content = request.form.get('content')
-    image_url = request.form.get('image_url')
-    if content:
-        new_post = Post(content=content, image_url=image_url, user_id=session['user_id'])
+    
+    if request.method == 'POST':
+        title = request.form.get('title') # 1. Get the title from the form
+        content = request.form.get('content')
+        file = request.files.get('media_file')
+        
+        media_filename = None
+        media_type = None
+
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            unique_filename = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{filename}"
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_filename))
+            media_filename = unique_filename
+            
+            ext = filename.rsplit('.', 1)[1].lower()
+            media_type = 'video' if ext in ['mp4', 'mov', 'avi'] else 'image'
+
+        new_post = Post(
+            title=title,
+            content=content, 
+            user_id=session['user_id'],
+            media_file=media_filename,
+            media_type=media_type
+        )
         db.session.add(new_post)
         db.session.commit()
-        flash('Post created successfully!', 'success')
-    else: flash('Post content cannot be empty', 'error')
-    return redirect(url_for('home'))
+        return redirect(url_for('home'))
+        
+    return render_template('create_post.html')
+
+# View Single Post & Comments
+@app.route('/post/<int:post_id>', methods=['GET', 'POST'])
+def post_details(post_id):
+    if 'user_id' not in session: return redirect(url_for('login'))
+    post = Post.query.get_or_404(post_id)
+    current_user = User.query.get(session['user_id'])
+
+    if request.method == 'POST':
+        comment_text = request.form.get('comment')
+        if comment_text:
+            comment = Comment(content=comment_text, user_id=current_user.id, post_id=post.id)
+            db.session.add(comment)
+            db.session.commit()
+            return redirect(url_for('post_details', post_id=post.id))
+
+    return render_template('post_details.html', post=post, current_user=current_user)
+
+# Like Functionality
+@app.route('/like/<int:post_id>')
+def like_post(post_id):
+    if 'user_id' not in session: return redirect(url_for('login'))
+    user_id = session['user_id']
+    existing_like = Like.query.filter_by(user_id=user_id, post_id=post_id).first()
+
+    if existing_like:
+        db.session.delete(existing_like)
+    else:
+        new_like = Like(user_id=user_id, post_id=post_id)
+        db.session.add(new_like)
+    
+    db.session.commit()
+    return redirect(request.referrer or url_for('home'))
 
 @app.route('/achievements')
 def achievements():

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4" style="max-width: 700px;">
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="fw-bold mb-1">{{ post.author.username }}</h5>
+            <small class="text-muted">{{ post.created_at.strftime('%Y-%m-%d') }}</small>
+            <p class="card-text mt-3">{{ post.content }}</p>
+        </div>
+        
+        {% if post.media_file %}
+            {% if post.media_type == 'video' %}
+                <video src="{{ url_for('uploaded_file', filename=post.media_file) }}" controls class="w-100"></video>
+            {% else %}
+                <img src="{{ url_for('uploaded_file', filename=post.media_file) }}" class="w-100" alt="Post Media">
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <h5>Comments</h5>
+            <hr>
+            {% for comment in post.comments %}
+                <div class="mb-3">
+                    <strong>{{ comment.author.username }}</strong>
+                    <span class="text-muted small ms-2">{{ comment.created_at.strftime('%I:%M %p') }}</span>
+                    <div class="bg-light p-2 rounded mt-1">{{ comment.content }}</div>
+                </div>
+            {% else %}
+                <p class="text-muted">No comments yet.</p>
+            {% endfor %}
+
+            <form action="{{ url_for('post_details', post_id=post.id) }}" method="POST" class="mt-4">
+                <div class="input-group">
+                    <input type="text" name="comment" class="form-control" placeholder="Write a comment..." required>
+                    <button class="btn btn-primary" type="submit">Send</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
