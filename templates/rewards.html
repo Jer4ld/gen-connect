@@ -207,31 +207,60 @@
     }
 
     function claimDailyPoints() {
-        currentPoints += 50;
-        updatePointsUI();
-        localStorage.setItem('lastClaimDate', new Date().toDateString());
-        
-        const btn = document.getElementById('dailyBtn');
-        btn.disabled = true;
-        btn.innerText = "Claimed!";
-        
-        alert("Success! You claimed 50 points.");
-    }
+    fetch('/api/claim_daily', { method: 'POST' })
+    .then(response => response.json())
+    .then(data => {
+        if(data.success) {
+            currentPoints = data.new_points;
+            updatePointsUI();
+            localStorage.setItem('lastClaimDate', new Date().toDateString());
+            
+            const btn = document.getElementById('dailyBtn');
+            btn.disabled = true;
+            btn.innerText = "Claimed!";
+            alert("Success! You claimed 50 points.");
+        } else {
+            alert(data.message || "Error claiming points");
+        }
+    });
+}
 
     function redeemItem(cost, itemName) {
-        if(currentPoints >= cost) {
-            if(confirm(`Spend ${cost} points on ${itemName}?`)) {
-                currentPoints -= cost;
+    if (confirm(`Spend ${cost} points on ${itemName}?`)) {
+        fetch('/api/redeem_item', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                cost: cost,
+                itemName: itemName
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update the UI with the real points from the database
+                currentPoints = data.new_points;
                 updatePointsUI();
-                alert(`Successfully redeemed: ${itemName}!`);
+                alert(data.message);
+            } else {
+                alert(data.message);
             }
-        } else {
-            alert("Not enough points!");
-        }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("Something went wrong with the transaction.");
+        });
     }
+}
 
-    function updatePointsUI() {
-        document.getElementById('displayPoints').innerText = currentPoints;
+function updatePointsUI() {
+    // Update both the main display and any other point references
+    const display = document.getElementById('displayPoints');
+    if (display) {
+        display.innerText = currentPoints;
     }
+}
 </script>
 {% endblock %}

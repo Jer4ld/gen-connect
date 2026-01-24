@@ -65,6 +65,7 @@ class User(db.Model):
     banner_image = db.Column(db.String(255), default='default_banner.jpg')
     member_type = db.Column(db.String(50), default='Youth Member')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    points = db.Column(db.Integer, default=0)
     
     posts = db.relationship('Post', backref='author', lazy=True, cascade='all, delete-orphan')
     comments = db.relationship('Comment', backref='author', lazy=True, cascade='all, delete-orphan')
@@ -941,12 +942,62 @@ last_daily_claim = db.Column(db.DateTime, nullable=True)
 @app.route('/ranking')
 def ranking():
     if 'user_id' not in session: return redirect(url_for('login'))
-    return "<h1>Ranking</h1><p>This feature is coming soon!</p>"
+    
+    # 1. Get the current user
+    user = User.query.get(session['user_id'])
+    
+    # 2. OPTIONAL: Get top 3 users for the leaderboard
+    # (If you want to replace the hardcoded "Sarah Chen" in your HTML later)
+    top_users = User.query.order_by(User.points.desc()).limit(3).all()
+    
+    return render_template('ranking.html', user=user, top_users=top_users)
 
 @app.route('/rewards')
 def rewards():
     if 'user_id' not in session: return redirect(url_for('login'))
-    return "<h1>Rewards</h1><p>This feature is coming soon!</p>"
+    
+    user = User.query.get(session['user_id'])
+    
+    return render_template('rewards.html', user=user)
+
+@app.route('/api/claim_daily', methods=['POST'])
+def claim_daily():
+    if 'user_id' not in session: return jsonify({'success': False}), 401
+    
+    user = User.query.get(session['user_id'])
+    
+    # Check if already claimed today
+    if user.last_daily_claim:
+        if user.last_daily_claim.date() == datetime.utcnow().date():
+             return jsonify({'success': False, 'message': 'Already claimed today'})
+
+    # Update points and date
+    user.points += 50
+    user.last_daily_claim = datetime.utcnow()
+    db.session.commit()
+    
+    return jsonify({'success': True, 'new_points': user.points})
+@app.route('/api/redeem_item', methods=['POST'])
+def redeem_item():
+    if 'user_id' not in session: 
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    
+    data = request.get_json()
+    cost = data.get('cost')
+    item_name = data.get('itemName')
+    
+    user = User.query.get(session['user_id'])
+    
+    if user.points >= cost:
+        user.points -= cost
+        db.session.commit()
+        return jsonify({
+            'success': True, 
+            'new_points': user.points, 
+            'message': f'Successfully redeemed {item_name}!'
+        })
+    else:
+        return jsonify({'success': False, 'message': 'Not enough points!'}), 400
 
 @app.errorhandler(404)
 def not_found(error): return '<h1>404 - Page Not Found</h1>', 404
