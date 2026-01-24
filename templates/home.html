@@ -5,13 +5,19 @@
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
+    /* --- Layout Styles --- */
+    body {
+        background-color: #f9fafb;
+    }
+
     .container {
         display: flex;
         min-height: 100vh;
-        max-width: 100%; /* Ensure container takes full width */
-        padding: 0;      /* Remove default padding */
+        max-width: 100%;
+        padding: 0;
     }
 
+    /* --- Sidebar Styles --- */
     .sidebar {
         position: fixed;
         left: 0;
@@ -21,7 +27,7 @@
         background-color: white;
         border-right: 1px solid #e5e7eb;
         padding: 20px 0;
-        z-index: 100; /* Ensure sidebar stays on top */
+        z-index: 100;
     }
 
     .sidebar-logo {
@@ -71,12 +77,19 @@
         border-right: 3px solid #2563eb;
     }
 
+    /* --- Feed Styles --- */
     .main-feed {
-        margin-left: 250px;
+        margin-left: 250px; /* Push right by sidebar width */
         flex: 1;
         padding: 40px;
-        max-width: 900px; /* Limit width for better readability */
-        margin-right: auto; /* Center the feed in the remaining space */
+        width: calc(100% - 250px); /* Fill remaining space */
+    }
+
+    /* Wrapper to control post width and centering */
+    .feed-posts {
+        max-width: 1200px; /* Increased width to fill space */
+        margin: 0 auto;    /* Centers the feed in the middle of the screen */
+        width: 100%;
     }
 
     /* Post Card Styles */
@@ -86,7 +99,7 @@
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         margin-bottom: 25px;
         border: 1px solid #e5e7eb;
-        overflow: hidden; /* Contains content */
+        overflow: visible; 
     }
 
     .post-header {
@@ -97,11 +110,13 @@
     }
 
     .post-title {
-    font-size: 18px;
-    font-weight: 700;
-    color: #111827;
-    margin-bottom: 8px;
-    text-align: left;
+        padding: 0 15px 5px 15px;
+        font-size: 18px;
+        font-weight: 700;
+        color: #111827;
+        text-align: left;
+        margin: 0; 
+        display: block; 
     }
 
     .post-content {
@@ -110,11 +125,13 @@
         line-height: 1.5;
         color: #1f2937;
         white-space: pre-wrap;
-        text-align: left;
+        text-align: left; 
+        margin: 0;
+        display: block;
     }
 
     .post-media {
-        background-color: #000;
+        background-color: #f3f4f6;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -123,7 +140,7 @@
     .post-media img, .post-media video {
         max-height: 600px;
         width: 100%;
-        object-fit: contain; /* Shows full image without cropping */
+        object-fit: contain;
     }
 
     .post-footer {
@@ -155,6 +172,139 @@
         margin-bottom: 20px;
         color: #d1d5db;
     }
+
+    /* --- Hidden Post UI Styles --- */
+    .post-hidden-state {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 25px 30px;
+        background: #f9fafb;
+        color: #6b7280;
+        font-weight: 500;
+    }
+    .btn-undo {
+        border: none;
+        background: #e5e7eb;
+        color: #374151;
+        padding: 8px 20px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-undo:hover { background: #d1d5db; }
+
+    /* --- Modal Styles --- */
+    .custom-modal-content {
+        border-radius: 16px;
+        border: none;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        text-align: center;
+        padding: 20px;
+    }
+    .custom-modal-header {
+        border-bottom: none;
+        justify-content: center;
+        padding-bottom: 0;
+        position: relative;
+    }
+    .custom-modal-title {
+        font-weight: 700;
+        color: #111827;
+        font-size: 20px;
+    }
+    .btn-close-custom {
+        position: absolute;
+        right: 20px;
+        top: 20px;
+        background: transparent;
+        border: none;
+        font-size: 20px;
+        color: #6b7280;
+    }
+    .custom-modal-body {
+        color: #6b7280;
+        font-size: 15px;
+        padding: 15px 30px;
+        text-align: left;
+    }
+    .custom-modal-footer {
+        border-top: none;
+        justify-content: flex-end; 
+        gap: 15px;
+        padding-bottom: 20px;
+        padding-right: 30px;
+    }
+    .btn-modal-cancel {
+        background-color: #f3f4f6;
+        color: #374151;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 24px;
+        font-weight: 600;
+        width: 120px;
+    }
+    .btn-modal-cancel:hover { background-color: #e5e7eb; color: #111827; }
+    
+    .btn-modal-delete {
+        background-color: #dc2626;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 24px;
+        font-weight: 600;
+        width: 120px;
+    }
+    .btn-modal-delete:hover { background-color: #b91c1c; }
+
+    /* --- Report Modal Specifics --- */
+    .report-reasons-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    .report-chip {
+        padding: 8px 16px;
+        border: 1px solid #e5e7eb;
+        border-radius: 20px;
+        background: white;
+        color: #374151;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        user-select: none;
+    }
+    .report-chip:hover {
+        background-color: #f9fafb;
+    }
+    .report-chip.active {
+        background-color: #eff6ff;
+        border-color: #2563eb;
+        color: #2563eb;
+    }
+    .report-textarea {
+        width: 100%;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 12px;
+        font-size: 14px;
+        resize: vertical;
+        min-height: 100px;
+    }
+    .btn-modal-submit {
+        background-color: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 24px;
+        font-weight: 600;
+    }
+    .btn-modal-submit:hover { background-color: #1d4ed8; }
+
 </style>
 {% endblock %}
 
@@ -255,80 +405,100 @@
         <div class="feed-posts">
             {% if posts %}
                 {% for post in posts %}
-                <div class="post">
-                    <div class="post-header">
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="rounded-circle bg-secondary text-white d-flex justify-content-center align-items-center" style="width: 40px; height: 40px; font-weight: bold;">
-                                {{ post.author.username[0] | upper }}
+                <div class="post" id="post-container-{{ post.id }}">
+                    
+                    <div id="post-visible-{{ post.id }}">
+                        <div class="post-header">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="rounded-circle bg-secondary text-white d-flex justify-content-center align-items-center" style="width: 40px; height: 40px; font-weight: bold;">
+                                    {{ post.author.username[0] | upper }}
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark">{{ post.author.username }}</div>
+                                    <div class="text-muted small">{{ post.created_at.strftime('%B %d at %I:%M %p') }}</div>
+                                </div>
                             </div>
-                            <div>
-                                <div class="fw-bold text-dark">{{ post.author.username }}</div>
-                                <div class="text-muted small">{{ post.created_at.strftime('%B %d at %I:%M %p') }}</div>
-                            </div>
-                        </div>
-                        
-                        <div class="dropdown">
-                            <button class="btn btn-link text-dark text-decoration-none p-0" type="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-ellipsis-h"></i>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                {% if session['user_id'] == post.user_id %}
-                                <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Edit</a></li>
-                                {% endif %}
-
-                                <li><a class="dropdown-item" href="#"><i class="far fa-bookmark me-2"></i>Save</a></li>
-                                <li><a class="dropdown-item" href="#"><i class="far fa-eye-slash me-2"></i>Hide</a></li>
-                                <li><a class="dropdown-item" href="#"><i class="far fa-flag me-2"></i>Report</a></li>
-
-                                {% if session['user_id'] == post.user_id %}
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-danger" href="#"><i class="far fa-trash-alt me-2"></i>Delete</a></li>
-                                {% endif %}
-                            </ul>
-                        </div>
-                    </div>
-
-                    <a href="{{ url_for('post_details', post_id=post.id) }}" class="text-decoration-none text-dark">
-                        <div class="post-content">
-                            {% if post.title %}
-                                <div class="post-title">{{ post.title }}</div>
-                            {% endif %}
                             
-                            {{ post.content }}
-                        </div>
-                        
-                        {% if post.media_file %}
-                            <div class="post-media">
-                                {% if post.media_type == 'video' %}
-                                    <video src="{{ url_for('uploaded_file', filename=post.media_file) }}" controls></video>
-                                {% else %}
-                                    <img src="{{ url_for('uploaded_file', filename=post.media_file) }}" alt="Post content">
-                                {% endif %}
+                            <div class="dropdown">
+                                <button class="btn btn-link text-dark text-decoration-none p-0" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-ellipsis-h"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    {% if current_user.id == post.author.id %}
+                                        <li><a class="dropdown-item" href="{{ url_for('edit_post', post_id=post.id) }}"><i class="fas fa-edit me-2"></i>Edit</a></li>
+                                    {% endif %}
+                                    
+                                    <li><a class="dropdown-item" href="#"><i class="far fa-bookmark me-2"></i>Save</a></li>
+                                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="toggleHidePost('{{ post.id }}')"><i class="far fa-eye-slash me-2"></i>Hide</a></li>
+                                    
+                                    <li>
+                                        <button type="button" class="dropdown-item" 
+                                                data-url="{{ url_for('report_post', post_id=post.id) }}"
+                                                onclick="openReportModal(this.dataset.url)">
+                                            <i class="far fa-flag me-2"></i>Report
+                                        </button>
+                                    </li>
+                                    
+                                    {% if current_user.id == post.author.id %}
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <button type="button" class="dropdown-item text-danger" 
+                                                    data-url="{{ url_for('delete_post', post_id=post.id) }}"
+                                                    onclick="openPostDeleteModal(this.dataset.url)">
+                                                <i class="far fa-trash-alt me-2"></i>Delete
+                                            </button>
+                                        </li>
+                                    {% endif %}
+                                </ul>
                             </div>
-                        {% endif %}
-                    </a>
-
-                    <div class="post-footer">
-                        <div class="d-flex align-items-center gap-3 px-2 mb-2 small text-muted">
-                            <span><i class="fas fa-thumbs-up text-primary"></i> {{ post.likes|length }} Likes</span>
-                            <span>{{ post.comments|length }} Comments</span>
                         </div>
-                        <div class="d-flex justify-content-around">
-                            <a href="{{ url_for('like_post', post_id=post.id) }}" class="btn btn-light flex-grow-1">
-                                {% if post.user_has_liked(current_user.id) %}
-                                    <i class="fas fa-thumbs-up text-primary me-2"></i><span class="text-primary">Like</span>
-                                {% else %}
-                                    <i class="far fa-thumbs-up me-2"></i>Like
-                                {% endif %}
-                            </a>
-                            <a href="{{ url_for('post_details', post_id=post.id) }}" class="btn btn-light flex-grow-1">
-                                <i class="far fa-comment-alt me-2"></i> Comment
-                            </a>
-                            <button class="btn btn-light flex-grow-1">
-                                <i class="fas fa-share me-2"></i> Share
-                            </button>
+
+                        <a href="{{ url_for('post_details', post_id=post.id) }}" class="text-decoration-none text-dark">
+                            {% if post.title %}
+                            <div class="post-title">{{ post.title }}</div>
+                            {% endif %}
+
+                            <div class="post-content">{{ post.content }}</div>
+                            
+                            {% if post.media_file %}
+                                <div class="post-media">
+                                    {% if post.media_type == 'video' %}
+                                        <video src="{{ url_for('uploaded_file', filename=post.media_file) }}" controls></video>
+                                    {% else %}
+                                        <img src="{{ url_for('uploaded_file', filename=post.media_file) }}" alt="Post content">
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </a>
+
+                        <div class="post-footer">
+                            <div class="d-flex align-items-center gap-3 px-2 mb-2 small text-muted">
+                                <span><i class="fas fa-thumbs-up text-primary"></i> {{ post.likes|length }} Likes</span>
+                                <span>{{ post.comments|length }} Comments</span>
+                            </div>
+                            <div class="d-flex justify-content-around">
+                                <a href="{{ url_for('like_post', post_id=post.id) }}" class="btn btn-light flex-grow-1">
+                                    {% if post.user_has_liked(current_user.id) %}
+                                        <i class="fas fa-thumbs-up text-primary me-2"></i><span class="text-primary">Like</span>
+                                    {% else %}
+                                        <i class="far fa-thumbs-up me-2"></i>Like
+                                    {% endif %}
+                                </a>
+                                <a href="{{ url_for('post_details', post_id=post.id) }}" class="btn btn-light flex-grow-1">
+                                    <i class="far fa-comment-alt me-2"></i> Comment
+                                </a>
+                                <button class="btn btn-light flex-grow-1">
+                                    <i class="fas fa-share me-2"></i> Share
+                                </button>
+                            </div>
                         </div>
                     </div>
+
+                    <div id="post-hidden-{{ post.id }}" class="post-hidden-state" style="display: none;">
+                        <div><i class="far fa-eye-slash me-2"></i> Post hidden</div>
+                        <button class="btn-undo" onclick="toggleHidePost('{{ post.id }}')">Undo</button>
+                    </div>
+
                 </div>
                 {% endfor %}
             {% else %}
@@ -345,4 +515,86 @@
         </div>
     </main>
 </div>
+
+<div class="modal fade" id="deletePostModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content custom-modal-content">
+            <div class="modal-header custom-modal-header">
+                <h5 class="custom-modal-title">Delete Post?</h5>
+            </div>
+            <div class="modal-body custom-modal-body">
+                Are you sure you want to delete this post? This action cannot be undone.
+            </div>
+            <div class="modal-footer custom-modal-footer">
+                <button type="button" class="btn btn-modal-cancel" data-bs-dismiss="modal">Cancel</button>
+                <form id="deletePostForm" method="POST" action="">
+                    <button type="submit" class="btn btn-modal-delete">Yes, Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="reportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content custom-modal-content">
+            <div class="modal-header custom-modal-header" style="justify-content: flex-start;">
+                <h5 class="custom-modal-title">Submit a Report</h5>
+                <button type="button" class="btn-close-custom" data-bs-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <form id="reportForm" method="POST" action="">
+                <div class="modal-body custom-modal-body">
+                    <div class="report-reasons-grid">
+                        <div class="report-chip" onclick="toggleReportChip(this)">Impersonation</div>
+                        <div class="report-chip" onclick="toggleReportChip(this)">Threatening Violence</div>
+                        <div class="report-chip" onclick="toggleReportChip(this)">Harassment</div>
+                        <div class="report-chip" onclick="toggleReportChip(this)">Self-harm or Suicide</div>
+                        <div class="report-chip" onclick="toggleReportChip(this)">Spam</div>
+                        <div class="report-chip" onclick="toggleReportChip(this)">Copyright violation</div>
+                        <div class="report-chip" onclick="toggleReportChip(this)">Hate</div>
+                    </div>
+                    <textarea name="reason" class="report-textarea" placeholder="Tell us more about it"></textarea>
+                </div>
+                <div class="modal-footer custom-modal-footer">
+                    <button type="submit" class="btn-modal-submit">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Toggle Hide Post
+    function toggleHidePost(postId) {
+        let visiblePart = document.getElementById('post-visible-' + postId);
+        let hiddenPart = document.getElementById('post-hidden-' + postId);
+
+        if (visiblePart.style.display === "none") {
+            visiblePart.style.display = "block";
+            hiddenPart.style.display = "none";
+        } else {
+            visiblePart.style.display = "none";
+            hiddenPart.style.display = "flex";
+        }
+    }
+
+    // Open POST Delete Modal
+    function openPostDeleteModal(deleteUrl) {
+        let modal = new bootstrap.Modal(document.getElementById('deletePostModal'));
+        document.getElementById('deletePostForm').action = deleteUrl;
+        modal.show();
+    }
+
+    // Handle Report Modal
+    function openReportModal(reportUrl) {
+        let modal = new bootstrap.Modal(document.getElementById('reportModal'));
+        document.getElementById('reportForm').action = reportUrl;
+        modal.show();
+    }
+
+    // Toggle Chip Selection
+    function toggleReportChip(element) {
+        element.classList.toggle('active');
+    }
+</script>
 {% endblock %}

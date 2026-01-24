@@ -157,17 +157,18 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=True)
     content = db.Column(db.Text, nullable=False)
-    
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    media_file = db.Column(db.String(255), nullable=True) # Replaces image_url
+    media_type = db.Column(db.String(10), nullable=True)  # 'image' or 'video'
     
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    media_file = db.Column(db.String(255), nullable=True)
-    media_type = db.Column(db.String(10), nullable=True) # 'image' or 'video'
-    
-    comments = db.relationship('Comment', backref='post', lazy=True, cascade="all, delete-orphan")
-    likes = db.relationship('Like', backref='post', lazy=True, cascade="all, delete-orphan")
+    comments = db.relationship('Comment', backref='post', lazy=True, cascade='all, delete-orphan')
+    likes = db.relationship('Like', backref='post', lazy=True, cascade='all, delete-orphan')
 
+    def get_like_count(self): return Like.query.filter_by(post_id=self.id).count()
+    def get_comment_count(self): return Comment.query.filter_by(post_id=self.id).count()
+    
     def user_has_liked(self, user_id):
         return Like.query.filter_by(user_id=user_id, post_id=self.id).first() is not None
 
@@ -670,36 +671,50 @@ def uploaded_file(filename):
 # Create Post Page
 @app.route('/create_post', methods=['GET', 'POST'])
 def create_post():
-    if 'user_id' not in session: return redirect(url_for('login'))
+    # FIX 1: Use session check instead of @login_required
+    if 'user_id' not in session: 
+        return redirect(url_for('login'))
     
     if request.method == 'POST':
-        title = request.form.get('title') # 1. Get the title from the form
-        content = request.form.get('content')
-        file = request.files.get('media_file')
-        
+        title = request.form.get('title', '').strip()
+        content = request.form.get('content', '').strip()
+        media_file = request.files.get('media_file')
+
+        if not content and not media_file:
+             flash('Post content cannot be empty.', 'error')
+             return render_template('create_post.html')
+
         media_filename = None
         media_type = None
 
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            unique_filename = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{filename}"
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_filename))
-            media_filename = unique_filename
+        if media_file and allowed_file(media_file.filename):
+            filename = secure_filename(media_file.filename)
+            unique_filename = f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{filename}"
+            media_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+            media_file.save(media_path)
             
+            media_filename = unique_filename
             ext = filename.rsplit('.', 1)[1].lower()
             media_type = 'video' if ext in ['mp4', 'mov', 'avi'] else 'image'
+        elif media_file:
+             flash('Invalid file type.', 'error')
+             return render_template('create_post.html')
 
+        # FIX 2: Use session['user_id'] instead of current_user
         new_post = Post(
-            title=title,
+            title=title, 
             content=content, 
-            user_id=session['user_id'],
-            media_file=media_filename,
+            user_id=session['user_id'], 
+            media_file=media_filename, 
             media_type=media_type
         )
         db.session.add(new_post)
         db.session.commit()
-        return redirect(url_for('home'))
         
+        # FIX 3: Popup message (Flash) + Stay on page
+        flash('Post created successfully!', 'success')
+        return render_template('create_post.html')
+
     return render_template('create_post.html')
 
 # View Single Post & Comments
@@ -718,6 +733,127 @@ def post_details(post_id):
             return redirect(url_for('post_details', post_id=post.id))
 
     return render_template('post_details.html', post=post, current_user=current_user)
+
+@app.route('/edit_post/<int:post_id>', methods=['GET', 'POST'])
+def edit_post(post_id):
+    if 'user_id' not in session: return redirect(url_for('login'))
+    
+    post = Post.query.get_or_404(post_id)
+    
+    # Security check
+    if post.user_id != session['user_id']:
+        flash('You are not authorized to edit this post.', 'error')
+        return redirect(url_for('home'))
+    
+    if request.method == 'POST':
+        post.title = request.form.get('title', '').strip()
+        post.content = request.form.get('content', '').strip()
+        
+        # 1. Handle Media Deletion (User clicked 'X')
+        if request.form.get('delete_media') == 'true' and post.media_file:
+            try:
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], post.media_file)
+                if os.path.exists(file_path): os.remove(file_path)
+                post.media_file = None
+                post.media_type = None
+            except Exception as e:
+                print(f"Error deleting file: {e}")
+
+        # 2. Handle New Media Upload (User clicked 'Add Photos/Videos')
+        file = request.files.get('media_file')
+        if file and allowed_file(file.filename):
+            # Delete old media if it exists (cleanup)
+            if post.media_file:
+                try:
+                    old_path = os.path.join(app.config['UPLOAD_FOLDER'], post.media_file)
+                    if os.path.exists(old_path): os.remove(old_path)
+                except Exception as e:
+                    print(f"Error deleting old file: {e}")
+
+            # Save new media
+            filename = secure_filename(file.filename)
+            unique_filename = f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{filename}"
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_filename))
+            
+            post.media_file = unique_filename
+            ext = filename.rsplit('.', 1)[1].lower()
+            post.media_type = 'video' if ext in ['mp4', 'mov', 'avi'] else 'image'
+        
+        db.session.commit()
+        flash('Post updated successfully!', 'success')
+        return redirect(url_for('post_details', post_id=post.id))
+        
+    return render_template('edit_post.html', post=post)
+
+@app.route('/delete_post/<int:post_id>', methods=['POST'])
+def delete_post(post_id):
+    if 'user_id' not in session: return redirect(url_for('login'))
+    
+    post = Post.query.get_or_404(post_id)
+    
+    # Security: Only allows author to delete
+    if post.user_id != session['user_id']:
+        flash('You are not authorized to delete this post.', 'error')
+        return redirect(url_for('home'))
+    
+    # Optional: Attempt to delete associated media file from server
+    if post.media_file:
+        try:
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], post.media_file)
+            if os.path.exists(file_path):
+                os.remove(file_path)
+        except Exception as e:
+            print(f"Error deleting file: {e}")
+
+    db.session.delete(post)
+    db.session.commit()
+    flash('Post deleted successfully.', 'success')
+    
+    return redirect(url_for('home'))
+
+@app.route('/delete_comment/<int:comment_id>', methods=['POST'])
+def delete_comment(comment_id):
+    if 'user_id' not in session: return redirect(url_for('login'))
+    
+    comment = Comment.query.get_or_404(comment_id)
+    
+    # Security Check: Ensure only the author can delete
+    if comment.user_id != session['user_id']:
+        flash('You are not authorized to delete this comment.', 'error')
+        return redirect(url_for('post_details', post_id=comment.post_id))
+    
+    post_id = comment.post_id
+    db.session.delete(comment)
+    db.session.commit()
+    flash('Comment deleted.', 'success')
+    return redirect(url_for('post_details', post_id=post_id))
+
+@app.route('/edit_comment/<int:comment_id>', methods=['POST'])
+def edit_comment(comment_id):
+    if 'user_id' not in session: return redirect(url_for('login'))
+    
+    comment = Comment.query.get_or_404(comment_id)
+    
+    # Security Check
+    if comment.user_id != session['user_id']:
+        flash('You are not authorized to edit this comment.', 'error')
+        return redirect(url_for('post_details', post_id=comment.post_id))
+    
+    new_content = request.form.get('content')
+    if new_content:
+        comment.content = new_content
+        db.session.commit()
+        flash('Comment updated.', 'success')
+    
+    return redirect(url_for('post_details', post_id=comment.post_id))
+
+# --- NEW ROUTE: Handle Report Submission ---
+@app.route('/report_post/<int:post_id>', methods=['POST'])
+def report_post(post_id):
+    if 'user_id' not in session: return redirect(url_for('login'))
+    # No storage needed as per instructions
+    flash('Report submitted successfully. Thank you for helping keep our community safe.', 'success')
+    return redirect(request.referrer or url_for('home'))
 
 # Like Functionality
 @app.route('/like/<int:post_id>')
@@ -791,6 +927,11 @@ def reset_password():
                 return redirect(url_for('login'))
         else: flash('Passwords do not match.', 'error')
     return render_template('reset_password.html')
+
+# Inside class User(db.Model):
+last_daily_claim = db.Column(db.DateTime, nullable=True)
+
+
 
 @app.errorhandler(404)
 def not_found(error): return '<h1>404 - Page Not Found</h1>', 404

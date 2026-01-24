@@ -1,44 +1,391 @@
 {% extends "base.html" %}
 
+{% block title %}Post Details{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    /* --- Layout Styles (Matching Home) --- */
+    body { background-color: #f9fafb; }
+    .container { display: flex; min-height: 100vh; max-width: 100%; padding: 0; }
+
+    /* Sidebar */
+    .sidebar {
+        position: fixed; left: 0; top: 0; width: 250px; height: 100vh;
+        background-color: white; border-right: 1px solid #e5e7eb; padding: 20px 0; z-index: 100;
+    }
+    .sidebar-logo { padding: 0 30px 20px; border-bottom: 1px solid #e5e7eb; margin-bottom: 20px; }
+    .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 600; color: #6366f1; text-decoration: none; }
+    .sidebar-nav { list-style: none; padding: 0; margin: 0; }
+    .sidebar-nav li { margin: 5px 0; }
+    .sidebar-nav a { display: flex; align-items: center; gap: 15px; padding: 12px 30px; text-decoration: none; color: #374151; transition: all 0.2s; font-size: 15px; }
+    .sidebar-nav a:hover { background-color: #f9fafb; }
+    .sidebar-nav a.active { background-color: #eff6ff; color: #2563eb; border-right: 3px solid #2563eb; }
+
+    /* Content Area */
+    .main-feed {
+        margin-left: 250px; flex: 1; padding: 40px;
+        width: calc(100% - 250px);
+    }
+    .content-wrapper { max-width: 900px; margin: 0 auto; }
+
+    /* Post Card */
+    .post-card {
+        background: white; border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 25px; border: 1px solid #e5e7eb; 
+        overflow: visible; 
+    }
+    .post-header { padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+    .post-title { padding: 0 15px 5px 15px; font-size: 20px; font-weight: 700; color: #111827; margin: 0; text-align: left; }
+    .post-content { padding: 0 15px 15px 15px; font-size: 16px; line-height: 1.6; color: #1f2937; white-space: pre-wrap; text-align: left; }
+    .post-media { background-color: #f3f4f6; display: flex; justify-content: center; align-items: center; }
+    .post-media img, .post-media video { max-height: 700px; width: 100%; object-fit: contain; }
+    .post-footer { padding: 15px; border-top: 1px solid #f3f4f6; }
+
+    /* Comments Section */
+    .comments-section {
+        background: white; border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e5e7eb; padding: 25px;
+        overflow: visible;
+    }
+    .comment-item {
+        border-bottom: 1px solid #f3f4f6; padding: 15px 0;
+        display: flex; gap: 15px;
+    }
+    .comment-item:last-child { border-bottom: none; }
+    .comment-avatar {
+        width: 35px; height: 35px; background: #e5e7eb;
+        border-radius: 50%; display: flex; align-items: center;
+        justify-content: center; font-weight: bold; color: #6b7280;
+    }
+    .comment-body { flex: 1; text-align: left; }
+    .comment-header { display: flex; justify-content: space-between; margin-bottom: 5px; }
+    .comment-author { font-weight: 600; color: #111827; font-size: 14px; }
+    .comment-date { color: #9ca3af; font-size: 12px; margin-left: 10px; }
+    .comment-text { font-size: 14px; color: #374151; white-space: pre-wrap; text-align: left; display: block; margin: 0; }
+    .edit-comment-form { display: none; margin-top: 10px; }
+
+    /* --- Hidden Post UI --- */
+    .post-hidden-state {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 25px 30px; background: #f9fafb; color: #6b7280; font-weight: 500;
+        margin-bottom: 25px; border-radius: 12px; border: 1px solid #e5e7eb;
+    }
+    .btn-undo {
+        border: none; background: #e5e7eb; color: #374151; padding: 8px 20px;
+        border-radius: 20px; font-weight: 600; font-size: 14px;
+        cursor: pointer; transition: background 0.2s;
+    }
+    .btn-undo:hover { background: #d1d5db; }
+
+    /* Modal Styles */
+    .custom-modal-content { border-radius: 16px; border: none; text-align: center; padding: 20px; }
+    .custom-modal-header { border-bottom: none; justify-content: center; padding-bottom: 0; position: relative; }
+    .custom-modal-title { font-weight: 700; color: #111827; font-size: 20px; }
+    .btn-close-custom { position: absolute; right: 20px; top: 20px; background: transparent; border: none; font-size: 20px; color: #6b7280; }
+    .custom-modal-body { color: #6b7280; font-size: 15px; padding: 15px 30px; text-align: left; }
+    .custom-modal-footer { border-top: none; justify-content: flex-end; gap: 15px; padding-bottom: 20px; padding-right: 30px; }
+    .btn-modal-cancel { background: #f3f4f6; color: #374151; border-radius: 8px; padding: 10px 24px; font-weight: 600; border: none; width: 120px; }
+    .btn-modal-delete { background: #dc2626; color: white; border-radius: 8px; padding: 10px 24px; font-weight: 600; border: none; width: 120px; }
+
+    /* Report Modal Specifics */
+    .report-reasons-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+    .report-chip { padding: 8px 16px; border: 1px solid #e5e7eb; border-radius: 20px; background: white; color: #374151; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; user-select: none; }
+    .report-chip:hover { background-color: #f9fafb; }
+    .report-chip.active { background-color: #eff6ff; border-color: #2563eb; color: #2563eb; }
+    .report-textarea { width: 100%; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; font-size: 14px; resize: vertical; min-height: 100px; }
+    .btn-modal-submit { background-color: #2563eb; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 600; }
+    .btn-modal-submit:hover { background-color: #1d4ed8; }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4" style="max-width: 700px;">
-    <div class="card mb-3">
-        <div class="card-body">
-            <h5 class="fw-bold mb-1">{{ post.author.username }}</h5>
-            <small class="text-muted">{{ post.created_at.strftime('%Y-%m-%d') }}</small>
-            <p class="card-text mt-3">{{ post.content }}</p>
+<div class="container">
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <a href="/" class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                <span>GenConnect</span>
+            </a>
         </div>
-        
-        {% if post.media_file %}
-            {% if post.media_type == 'video' %}
-                <video src="{{ url_for('uploaded_file', filename=post.media_file) }}" controls class="w-100"></video>
-            {% else %}
-                <img src="{{ url_for('uploaded_file', filename=post.media_file) }}" class="w-100" alt="Post Media">
-            {% endif %}
-        {% endif %}
-    </div>
+        <ul class="sidebar-nav">
+            <li><a href="{{ url_for('home') }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a></li>
+            <li><a href="#"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg><span>Explore Activities</span></a></li>
+            <li><a href="#"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Community</span></a></li>
+            <li><a href="{{ url_for('create_post') }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>Create</span></a></li>
+            <li><a href="/notifications"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Notification</span></a></li>
+            <li><a href="{{ url_for('messages') }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Messages</span></a></li>
+            <li><a href="{{ url_for('profile') }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a></li>
+            <li><a href="{{ url_for('logout') }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></a></li>
+        </ul>
+    </aside>
 
-    <div class="card">
-        <div class="card-body">
-            <h5>Comments</h5>
-            <hr>
-            {% for comment in post.comments %}
-                <div class="mb-3">
-                    <strong>{{ comment.author.username }}</strong>
-                    <span class="text-muted small ms-2">{{ comment.created_at.strftime('%I:%M %p') }}</span>
-                    <div class="bg-light p-2 rounded mt-1">{{ comment.content }}</div>
+    <main class="main-feed">
+        <div class="content-wrapper">
+            
+            <div id="post-container-{{ post.id }}">
+                <div id="post-visible-{{ post.id }}" class="post-card">
+                    <div class="post-header">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="rounded-circle bg-secondary text-white d-flex justify-content-center align-items-center" style="width: 45px; height: 45px; font-weight: bold;">
+                                {{ post.author.username[0] | upper }}
+                            </div>
+                            <div>
+                                <div class="fw-bold text-dark">{{ post.author.username }}</div>
+                                <div class="text-muted small">{{ post.created_at.strftime('%B %d at %I:%M %p') }}</div>
+                            </div>
+                        </div>
+
+                        <div class="dropdown">
+                            <button class="btn btn-link text-dark text-decoration-none p-0" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                {% if current_user.id == post.author.id %}
+                                    <li><a class="dropdown-item" href="{{ url_for('edit_post', post_id=post.id) }}"><i class="fas fa-edit me-2"></i>Edit</a></li>
+                                {% endif %}
+                                <li><a class="dropdown-item" href="#"><i class="far fa-bookmark me-2"></i>Save</a></li>
+                                <li><a class="dropdown-item" href="javascript:void(0)" onclick="toggleHidePost('{{ post.id }}')"><i class="far fa-eye-slash me-2"></i>Hide</a></li>
+                                
+                                <li>
+                                    <button type="button" class="dropdown-item" 
+                                            data-url="{{ url_for('report_post', post_id=post.id) }}"
+                                            onclick="openReportModal(this.dataset.url)">
+                                        <i class="far fa-flag me-2"></i>Report
+                                    </button>
+                                </li>
+
+                                {% if current_user.id == post.author.id %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <button type="button" class="dropdown-item text-danger" 
+                                                data-url="{{ url_for('delete_post', post_id=post.id) }}"
+                                                onclick="openPostDeleteModal(this.dataset.url)">
+                                            <i class="far fa-trash-alt me-2"></i>Delete
+                                        </button>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    {% if post.title %}
+                    <h2 class="post-title">{{ post.title }}</h2>
+                    {% endif %}
+                    <div class="post-content">{{ post.content }}</div>
+                    {% if post.media_file %}
+                    <div class="post-media">
+                        {% if post.media_type == 'video' %}
+                            <video src="{{ url_for('uploaded_file', filename=post.media_file) }}" controls></video>
+                        {% else %}
+                            <img src="{{ url_for('uploaded_file', filename=post.media_file) }}" alt="Post content">
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    <div class="post-footer">
+                        <div class="d-flex gap-4">
+                            <a href="{{ url_for('like_post', post_id=post.id) }}" class="text-decoration-none text-muted">
+                                {% if post.user_has_liked(current_user.id) %}
+                                    <i class="fas fa-thumbs-up text-primary"></i> <span class="text-primary">{{ post.likes|length }}</span>
+                                {% else %}
+                                    <i class="far fa-thumbs-up"></i> {{ post.likes|length }}
+                                {% endif %}
+                            </a>
+                            <span class="text-muted"><i class="far fa-comment-alt"></i> {{ post.comments|length }}</span>
+                            <span class="text-muted"><i class="fas fa-share"></i> Share</span>
+                        </div>
+                    </div>
                 </div>
-            {% else %}
-                <p class="text-muted">No comments yet.</p>
-            {% endfor %}
 
-            <form action="{{ url_for('post_details', post_id=post.id) }}" method="POST" class="mt-4">
-                <div class="input-group">
-                    <input type="text" name="comment" class="form-control" placeholder="Write a comment..." required>
-                    <button class="btn btn-primary" type="submit">Send</button>
+                <div id="post-hidden-{{ post.id }}" class="post-hidden-state" style="display: none;">
+                    <div><i class="far fa-eye-slash me-2"></i> Post hidden</div>
+                    <button class="btn-undo" onclick="toggleHidePost('{{ post.id }}')">Undo</button>
+                </div>
+            </div>
+
+            <div class="comments-section">
+                <h4 class="mb-4">Comments</h4>
+                
+                <form action="{{ url_for('post_details', post_id=post.id) }}" method="POST" class="mb-4">
+                    <div class="d-flex gap-3">
+                        <div class="comment-avatar">{{ current_user.username[0] | upper }}</div>
+                        <div class="flex-grow-1">
+                            <input type="text" name="comment" class="form-control" placeholder="Share your thoughts..." required>
+                        </div>
+                        <button class="btn btn-primary" type="submit">Post</button>
+                    </div>
+                </form>
+
+                {% for comment in post.comments %}
+                <div class="comment-item">
+                    <div class="comment-avatar">{{ comment.author.username[0] | upper }}</div>
+                    <div class="comment-body">
+                        <div class="comment-header">
+                            <div>
+                                <span class="comment-author">{{ comment.author.username }}</span>
+                                <span class="comment-date">{{ comment.created_at.strftime('%I:%M %p') }}</span>
+                            </div>
+                            {% if comment.user_id == current_user.id %}
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-link text-muted p-0" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-ellipsis-h"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" style="z-index: 1000;">
+                                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="toggleEdit('comment-{{ comment.id }}')">Edit</a></li>
+                                    <li>
+                                        <button type="button" 
+                                                class="dropdown-item text-danger" 
+                                                data-url="{{ url_for('delete_comment', comment_id=comment.id) }}"
+                                                onclick="openCommentDeleteModal(this.dataset.url)">
+                                            Delete
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div id="comment-text-{{ comment.id }}" class="comment-text">{{ comment.content }}</div>
+
+                        {% if comment.user_id == current_user.id %}
+                        <form id="edit-form-{{ comment.id }}" action="{{ url_for('edit_comment', comment_id=comment.id) }}" method="POST" class="edit-comment-form">
+                            <textarea name="content" class="form-control mb-2" rows="2">{{ comment.content }}</textarea>
+                            <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                            <button type="button" class="btn btn-sm btn-secondary" onclick="toggleEdit('comment-{{ comment.id }}')">Cancel</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-3">No comments yet.</p>
+                {% endfor %}
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<div class="modal fade" id="deletePostModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content custom-modal-content">
+            <div class="modal-header custom-modal-header">
+                <h5 class="custom-modal-title">Delete Post?</h5>
+            </div>
+            <div class="modal-body custom-modal-body">
+                Are you sure you want to delete this post? This action cannot be undone.
+            </div>
+            <div class="modal-footer custom-modal-footer">
+                <button type="button" class="btn btn-modal-cancel" data-bs-dismiss="modal">Cancel</button>
+                <form id="deletePostForm" method="POST" action="">
+                    <button type="submit" class="btn btn-modal-delete">Yes, Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteCommentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content custom-modal-content">
+            <div class="modal-header custom-modal-header">
+                <h5 class="custom-modal-title">Delete Comment?</h5>
+            </div>
+            <div class="modal-body custom-modal-body">
+                Are you sure you want to delete this comment?
+            </div>
+            <div class="modal-footer custom-modal-footer">
+                <button type="button" class="btn btn-modal-cancel" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteCommentForm" method="POST" action="">
+                    <button type="submit" class="btn btn-modal-delete">Yes, Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="reportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content custom-modal-content">
+            <div class="modal-header custom-modal-header" style="justify-content: flex-start;">
+                <h5 class="custom-modal-title">Submit a Report</h5>
+                <button type="button" class="btn-close-custom" data-bs-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <form id="reportForm" method="POST" action="">
+                <div class="modal-body custom-modal-body">
+                    <div class="report-reasons-grid">
+                        <div class="report-chip" onclick="toggleReportChip(this)">Impersonation</div>
+                        <div class="report-chip" onclick="toggleReportChip(this)">Threatening Violence</div>
+                        <div class="report-chip" onclick="toggleReportChip(this)">Harassment</div>
+                        <div class="report-chip" onclick="toggleReportChip(this)">Self-harm or Suicide</div>
+                        <div class="report-chip" onclick="toggleReportChip(this)">Spam</div>
+                        <div class="report-chip" onclick="toggleReportChip(this)">Copyright violation</div>
+                        <div class="report-chip" onclick="toggleReportChip(this)">Hate</div>
+                    </div>
+                    <textarea name="reason" class="report-textarea" placeholder="Tell us more about it"></textarea>
+                </div>
+                <div class="modal-footer custom-modal-footer">
+                    <button type="submit" class="btn-modal-submit">Submit</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<script>
+    // Toggle Edit Comment
+    function toggleEdit(id) {
+        let commentId = id.split('-')[1];
+        let textDiv = document.getElementById('comment-text-' + commentId);
+        let formDiv = document.getElementById('edit-form-' + commentId);
+        
+        if (textDiv.style.display === "none") {
+            textDiv.style.display = "block";
+            formDiv.style.display = "none";
+        } else {
+            textDiv.style.display = "none";
+            formDiv.style.display = "block";
+        }
+    }
+
+    // Toggle Hide Post
+    function toggleHidePost(postId) {
+        let visiblePart = document.getElementById('post-visible-' + postId);
+        let hiddenPart = document.getElementById('post-hidden-' + postId);
+
+        if (visiblePart.style.display === "none") {
+            visiblePart.style.display = "block";
+            hiddenPart.style.display = "none";
+        } else {
+            visiblePart.style.display = "none";
+            hiddenPart.style.display = "flex";
+        }
+    }
+
+    // Open POST Delete Modal
+    function openPostDeleteModal(deleteUrl) {
+        let modal = new bootstrap.Modal(document.getElementById('deletePostModal'));
+        document.getElementById('deletePostForm').action = deleteUrl;
+        modal.show();
+    }
+
+    // Open COMMENT Delete Modal
+    function openCommentDeleteModal(deleteUrl) {
+        let modal = new bootstrap.Modal(document.getElementById('deleteCommentModal'));
+        document.getElementById('deleteCommentForm').action = deleteUrl;
+        modal.show();
+    }
+
+    // Handle Report Modal
+    function openReportModal(reportUrl) {
+        let modal = new bootstrap.Modal(document.getElementById('reportModal'));
+        document.getElementById('reportForm').action = reportUrl;
+        modal.show();
+    }
+
+    function toggleReportChip(element) {
+        element.classList.toggle('active');
+    }
+</script>
 {% endblock %}
