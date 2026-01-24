@@ -65,8 +65,8 @@ class User(db.Model):
     banner_image = db.Column(db.String(255), default='default_banner.jpg')
     member_type = db.Column(db.String(50), default='Youth Member')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    points = db.Column(db.Integer, default=0)
-    
+    points = db.Column(db.Integer, default=10000)
+    last_daily_claim = db.Column(db.DateTime, nullable=True)
     posts = db.relationship('Post', backref='author', lazy=True, cascade='all, delete-orphan')
     comments = db.relationship('Comment', backref='author', lazy=True, cascade='all, delete-orphan')
     likes = db.relationship('Like', backref='user', lazy=True, cascade='all, delete-orphan')
@@ -998,6 +998,15 @@ def redeem_item():
         })
     else:
         return jsonify({'success': False, 'message': 'Not enough points!'}), 400
+
+@app.route('/give_points')
+def give_points():
+    if 'user_id' in session:
+        user = User.query.get(session['user_id'])
+        user.points = 1000
+        db.session.commit()
+        return "Points updated to 1000!"
+    return "Please log in first."
 
 @app.errorhandler(404)
 def not_found(error): return '<h1>404 - Page Not Found</h1>', 404
