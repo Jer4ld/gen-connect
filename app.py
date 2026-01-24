@@ -503,15 +503,73 @@ def dismiss_admin(group_id, target_user_id):
 @app.route('/edit_group_name/<int:group_id>', methods=['POST'])
 def edit_group_name(group_id):
     if 'user_id' not in session: return jsonify({'success': False}), 401
+    
+    # Verify Admin
     member = CommunityMember.query.filter_by(user_id=session['user_id'], community_id=group_id).first()
     if not member or not member.is_admin:
         return jsonify({'success': False, 'message': 'Only admins can edit name'})
+    
     new_name = request.form.get('new_name')
     group = Community.query.get(group_id)
-    group.name = new_name
-    db.session.commit()
-    return jsonify({'success': True, 'message': 'Group name updated!'})
+    
+    if group and new_name and group.name != new_name:
+        old_name = group.name
+        group.name = new_name
+        
+        # ⬇️ NEW: Add System Message to Chat
+        sys_msg = Message(
+            sender_id=session['user_id'], 
+            community_id=group_id, 
+            content=f"✏️ <b>{session['username']}</b> changed the group name from '<b>{old_name}</b>' to '<b>{new_name}</b>'.", 
+            is_read=True
+        )
+        db.session.add(sys_msg)
+        
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Group name updated!'})
+        
+    return jsonify({'success': False, 'message': 'No changes made or invalid group.'})
 
+@app.route('/add_group_members', methods=['POST'])
+def add_group_members():
+    if 'user_id' not in session: return jsonify({'success': False}), 401
+    
+    group_id = request.form.get('group_id')
+    member_ids = request.form.getlist('member_ids') # List of IDs to invite
+    
+    # 1. Verify Admin Status
+    caller = CommunityMember.query.filter_by(user_id=session['user_id'], community_id=group_id).first()
+    if not caller or not caller.is_admin:
+        return jsonify({'success': False, 'message': 'Unauthorized'})
+    
+    invited_count = 0
+    group = Community.query.get(group_id)
+    
+    for m_id in member_ids:
+        # Check if already a member
+        exists = CommunityMember.query.filter_by(user_id=m_id, community_id=group_id).first()
+        if not exists:
+            # Check if invite already pending to prevent spam
+            pending = Notification.query.filter_by(recipient_id=m_id, type='group_invite', target_id=group_id, status='pending').first()
+            
+            if not pending:
+                # 2. Create Invitation Notification
+                db.session.add(Notification(
+                    recipient_id=m_id, 
+                    sender_id=session['user_id'], 
+                    type='group_invite', # Special type for group invites
+                    target_id=group_id,
+                    message=f"{session['username']} invited you to join the group: {group.name}"
+                ))
+                invited_count += 1
+
+    db.session.commit()
+    
+    if invited_count > 0:
+        return jsonify({'success': True, 'message': f'Invitations sent to {invited_count} users.'})
+    else:
+        return jsonify({'success': False, 'message': 'No new invitations sent (users may already be members or pending).'})
+    
 @app.route('/leave_group/<int:group_id>', methods=['POST'])
 def leave_group(group_id):
     if 'user_id' not in session: return jsonify({'success': False}), 401
