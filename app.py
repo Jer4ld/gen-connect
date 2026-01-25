@@ -78,7 +78,12 @@ class User(db.Model):
     contacts_received = db.relationship('Contact', foreign_keys='Contact.contact_user_id', backref='contact_user', lazy='dynamic', cascade='all, delete-orphan')
     followers = db.relationship('Follow', foreign_keys='Follow.followed_id', backref='followed_user', lazy='dynamic', cascade='all, delete-orphan')
     following = db.relationship('Follow', foreign_keys='Follow.follower_id', backref='follower_user', lazy='dynamic', cascade='all, delete-orphan')
-
+    font_size = db.Column(db.String(20), default='Normal')
+    high_contrast = db.Column(db.Boolean, default=False)
+    screen_reader = db.Column(db.Boolean, default=False)
+    message_alerts = db.Column(db.Boolean, default=True)
+    event_reminders = db.Column(db.Boolean, default=True)
+    
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
     def check_password(self, password):
