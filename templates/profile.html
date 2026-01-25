@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-    /* --- RESET & GLOBAL STYLES --- */
+    /* --- 1. RESET & GLOBAL STYLES --- */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -21,9 +21,77 @@
         background-position: center;
         font-family: 'Outfit', -apple-system, sans-serif; 
         color: #1e293b;
+        transition: background 0.3s, color 0.3s;
     }
 
-    /* --- UI COMPONENT: TOGGLE SWITCH --- */
+    /* --- 2. ACCESSIBILITY: FONT SIZES --- */
+    /* These classes are added to body by JavaScript */
+    body.fs-Normal { font-size: 16px; }
+    body.fs-Large { font-size: 19px !important; }
+    body.fs-X-Large { font-size: 22px !important; }
+
+    /* --- 3. IMPORTANT: HIGH CONTRAST MODE --- */
+    /* This section forces Dark Background & Yellow Text when body has class "high-contrast" */
+    
+    body.high-contrast {
+        background: #000000 !important;
+        color: #ffffff !important;
+    }
+    
+    /* Force dark background on ALL containers */
+    body.high-contrast .glass-panel, 
+    body.high-contrast .sidebar, 
+    body.high-contrast .settings-section,
+    body.high-contrast .content-card,
+    body.high-contrast .profile-hero,
+    body.high-contrast .save-bar,
+    body.high-contrast .event-card,
+    body.high-contrast .list-item,
+    body.high-contrast .font-selector,
+    body.high-contrast .avatar-wrapper {
+        background: #111111 !important;
+        border: 1px solid #333333 !important;
+        color: #ffffff !important;
+        box-shadow: none !important;
+    }
+
+    /* Make headings and important text YELLOW */
+    body.high-contrast h1, 
+    body.high-contrast h3, 
+    body.high-contrast h4,
+    body.high-contrast .setting-title,
+    body.high-contrast .card-h,
+    body.high-contrast .date-badge span,
+    body.high-contrast .nav-active,
+    body.high-contrast .username,
+    body.high-contrast .big-num,
+    body.high-contrast .stat-num {
+        color: #ffff00 !important;
+    }
+
+    /* Make secondary text Light Gray */
+    body.high-contrast .setting-desc,
+    body.high-contrast .sub-text,
+    body.high-contrast .card-p,
+    body.high-contrast .sidebar-nav a {
+        color: #dddddd !important;
+    }
+
+    /* Hover states in High Contrast */
+    body.high-contrast .sidebar-nav a:hover,
+    body.high-contrast .setting-row:hover { 
+        background-color: #333333 !important; 
+    }
+    
+    /* Fix Date Badge colors */
+    body.high-contrast .date-badge {
+        background-color: #333 !important;
+        color: #ffff00 !important;
+    }
+
+    /* --- 4. UI COMPONENTS --- */
+
+    /* Toggle Switch */
     .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider {
@@ -38,87 +106,21 @@
     input:checked + .slider { background-color: #10b981; } /* Success Green */
     input:checked + .slider:before { transform: translateX(20px); }
 
-    /* --- UI COMPONENT: PILL FONT SELECTOR --- */
+    /* Font Selector (Pills) */
     .font-selector {
-        display: flex;
-        background: #f1f5f9;
-        padding: 4px;
-        border-radius: 12px;
-        border: 1px solid #e2e8f0;
+        display: flex; background: #f1f5f9; padding: 4px; border-radius: 12px; border: 1px solid #e2e8f0;
     }
     .font-selector input { display: none; }
     .font-selector label {
-        flex: 1;
-        padding: 8px 16px;
-        text-align: center;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 600;
-        color: #64748b;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        display: flex;
-        align-items: center;
-        gap: 6px;
+        flex: 1; padding: 8px 16px; text-align: center; border-radius: 8px; font-size: 13px; font-weight: 600;
+        color: #64748b; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 6px;
     }
     .font-selector label:hover { color: #334155; }
-    /* Active State for Font Selector */
     .font-selector input:checked + label {
-        background: white;
-        color: #4f46e5;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        background: white; color: #4f46e5; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
 
-    /* --- FONT PREVIEW CLASSES --- */
-    .fs-Normal { font-size: 14px; }
-    .fs-Large { font-size: 16px; }
-    .fs-X-Large { font-size: 18px; }
-
-    /* --- SETTINGS LAYOUT (MODERN) --- */
-    .settings-wrapper { display: flex; flex-direction: column; gap: 24px; max-width: 850px; }
-    
-    .settings-section {
-        background: white; border-radius: 20px; border: 1px solid #e2e8f0;
-        overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
-    }
-
-    .settings-header {
-        padding: 18px 24px; background: #f8fafc; border-bottom: 1px solid #f1f5f9;
-        display: flex; align-items: center; gap: 12px;
-    }
-    .settings-header h3 { 
-        margin: 0; font-size: 15px; font-weight: 700; color: #334155; 
-        text-transform: uppercase; letter-spacing: 0.5px; 
-    }
-    .settings-header i { color: #6366f1; font-size: 16px; }
-
-    .setting-row {
-        display: flex; justify-content: space-between; align-items: center;
-        padding: 20px 24px; border-bottom: 1px solid #f1f5f9; transition: background 0.2s;
-    }
-    .setting-row:last-child { border-bottom: none; }
-    .setting-row:hover { background-color: #fafafa; }
-
-    .setting-info { flex: 1; padding-right: 24px; }
-    .setting-title { font-size: 16px; font-weight: 600; color: #1e293b; margin-bottom: 4px; }
-    .setting-desc { font-size: 13px; color: #64748b; line-height: 1.5; }
-
-    /* Sticky Save Bar */
-    .save-bar {
-        position: sticky; bottom: 20px; z-index: 50;
-        background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px);
-        border: 1px solid #cbd5e1; padding: 12px 20px; border-radius: 16px;
-        display: flex; justify-content: space-between; align-items: center;
-        box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.15); margin-top: 10px;
-    }
-    .btn-save {
-        background: #4f46e5; color: white; font-weight: 600; padding: 10px 28px;
-        border-radius: 30px; border: none; cursor: pointer; 
-        transition: transform 0.2s, box-shadow 0.2s; font-size: 14px;
-    }
-    .btn-save:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4); }
-
-    /* --- SIDEBAR STYLES --- */
+    /* --- 5. LAYOUT & SIDEBAR --- */
     .container { display: flex; min-height: 100vh; }
     .sidebar { 
         position: fixed; left: 0; top: 0; width: 250px; height: 100vh; 
@@ -140,22 +142,17 @@
     .sidebar-nav a:hover { background-color: #f9fafb; }
     .sidebar-nav a.active { background-color: #eff6ff; color: #2563eb; border-right: 3px solid #2563eb; }
     .sidebar-nav svg { width: 22px; height: 22px; }
-    
-    /* --- MAIN CONTENT STYLES --- */
+
+    /* --- 6. MAIN CONTENT & HERO --- */
     .main-content { margin-left: 250px; flex: 1; padding: 40px; animation: fadeIn 0.6s ease-out; }
     .profile-container { max-width: 1100px; margin: 0 auto; }
 
-    /* --- BANNER & HERO --- */
     .profile-hero {
         background: white; border-radius: 24px; border: 1px solid white;
         box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08); overflow: hidden; margin-bottom: 30px; position: relative;
     }
     .hero-banner { height: 220px; width: 100%; background-color: #1e293b; position: relative; }
     .hero-banner img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6); }
-    .hero-banner::after {
-        content: ""; position: absolute; bottom: 0; left: 0; width: 100%; height: 100px;
-        background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
-    }
     .hero-content {
         padding: 0 40px 30px 40px; display: flex; justify-content: space-between; align-items: flex-end;
         position: relative; margin-top: -60px;
@@ -183,18 +180,17 @@
     .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4); }
     .btn-glass { background: rgba(255, 255, 255, 0.8); border: 1px solid #e2e8f0; color: #334155; }
     .btn-glass:hover { background: #f8fafc; border-color: #94a3b8; }
-    .btn-mini { font-size: 12px; padding: 4px 10px; background: #e0e7ff; color: #4338ca; border-radius: 6px; font-weight: 700; text-decoration: none; }
 
-    /* --- LAYOUT GRID --- */
+    /* --- 7. GRID & CARDS --- */
     .profile-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-top: 30px; }
     .content-column { display: flex; flex-direction: column; gap: 30px; }
     .sidebar-column { display: flex; flex-direction: column; gap: 24px; position: sticky; top: 30px; height: fit-content; }
 
-    /* --- DASHBOARD & TABS --- */
+    /* Dashboard & Tabs */
     .glass-panel { background: white; border-radius: 20px; padding: 24px; border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
     .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
     .dash-item {
-        background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px);
         border-radius: 24px; padding: 24px; position: relative; overflow: hidden; transition: all 0.3s;
         border: 1px solid rgba(255, 255, 255, 0.4); text-decoration: none; color: inherit; display: flex; flex-direction: column;
         box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
@@ -207,6 +203,7 @@
     .big-num { font-size: 36px; font-weight: 800; line-height: 1; color: #1e293b; }
     .sub-text { font-size: 14px; color: #64748b; font-weight: 500; }
     .card-separator { border: 0; height: 1px; background: rgba(100, 116, 139, 0.2); margin: 0 0 20px 0; }
+    
     .badge-section { display: flex; align-items: center; justify-content: space-between; }
     .badge-stack { display: flex; }
     .mini-badge { width: 44px; height: 44px; border-radius: 50%; background: white; border: 3px solid white; box-shadow: 0 4px 8px rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center; font-size: 22px; margin-right: -12px; position: relative; }
@@ -214,6 +211,7 @@
     .bg-rank-2 { background-color: #fbbf24; }
     .bg-rank-3 { background-color: #60a5fa; }
     .badge-view-all { font-size: 14px; font-weight: 600; color: #4f46e5; display: flex; align-items: center; gap: 4px; }
+    
     .points-section { display: flex; align-items: center; gap: 16px; margin: 24px 0; }
     .coin-icon-large {
         width: 50px; height: 50px; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
@@ -230,6 +228,7 @@
     }
     .btn-exchange:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(199, 210, 254, 0.6); }
     
+    /* Tabs & Content Cards */
     .tabs-nav { display: flex; gap: 25px; border-bottom: 2px solid #e2e8f0; margin-bottom: 24px; }
     .tab-link { padding: 0 5px 12px; font-weight: 700; color: #94a3b8; cursor: pointer; font-size: 15px; position: relative; transition: 0.2s; }
     .tab-link:hover { color: #475569; }
@@ -244,11 +243,13 @@
     .card-p { font-size: 14px; color: #64748b; line-height: 1.5; margin-bottom: 12px; flex: 1; }
     .card-ft { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 12px; font-size: 12px; font-weight: 600; color: #94a3b8; }
 
-    .stats-bar { display: flex; gap: 20px; justify-content: space-between; background: #f8fafc; padding: 15px 25px; border-radius: 16px; border: 1px solid #f1f5f9; }
+    /* Stats & Lists */
+    .stats-bar { display: flex; gap: 20px; justify-content: space-between; background:rgba(255, 255, 255, 0.8); padding: 15px 25px; border-radius: 16px; border: 1px solid #f1f5f9; }
     .stat-box { display: flex; flex-direction: column; cursor: pointer; transition: 0.2s; align-items: center; }
     .stat-box:hover .stat-num { color: #4f46e5; }
     .stat-num { font-size: 18px; font-weight: 800; color: #1e293b; }
     .stat-label { font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; }
+    
     .tags-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
     .skill-pill { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; position: relative; overflow: hidden; background: #eef2ff; color: #4338ca; }
     .skill-pill-blue { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
@@ -257,6 +258,51 @@
     .list-item:hover { border-color: #4f46e5; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1); }
     .list-icon { width: 50px; height: 50px; background: #f1f5f9; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
 
+    .event-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-bottom: 10px; display: flex; gap: 12px; }
+    .date-badge { background: #eff6ff; color: #2563eb; padding: 5px 10px; border-radius: 8px; text-align: center; min-width: 50px; display: flex; flex-direction: column; justify-content: center; }
+
+    /* --- 8. SETTINGS --- */
+    .settings-wrapper { display: flex; flex-direction: column; gap: 24px; max-width: 850px; }
+    .settings-section {
+        background: white; border-radius: 20px; border: 1px solid #e2e8f0;
+        overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+    }
+    .settings-header {
+        padding: 18px 24px; background:rgba(255, 255, 255, 0.8); border-bottom: 1px solid #f1f5f9;
+        display: flex; align-items: center; gap: 12px;
+    }
+    .settings-header h3 { 
+        margin: 0; font-size: 15px; font-weight: 700; color: #334155; 
+        text-transform: uppercase; letter-spacing: 0.5px; 
+    }
+    .settings-header i { color: #6366f1; font-size: 16px; }
+
+    .setting-row {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 20px 24px; border-bottom: 1px solid #f1f5f9; transition: background 0.2s;
+    }
+    .setting-row:last-child { border-bottom: none; }
+    .setting-row:hover { background-color: #fafafa; }
+
+    .setting-info { flex: 1; padding-right: 24px; }
+    .setting-title { font-size: 16px; font-weight: 600; color: #1e293b; margin-bottom: 4px; }
+    .setting-desc { font-size: 13px; color: #64748b; line-height: 1.5; }
+
+    .save-bar {
+        position: sticky; bottom: 20px; z-index: 50;
+        background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px);
+        border: 1px solid #cbd5e1; padding: 12px 20px; border-radius: 16px;
+        display: flex; justify-content: space-between; align-items: center;
+        box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.15); margin-top: 10px;
+    }
+    .btn-save {
+        background: #4f46e5; color: white; font-weight: 600; padding: 10px 28px;
+        border-radius: 30px; border: none; cursor: pointer; 
+        transition: transform 0.2s, box-shadow 0.2s; font-size: 14px;
+    }
+    .btn-save:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4); }
+
+    /* --- 9. RESPONSIVE --- */
     @media (max-width: 1024px) {
         .profile-grid { grid-template-columns: 1fr; }
         .sidebar-column { display: none; } 
@@ -472,8 +518,8 @@
                                             <div class="font-selector">
                                                 {% for size in ['Normal', 'Large', 'X-Large'] %}
                                                     <input type="radio" name="font_size" id="size-{{ size }}" value="{{ size }}" 
-                                                           {% if user.font_size == size %}checked{% endif %}>
-                                                    <label for="size-{{ size }}">
+                                                        {% if user.font_size == size %}checked{% endif %}
+                                                        onchange="updateFont(this.value)"> <label for="size-{{ size }}">
                                                         <span class="fs-{{ size }}">Aa</span>
                                                         {{ size }}
                                                     </label>
@@ -487,7 +533,9 @@
                                                 <div class="setting-desc">Increases the contrast between text and background colors.</div>
                                             </div>
                                             <label class="switch">
-                                                <input type="checkbox" name="high_contrast" {% if user.high_contrast %}checked{% endif %}>
+                                                <input type="checkbox" name="high_contrast" 
+                                                    {% if user.high_contrast %}checked{% endif %}
+                                                    onchange="toggleContrast(this)">
                                                 <span class="slider"></span>
                                             </label>
                                         </div>
@@ -580,39 +628,79 @@
 </div>
 
 <script>
-    // Run this when the page loads
     document.addEventListener("DOMContentLoaded", function() {
-        // If the URL has #settings, open the settings tab immediately
+        // 1. INITIAL SETUP: Apply saved settings immediately when page loads
+        // This prevents the page from "flashing" the wrong style before applying your settings.
+        
+        // Check High Contrast
+        const contrastCheckbox = document.querySelector('input[name="high_contrast"]');
+        if (contrastCheckbox && contrastCheckbox.checked) {
+            document.body.classList.add('high-contrast');
+        }
+
+        // Check Font Size
+        const fontRadio = document.querySelector('input[name="font_size"]:checked');
+        if (fontRadio) {
+            // Remove any default first, just in case
+            document.body.classList.remove('fs-Normal', 'fs-Large', 'fs-X-Large');
+            document.body.classList.add('fs-' + fontRadio.value);
+        } else {
+            document.body.classList.add('fs-Normal'); // Default fallback
+        }
+
+        // 2. URL CHECK: Open Settings tab if URL ends in #settings
         if(window.location.hash === '#settings') {
-            switchTab('Setting', null);
+            switchTab('Setting', null); // 'Setting' matches your ID "tab-Setting"
         }
     });
 
+    // --- TAB SWITCHING LOGIC ---
     function switchTab(tabName, event) {
-        // 1. Remove 'active' class from all tab links
-        document.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active'));
-        
-        // 2. Hide ALL tab content areas
-        ['posts', 'communities', 'saved', 'Setting'].forEach(name => {
-            const el = document.getElementById('tab-' + name);
-            if(el) el.style.display = 'none';
-        });
+        // 1. Hide ALL tab content areas
+        // We select all elements whose ID starts with "tab-"
+        const allTabs = document.querySelectorAll('[id^="tab-"]');
+        allTabs.forEach(el => el.style.display = 'none');
 
-        // 3. Add 'active' class to the clicked tab (if event exists)
-        if(event) {
-            event.currentTarget.classList.add('active');
-        } else if (tabName === 'Setting') {
-            // Manually highlight the Settings tab link if no click event (e.g., from redirect)
-            // Note: This assumes the Settings tab link is the 4th one (index 3)
-            const links = document.querySelectorAll('.tab-link');
-            if(links.length > 3) links[3].classList.add('active');
+        // 2. Remove 'active' style from ALL tab buttons
+        document.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active'));
+
+        // 3. Show the SPECIFIC target tab
+        const targetTab = document.getElementById('tab-' + tabName);
+        if(targetTab) {
+            targetTab.style.display = 'block';
+            targetTab.style.animation = 'fadeIn 0.5s ease';
         }
 
-        // 4. Show the specific target tab content
-        const target = document.getElementById('tab-' + tabName);
-        if(target) {
-            target.style.display = 'block';
-            target.style.animation = 'fadeIn 0.5s ease';
+        // 4. Highlight the correct button
+        if (event) {
+            // If the user clicked, we have the event, so use it
+            event.currentTarget.classList.add('active');
+        } else {
+            // If there is no event (e.g. loaded from URL #settings), find the button manually
+            // We look for the button that calls switchTab with the current tabName
+            const targetBtn = document.querySelector(`.tab-link[onclick*="'${tabName}'"]`);
+            if (targetBtn) {
+                targetBtn.classList.add('active');
+            }
+        }
+    }
+
+    // --- LIVE PREVIEW: FONT SIZE ---
+    function updateFont(size) {
+        // Remove all possible font classes so they don't stack up
+        document.body.classList.remove('fs-Normal', 'fs-Large', 'fs-X-Large');
+        // Add the new class immediately
+        document.body.classList.add('fs-' + size);
+    }
+
+    // --- LIVE PREVIEW: HIGH CONTRAST ---
+    function toggleContrast(checkbox) {
+        if (checkbox.checked) {
+            // If switch is ON, turn page black/yellow
+            document.body.classList.add('high-contrast');
+        } else {
+            // If switch is OFF, go back to normal
+            document.body.classList.remove('high-contrast');
         }
     }
 </script>
