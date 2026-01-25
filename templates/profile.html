@@ -7,54 +7,90 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-    /* --- RESET & ANIMATIONS --- */
+    /* --- RESET & GLOBAL STYLES --- */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     
     body { 
-        /* IT CLASSROOM BACKGROUND */
         background: 
             linear-gradient(rgba(248, 250, 252, 0.92), rgba(248, 250, 252, 0.92)),
             url('https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1600&fit=crop'); 
         background-size: cover;
         background-attachment: fixed;
         background-position: center;
-        
         font-family: 'Outfit', -apple-system, sans-serif; 
         color: #1e293b;
     }
 
-    /* --- TOGGLE SWITCH STYLES (Green) --- */
+    /* --- UI COMPONENT: TOGGLE SWITCH --- */
     .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider {
         position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-        background-color: #e2e8f0; transition: .4s; border-radius: 24px;
+        background-color: #cbd5e1; transition: 0.3s; border-radius: 24px;
     }
     .slider:before {
         position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
-        background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        background-color: white; transition: 0.3s; border-radius: 50%;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    input:checked + .slider { background-color: #10b981; } /* Green color */
+    input:checked + .slider { background-color: #10b981; } /* Success Green */
     input:checked + .slider:before { transform: translateX(20px); }
 
-    /* --- MODERN SETTINGS LAYOUT (NEW) --- */
-    .settings-wrapper {
-        display: flex; flex-direction: column; gap: 20px;
+    /* --- UI COMPONENT: PILL FONT SELECTOR --- */
+    .font-selector {
+        display: flex;
+        background: #f1f5f9;
+        padding: 4px;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+    }
+    .font-selector input { display: none; }
+    .font-selector label {
+        flex: 1;
+        padding: 8px 16px;
+        text-align: center;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #64748b;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .font-selector label:hover { color: #334155; }
+    /* Active State for Font Selector */
+    .font-selector input:checked + label {
+        background: white;
+        color: #4f46e5;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
 
+    /* --- FONT PREVIEW CLASSES --- */
+    .fs-Normal { font-size: 14px; }
+    .fs-Large { font-size: 16px; }
+    .fs-X-Large { font-size: 18px; }
+
+    /* --- SETTINGS LAYOUT (MODERN) --- */
+    .settings-wrapper { display: flex; flex-direction: column; gap: 24px; max-width: 850px; }
+    
     .settings-section {
-        background: white; border-radius: 16px; border: 1px solid #e2e8f0;
+        background: white; border-radius: 20px; border: 1px solid #e2e8f0;
         overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
     }
 
     .settings-header {
-        padding: 16px 24px; background: #f8fafc; border-bottom: 1px solid #f1f5f9;
-        display: flex; align-items: center; gap: 10px;
+        padding: 18px 24px; background: #f8fafc; border-bottom: 1px solid #f1f5f9;
+        display: flex; align-items: center; gap: 12px;
     }
-    .settings-header h3 { margin: 0; font-size: 15px; font-weight: 700; color: #334155; text-transform: uppercase; letter-spacing: 0.5px; }
-    .settings-header i { color: #6366f1; }
+    .settings-header h3 { 
+        margin: 0; font-size: 15px; font-weight: 700; color: #334155; 
+        text-transform: uppercase; letter-spacing: 0.5px; 
+    }
+    .settings-header i { color: #6366f1; font-size: 16px; }
 
     .setting-row {
         display: flex; justify-content: space-between; align-items: center;
@@ -63,76 +99,48 @@
     .setting-row:last-child { border-bottom: none; }
     .setting-row:hover { background-color: #fafafa; }
 
-    .setting-info { flex: 1; padding-right: 20px; }
-    .setting-title { font-size: 15px; font-weight: 600; color: #1e293b; margin-bottom: 4px; }
-    .setting-desc { font-size: 13px; color: #64748b; line-height: 1.4; }
+    .setting-info { flex: 1; padding-right: 24px; }
+    .setting-title { font-size: 16px; font-weight: 600; color: #1e293b; margin-bottom: 4px; }
+    .setting-desc { font-size: 13px; color: #64748b; line-height: 1.5; }
 
-    /* Modern Pill Font Selector */
-    .font-selector {
-        display: flex; background: #f1f5f9; padding: 4px; border-radius: 10px;
-        width: fit-content; border: 1px solid #e2e8f0;
-    }
-    .font-selector input { display: none; }
-    .font-selector label {
-        padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
-        color: #64748b; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;
-    }
-    .font-selector input:checked + label {
-        background: white; color: #4f46e5; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    }
-
-    /* Floating Save Bar */
+    /* Sticky Save Bar */
     .save-bar {
-        position: sticky; bottom: 20px; z-index: 10;
-        background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);
-        border: 1px solid #e2e8f0; padding: 12px 20px; border-radius: 16px;
+        position: sticky; bottom: 20px; z-index: 50;
+        background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px);
+        border: 1px solid #cbd5e1; padding: 12px 20px; border-radius: 16px;
         display: flex; justify-content: space-between; align-items: center;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); margin-top: 10px;
+        box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.15); margin-top: 10px;
     }
     .btn-save {
-        background: #4f46e5; color: white; font-weight: 600; padding: 10px 24px;
-        border-radius: 30px; border: none; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+        background: #4f46e5; color: white; font-weight: 600; padding: 10px 28px;
+        border-radius: 30px; border: none; cursor: pointer; 
+        transition: transform 0.2s, box-shadow 0.2s; font-size: 14px;
     }
     .btn-save:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4); }
 
     /* --- SIDEBAR STYLES --- */
     .container { display: flex; min-height: 100vh; }
-    
     .sidebar { 
         position: fixed; left: 0; top: 0; width: 250px; height: 100vh; 
         background-color: white; border-right: 1px solid #e5e7eb; 
         padding: 20px 0; z-index: 100; display: flex; flex-direction: column;
     }
-
     .sidebar-logo { padding: 0 30px 20px; border-bottom: 1px solid #e5e7eb; margin-bottom: 20px; }
-    
     .logo { 
         display: flex; align-items: center; gap: 10px;
         font-size: 20px; font-weight: 600; color: #6366f1; text-decoration: none;
     }
-
     .sidebar-nav { list-style: none; padding: 0; margin: 0; flex: 1; }
     .sidebar-nav li { margin: 5px 0; }
-
     .sidebar-nav a { 
         display: flex; align-items: center; gap: 15px; 
         padding: 12px 30px; text-decoration: none; color: #374151; 
         transition: all 0.2s; font-size: 15px; border-radius: 0;
     }
-
     .sidebar-nav a:hover { background-color: #f9fafb; }
     .sidebar-nav a.active { background-color: #eff6ff; color: #2563eb; border-right: 3px solid #2563eb; }
     .sidebar-nav svg { width: 22px; height: 22px; }
-
-    /* Yellow Settings Link */
-    .settings-item a {
-        background-color: #fef9c3 !important; 
-        color: #854d0e !important; 
-        border-left: 4px solid #facc15;
-        font-weight: 600;
-    }
-    .settings-item a:hover { background-color: #fef08a !important; }
-
+    
     /* --- MAIN CONTENT STYLES --- */
     .main-content { margin-left: 250px; flex: 1; padding: 40px; animation: fadeIn 0.6s ease-out; }
     .profile-container { max-width: 1100px; margin: 0 auto; }
@@ -182,7 +190,7 @@
     .content-column { display: flex; flex-direction: column; gap: 30px; }
     .sidebar-column { display: flex; flex-direction: column; gap: 24px; position: sticky; top: 30px; height: fit-content; }
 
-    /* --- DASHBOARD --- */
+    /* --- DASHBOARD & TABS --- */
     .glass-panel { background: white; border-radius: 20px; padding: 24px; border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
     .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
     .dash-item {
@@ -192,6 +200,7 @@
         box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
     }
     .dash-item:hover { transform: translateY(-3px); background: rgba(255, 255, 255, 0.8); box-shadow: 0 12px 40px rgba(31, 38, 135, 0.1); }
+    
     .level-section { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
     .level-icon { font-size: 40px; }
     .level-details { display: flex; flex-direction: column; }
@@ -220,18 +229,6 @@
         box-shadow: 0 4px 12px rgba(199, 210, 254, 0.4);
     }
     .btn-exchange:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(199, 210, 254, 0.6); }
-    .gift-icon { font-size: 18px; }
-    .stats-bar { display: flex; gap: 20px; justify-content: space-between; background: #f8fafc; padding: 15px 25px; border-radius: 16px; border: 1px solid #f1f5f9; }
-    .stat-box { display: flex; flex-direction: column; cursor: pointer; transition: 0.2s; align-items: center; }
-    .stat-box:hover .stat-num { color: #4f46e5; }
-    .stat-num { font-size: 18px; font-weight: 800; color: #1e293b; }
-    .stat-label { font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; }
-    .tags-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-    .skill-pill { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; position: relative; overflow: hidden; }
-    .pill-green { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-    .pill-blue { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
-    .pill-purple { background: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff; }
-    .skill-pill:hover::after { content: "Request Help"; position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: inherit; display: flex; align-items: center; justify-content: center; font-weight: 800; animation: fadeIn 0.2s; }
     
     .tabs-nav { display: flex; gap: 25px; border-bottom: 2px solid #e2e8f0; margin-bottom: 24px; }
     .tab-link { padding: 0 5px 12px; font-weight: 700; color: #94a3b8; cursor: pointer; font-size: 15px; position: relative; transition: 0.2s; }
@@ -247,6 +244,15 @@
     .card-p { font-size: 14px; color: #64748b; line-height: 1.5; margin-bottom: 12px; flex: 1; }
     .card-ft { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 12px; font-size: 12px; font-weight: 600; color: #94a3b8; }
 
+    .stats-bar { display: flex; gap: 20px; justify-content: space-between; background: #f8fafc; padding: 15px 25px; border-radius: 16px; border: 1px solid #f1f5f9; }
+    .stat-box { display: flex; flex-direction: column; cursor: pointer; transition: 0.2s; align-items: center; }
+    .stat-box:hover .stat-num { color: #4f46e5; }
+    .stat-num { font-size: 18px; font-weight: 800; color: #1e293b; }
+    .stat-label { font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; }
+    .tags-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .skill-pill { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; position: relative; overflow: hidden; background: #eef2ff; color: #4338ca; }
+    .skill-pill-blue { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+    
     .list-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: white; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 15px; transition: 0.2s; }
     .list-item:hover { border-color: #4f46e5; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1); }
     .list-icon { width: 50px; height: 50px; background: #f1f5f9; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
@@ -289,8 +295,6 @@
             <li><a href="{{ url_for('profile') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a></li>
             
             <li style="margin-top: 20px; border-top: 1px solid #e5e7eb;"></li>
-            
-            <li class="settings-item"><a href="{{ url_for('settings') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Settings</span></a></li>
             
             <li><a href="{{ url_for('logout') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></a></li>
         </ul>
@@ -410,7 +414,7 @@
                                 <div><div style="font-weight: 700; color: #0f172a;">Python Developers SG</div><div style="font-size: 13px; color: #64748b;">A group for Python enthusiasts.</div></div>
                                 <button class="btn-action btn-glass" style="margin-left:auto; padding: 6px 12px; font-size:12px;">View</button>
                             </div>
-                            </div>
+                        </div>
 
                         <div id="tab-saved" style="display: none;">
                             {% if user.saved_posts %}
@@ -470,7 +474,7 @@
                                                     <input type="radio" name="font_size" id="size-{{ size }}" value="{{ size }}" 
                                                            {% if user.font_size == size %}checked{% endif %}>
                                                     <label for="size-{{ size }}">
-                                                        <span style="font-size: {% if size=='Normal' %}14px{% elif size=='Large' %}16px{% else %}18px{% endif %};">Aa</span>
+                                                        <span class="fs-{{ size }}">Aa</span>
                                                         {{ size }}
                                                     </label>
                                                 {% endfor %}
@@ -554,10 +558,10 @@
                             <div class="tags-container">
                                 {% if user.interests %}
                                     {% for interest in user.interests.split(',') %}
-                                        <span class="skill-pill pill-blue">{{ interest }}</span>
+                                        <span class="skill-pill skill-pill-blue">{{ interest }}</span>
                                     {% endfor %}
                                 {% else %}
-                                    <span class="skill-pill pill-blue">Web Dev</span>
+                                    <span class="skill-pill skill-pill-blue">Web Dev</span>
                                 {% endif %}
                             </div>
                         </div>
