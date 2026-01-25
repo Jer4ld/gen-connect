@@ -878,6 +878,64 @@ def like_post(post_id):
     db.session.commit()
     return redirect(request.referrer or url_for('home'))
 
+@app.route('/search')
+def search():
+    if 'user_id' not in session: return redirect(url_for('login'))
+    current_user = User.query.get(session['user_id'])
+    
+    query = request.args.get('q', '').strip()
+    active_tab = request.args.get('tab', 'posts') # Default to posts tab
+    
+    posts = []
+    communities = []
+    media_posts = []
+    people = []
+    
+    if query:
+        # 1. Search Posts (Title or Content)
+        posts = Post.query.filter(
+            or_(
+                Post.title.ilike(f'%{query}%'),
+                Post.content.ilike(f'%{query}%')
+            )
+        ).order_by(Post.created_at.desc()).all()
+        
+        # 2. Search Communities (Name or Description)
+        communities = Community.query.filter(
+            or_(
+                Community.name.ilike(f'%{query}%'),
+                Community.description.ilike(f'%{query}%')
+            )
+        ).all()
+
+        # 3. Search Media (Posts that contain media AND match the query)
+        media_posts = Post.query.filter(
+            and_(
+                Post.media_file.isnot(None),
+                or_(
+                    Post.title.ilike(f'%{query}%'),
+                    Post.content.ilike(f'%{query}%')
+                )
+            )
+        ).order_by(Post.created_at.desc()).all()
+
+        # 4. Search People (Username or Fullname)
+        people = User.query.filter(
+            or_(
+                User.username.ilike(f'%{query}%'),
+                User.fullname.ilike(f'%{query}%')
+            )
+        ).all()
+        
+    return render_template('search_results.html', 
+                           query=query, 
+                           posts=posts, 
+                           communities=communities, 
+                           media_posts=media_posts,
+                           people=people,
+                           active_tab=active_tab,
+                           current_user=current_user)
+
 @app.route('/achievements')
 def achievements():
     if 'user_id' not in session: return redirect(url_for('login'))

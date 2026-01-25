@@ -402,6 +402,14 @@
     </aside>
 
     <main class="main-feed">
+        <div class="search-section mb-4" style="display: flex; justify-content: flex-end;">
+            <form action="{{ url_for('search') }}" method="GET" style="position: relative; width: 300px;">
+                <input type="text" name="q" placeholder="Search..." 
+                       style="width: 100%; padding: 10px 15px 10px 40px; border: 1px solid #e5e7eb; border-radius: 8px; outline: none;">
+                <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af;"></i>
+            </form>
+        </div>
+
         <div class="feed-posts">
             {% if posts %}
                 {% for post in posts %}

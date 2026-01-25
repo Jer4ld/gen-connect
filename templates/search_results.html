@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+
+{% block title %}Search Results - GenConnect{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    /* Reuse layout from home */
+    body { background-color: #f9fafb; }
+    .container { display: flex; min-height: 100vh; max-width: 100%; padding: 0; }
+
+    /* Sidebar */
+    .sidebar { position: fixed; left: 0; top: 0; width: 250px; height: 100vh; background-color: white; border-right: 1px solid #e5e7eb; padding: 20px 0; z-index: 100; }
+    .sidebar-logo { padding: 0 30px 20px; border-bottom: 1px solid #e5e7eb; margin-bottom: 20px; }
+    .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 600; color: #6366f1; text-decoration: none; }
+    .sidebar-nav { list-style: none; padding: 0; margin: 0; }
+    .sidebar-nav li { margin: 5px 0; }
+    .sidebar-nav a { display: flex; align-items: center; gap: 15px; padding: 12px 30px; text-decoration: none; color: #374151; transition: all 0.2s; font-size: 15px; }
+    .sidebar-nav a:hover { background-color: #f9fafb; }
+    .sidebar-nav a.active { background-color: #eff6ff; color: #2563eb; border-right: 3px solid #2563eb; }
+
+    /* Main Content */
+    .main-feed { margin-left: 250px; flex: 1; padding: 40px; width: calc(100% - 250px); }
+    .feed-posts { max-width: 1200px; margin: 0 auto; width: 100%; }
+
+    /* Search Bar (Top) */
+    .search-section { display: flex; justify-content: flex-end; margin-bottom: 25px; }
+
+    /* Tabs */
+    .tabs-container {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 30px;
+        justify-content: flex-start;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 15px;
+    }
+    .tab-btn {
+        padding: 8px 24px;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+        background: white;
+        color: #374151;
+        font-weight: 500;
+        text-decoration: none;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+    .tab-btn:hover { background-color: #f9fafb; }
+    .tab-btn.active {
+        background-color: #e5e7eb;
+        color: #111827;
+        font-weight: 600;
+        border-color: #d1d5db;
+    }
+
+    /* --- Result Cards Styling --- */
+    
+    /* Post Card */
+    .post { background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); margin-bottom: 25px; border: 1px solid #e5e7eb; }
+    .post-header { padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+    .post-content { padding: 0 15px 15px 15px; font-size: 15px; line-height: 1.5; color: #1f2937; }
+    .post-media { background-color: #f3f4f6; display: flex; justify-content: center; align-items: center; }
+    .post-media img, .post-media video { max-height: 500px; width: 100%; object-fit: contain; }
+    .post-footer { padding: 10px 15px; border-top: 1px solid #f3f4f6; }
+
+    /* Community Card */
+    .community-card {
+        background: white; border: 1px solid #e5e7eb; padding: 20px;
+        margin-bottom: 15px; border-radius: 12px;
+        display: flex; align-items: center; gap: 20px;
+    }
+    .comm-img { width: 80px; height: 80px; background: #f3f4f6; border-radius: 8px; object-fit: cover; }
+    .comm-info h3 { margin: 0 0 5px 0; font-size: 16px; font-weight: 700; color: #111827; }
+    .comm-desc { color: #4b5563; font-size: 14px; margin: 0 0 5px 0; }
+    .comm-meta { color: #9ca3af; font-size: 12px; }
+
+    /* Media Grid (Gallery Style) */
+    .media-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 15px;
+    }
+    .media-item {
+        background: white; border-radius: 8px; overflow: hidden;
+        border: 1px solid #e5e7eb; position: relative;
+        aspect-ratio: 1 / 1;
+    }
+    .media-item img, .media-item video {
+        width: 100%; height: 100%; object-fit: cover;
+    }
+    .media-overlay {
+        position: absolute; bottom: 0; left: 0; right: 0;
+        background: linear-gradient(transparent, rgba(0,0,0,0.7));
+        padding: 10px; color: white; font-size: 12px;
+        opacity: 0; transition: opacity 0.2s;
+    }
+    .media-item:hover .media-overlay { opacity: 1; }
+
+    /* People Card */
+    .people-card {
+        background: white; border: 1px solid #e5e7eb; padding: 15px 20px;
+        margin-bottom: 15px; border-radius: 12px;
+        display: flex; align-items: center; gap: 15px;
+        justify-content: space-between;
+    }
+    .people-info { display: flex; align-items: center; gap: 15px; }
+    .people-avatar {
+        width: 60px; height: 60px; background: #e5e7eb;
+        border-radius: 50%; object-fit: cover; display: flex;
+        justify-content: center; align-items: center;
+        font-weight: bold; font-size: 20px; color: #6b7280;
+    }
+    .people-details h4 { margin: 0; font-size: 16px; font-weight: 700; color: #111827; }
+    .people-username { margin: 0; font-size: 13px; color: #6b7280; }
+    .btn-view-profile {
+        padding: 6px 16px; border: 1px solid #d1d5db;
+        border-radius: 20px; background: white;
+        color: #374151; font-size: 13px; font-weight: 600;
+        text-decoration: none; transition: all 0.2s;
+    }
+    .btn-view-profile:hover { background: #f3f4f6; color: #111827; }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <a href="/" class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                <span>GenConnect</span>
+            </a>
+        </div>
+        <ul class="sidebar-nav">
+            <li><a href="{{ url_for('home') }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a></li>
+            <li><a href="#"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg><span>Explore Activities</span></a></li>
+            <li><a href="#"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Community</span></a></li>
+            <li><a href="{{ url_for('create_post') }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>Create</span></a></li>
+            <li><a href="/notifications"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Notification</span></a></li>
+            <li><a href="{{ url_for('messages') }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Messages</span></a></li>
+            <li><a href="{{ url_for('profile') }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a></li>
+            <li><a href="{{ url_for('logout') }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></a></li>
+        </ul>
+    </aside>
+
+    <main class="main-feed">
+        <div class="search-section">
+            <form action="{{ url_for('search') }}" method="GET" style="position: relative; width: 300px;">
+                <input type="text" name="q" value="{{ query }}" placeholder="Search..." 
+                       style="width: 100%; padding: 10px 15px 10px 40px; border: 1px solid #e5e7eb; border-radius: 8px; outline: none;">
+                <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af;"></i>
+            </form>
+        </div>
+
+        <div class="tabs-container">
+            <a href="{{ url_for('search', q=query, tab='posts') }}" class="tab-btn {{ 'active' if active_tab == 'posts' else '' }}">Posts</a>
+            <a href="{{ url_for('search', q=query, tab='communities') }}" class="tab-btn {{ 'active' if active_tab == 'communities' else '' }}">Communities</a>
+            <a href="{{ url_for('search', q=query, tab='media') }}" class="tab-btn {{ 'active' if active_tab == 'media' else '' }}">Media</a>
+            <a href="{{ url_for('search', q=query, tab='people') }}" class="tab-btn {{ 'active' if active_tab == 'people' else '' }}">People</a>
+        </div>
+
+        <div class="feed-posts">
+            
+            {% if active_tab == 'posts' %}
+                {% if posts %}
+                    {% for post in posts %}
+                    <div class="post">
+                        <div class="post-header">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="rounded-circle bg-secondary text-white d-flex justify-content-center align-items-center" style="width: 40px; height: 40px; font-weight: bold;">
+                                    {{ post.author.username[0] | upper }}
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark">{{ post.author.username }}</div>
+                                    <div class="text-muted small">{{ post.created_at.strftime('%B %d at %I:%M %p') }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="{{ url_for('post_details', post_id=post.id) }}" class="text-decoration-none text-dark">
+                            {% if post.title %}<div style="padding: 0 15px 5px 15px; font-size: 18px; font-weight: 700;">{{ post.title }}</div>{% endif %}
+                            <div class="post-content">{{ post.content }}</div>
+                            {% if post.media_file %}
+                                <div class="post-media">
+                                    {% if post.media_type == 'video' %}
+                                        <video src="{{ url_for('uploaded_file', filename=post.media_file) }}" controls></video>
+                                    {% else %}
+                                        <img src="{{ url_for('uploaded_file', filename=post.media_file) }}" alt="Post content">
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </a>
+                        <div class="post-footer">
+                            <div class="d-flex align-items-center gap-3 px-2 mb-2 small text-muted">
+                                <span><i class="fas fa-thumbs-up text-primary"></i> {{ post.likes|length }} Likes</span>
+                                <span>{{ post.comments|length }} Comments</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="text-align:center; color:#6b7280; padding:40px;">No posts found for "{{ query }}"</div>
+                {% endif %}
+            
+            {% elif active_tab == 'communities' %}
+                {% if communities %}
+                    {% for comm in communities %}
+                    <div class="community-card">
+                        <img src="{{ url_for('static', filename=comm.image_url) if comm.image_url else 'https://via.placeholder.com/80' }}" class="comm-img" alt="">
+                        <div class="comm-info">
+                            <h3>c/ {{ comm.name }}</h3>
+                            <p class="comm-desc">{{ comm.description }}</p>
+                            <div class="comm-meta">{{ comm.get_member_count() }} members</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="text-align:center; color:#6b7280; padding:40px;">No communities found for "{{ query }}"</div>
+                {% endif %}
+
+            {% elif active_tab == 'media' %}
+                {% if media_posts %}
+                    <div class="media-grid">
+                        {% for post in media_posts %}
+                        <a href="{{ url_for('post_details', post_id=post.id) }}" class="media-item">
+                            {% if post.media_type == 'video' %}
+                                <video src="{{ url_for('uploaded_file', filename=post.media_file) }}"></video>
+                            {% else %}
+                                <img src="{{ url_for('uploaded_file', filename=post.media_file) }}" alt="Post Media">
+                            {% endif %}
+                            <div class="media-overlay">
+                                <div>{{ post.title if post.title else 'View Post' }}</div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div style="text-align:center; color:#6b7280; padding:40px;">No media found for "{{ query }}"</div>
+                {% endif %}
+
+            {% elif active_tab == 'people' %}
+                {% if people %}
+                    {% for person in people %}
+                    <div class="people-card">
+                        <div class="people-info">
+                            {% if person.profile_picture and person.profile_picture != 'default.jpg' %}
+                                <img src="{{ url_for('uploaded_file', filename=person.profile_picture) }}" class="people-avatar" alt="Avatar">
+                            {% else %}
+                                <div class="people-avatar">{{ person.username[0] | upper }}</div>
+                            {% endif %}
+                            <div class="people-details">
+                                <h4>{{ person.fullname if person.fullname else person.username }}</h4>
+                                <div class="people-username">@{{ person.username }}</div>
+                            </div>
+                        </div>
+                        <a href="{{ url_for('profile', username=person.username) }}" class="btn-view-profile">View Profile</a>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="text-align:center; color:#6b7280; padding:40px;">No people found for "{{ query }}"</div>
+                {% endif %}
+
+            {% endif %}
+        </div>
+    </main>
+</div>
+{% endblock %}
