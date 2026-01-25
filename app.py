@@ -71,7 +71,7 @@ class User(db.Model):
     comments = db.relationship('Comment', backref='author', lazy=True, cascade='all, delete-orphan')
     likes = db.relationship('Like', backref='user', lazy=True, cascade='all, delete-orphan')
     community_memberships = db.relationship('CommunityMember', backref='user', lazy=True, cascade='all, delete-orphan')
-    
+    saved_posts = db.relationship('SavedPost', backref='user', lazy=True, cascade='all, delete-orphan')
     sent_messages = db.relationship('Message', foreign_keys='Message.sender_id', backref='sender', lazy='dynamic', cascade='all, delete-orphan')
     received_messages = db.relationship('Message', foreign_keys='Message.receiver_id', backref='receiver', lazy='dynamic', cascade='all, delete-orphan')
     contacts_initiated = db.relationship('Contact', foreign_keys='Contact.user_id', backref='user', lazy='dynamic', cascade='all, delete-orphan')
@@ -189,6 +189,14 @@ class Like(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class SavedPost(db.Model):
+    __tablename__ = 'saved_posts'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    post = db.relationship('Post', lazy=True)
 
 class Follow(db.Model):
     __tablename__ = 'follows'
@@ -893,7 +901,6 @@ def uploaded_file(filename):
 # Create Post Page
 @app.route('/create_post', methods=['GET', 'POST'])
 def create_post():
-    # FIX 1: Use session check instead of @login_required
     if 'user_id' not in session: 
         return redirect(url_for('login'))
     
@@ -922,7 +929,6 @@ def create_post():
              flash('Invalid file type.', 'error')
              return render_template('create_post.html')
 
-        # FIX 2: Use session['user_id'] instead of current_user
         new_post = Post(
             title=title, 
             content=content, 
@@ -933,7 +939,6 @@ def create_post():
         db.session.add(new_post)
         db.session.commit()
         
-        # FIX 3: Popup message (Flash) + Stay on page
         flash('Post created successfully!', 'success')
         return render_template('create_post.html')
 
@@ -1006,6 +1011,23 @@ def edit_post(post_id):
         return redirect(url_for('post_details', post_id=post.id))
         
     return render_template('edit_post.html', post=post)
+
+@app.route('/save_post/<int:post_id>')
+def save_post(post_id):
+    if 'user_id' not in session: return redirect(url_for('login'))
+    user_id = session['user_id']
+    existing = SavedPost.query.filter_by(user_id=user_id, post_id=post_id).first()
+    
+    if existing:
+        db.session.delete(existing)
+        flash('Post removed from Saved.', 'info')
+    else:
+        new_save = SavedPost(user_id=user_id, post_id=post_id)
+        db.session.add(new_save)
+        flash('Post saved successfully!', 'success')
+    
+    db.session.commit()
+    return redirect(request.referrer or url_for('home'))
 
 @app.route('/delete_post/<int:post_id>', methods=['POST'])
 def delete_post(post_id):

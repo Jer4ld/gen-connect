@@ -413,12 +413,41 @@
                             </div>
 
                         <div id="tab-saved" style="display: none;">
-                            <div class="content-card">
-                                <div class="card-body">
-                                    <div class="card-h">📄 SQL Cheat Sheet 2025</div>
-                                    <div class="card-ft"><span>Saved from DataScienceHub</span></div>
+                            {% if user.saved_posts %}
+                                {% for saved in user.saved_posts %}
+                                <div class="content-card">
+                                    {% if saved.post.media_file %}
+                                        {% if saved.post.media_type == 'video' %}
+                                            <video src="{{ url_for('uploaded_file', filename=saved.post.media_file) }}" class="card-thumb" style="object-fit: cover;"></video>
+                                        {% else %}
+                                            <img src="{{ url_for('uploaded_file', filename=saved.post.media_file) }}" class="card-thumb">
+                                        {% endif %}
+                                    {% endif %}
+                                    
+                                    <div class="card-body">
+                                        <div class="card-h">
+                                            <a href="{{ url_for('post_details', post_id=saved.post.id) }}" style="text-decoration: none; color: inherit;">
+                                                {{ saved.post.title if saved.post.title else 'View Post' }}
+                                            </a>
+                                        </div>
+                                        <p class="card-p">{{ saved.post.content[:100] }}...</p>
+                                        <div class="card-ft">
+                                            <span>Saved on {{ saved.created_at.strftime('%B %d, %Y') }}</span>
+                                            <a href="{{ url_for('save_post', post_id=saved.post.id) }}" style="color: #ef4444; text-decoration: none; font-weight: bold;">
+                                                Remove
+                                            </a>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="content-card">
+                                    <div class="card-body">
+                                        <div class="card-h">No Saved Posts</div>
+                                        <p class="card-p">Posts you save will appear here for easy access.</p>
+                                    </div>
+                                </div>
+                            {% endif %}
                         </div>
 
                         <div id="tab-Setting" style="display: none;">

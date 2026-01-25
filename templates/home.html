@@ -436,7 +436,11 @@
                                         <li><a class="dropdown-item" href="{{ url_for('edit_post', post_id=post.id) }}"><i class="fas fa-edit me-2"></i>Edit</a></li>
                                     {% endif %}
                                     
-                                    <li><a class="dropdown-item" href="#"><i class="far fa-bookmark me-2"></i>Save</a></li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ url_for('save_post', post_id=post.id) }}">
+                                            <i class="far fa-bookmark me-2"></i>Save
+                                        </a>
+                                    </li>
                                     <li><a class="dropdown-item" href="javascript:void(0)" onclick="toggleHidePost('{{ post.id }}')"><i class="far fa-eye-slash me-2"></i>Hide</a></li>
                                     
                                     <li>
