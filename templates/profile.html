@@ -4,6 +4,7 @@
 
 {% block extra_css %}
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
     /* --- RESET & ANIMATIONS --- */
@@ -22,57 +23,115 @@
         
         font-family: 'Outfit', -apple-system, sans-serif; 
         color: #1e293b;
-        transition: font-size 0.2s ease;
     }
 
-    /* --- SIDEBAR STYLES (EXACTLY LIKE MESSAGES.HTML - NO GAPS) --- */
+    /* --- TOGGLE SWITCH STYLES (Green) --- */
+    .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+        position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #e2e8f0; transition: .4s; border-radius: 24px;
+    }
+    .slider:before {
+        position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
+        background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    input:checked + .slider { background-color: #10b981; } /* Green color */
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    /* --- MODERN SETTINGS LAYOUT (NEW) --- */
+    .settings-wrapper {
+        display: flex; flex-direction: column; gap: 20px;
+    }
+
+    .settings-section {
+        background: white; border-radius: 16px; border: 1px solid #e2e8f0;
+        overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+    }
+
+    .settings-header {
+        padding: 16px 24px; background: #f8fafc; border-bottom: 1px solid #f1f5f9;
+        display: flex; align-items: center; gap: 10px;
+    }
+    .settings-header h3 { margin: 0; font-size: 15px; font-weight: 700; color: #334155; text-transform: uppercase; letter-spacing: 0.5px; }
+    .settings-header i { color: #6366f1; }
+
+    .setting-row {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 20px 24px; border-bottom: 1px solid #f1f5f9; transition: background 0.2s;
+    }
+    .setting-row:last-child { border-bottom: none; }
+    .setting-row:hover { background-color: #fafafa; }
+
+    .setting-info { flex: 1; padding-right: 20px; }
+    .setting-title { font-size: 15px; font-weight: 600; color: #1e293b; margin-bottom: 4px; }
+    .setting-desc { font-size: 13px; color: #64748b; line-height: 1.4; }
+
+    /* Modern Pill Font Selector */
+    .font-selector {
+        display: flex; background: #f1f5f9; padding: 4px; border-radius: 10px;
+        width: fit-content; border: 1px solid #e2e8f0;
+    }
+    .font-selector input { display: none; }
+    .font-selector label {
+        padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
+        color: #64748b; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+    }
+    .font-selector input:checked + label {
+        background: white; color: #4f46e5; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Floating Save Bar */
+    .save-bar {
+        position: sticky; bottom: 20px; z-index: 10;
+        background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);
+        border: 1px solid #e2e8f0; padding: 12px 20px; border-radius: 16px;
+        display: flex; justify-content: space-between; align-items: center;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); margin-top: 10px;
+    }
+    .btn-save {
+        background: #4f46e5; color: white; font-weight: 600; padding: 10px 24px;
+        border-radius: 30px; border: none; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-save:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4); }
+
+    /* --- SIDEBAR STYLES --- */
     .container { display: flex; min-height: 100vh; }
     
     .sidebar { 
         position: fixed; left: 0; top: 0; width: 250px; height: 100vh; 
-        background-color: white; /* Solid White */
-        border-right: 1px solid #e5e7eb; 
-        padding: 20px 0; z-index: 100; 
-        display: flex; flex-direction: column;
+        background-color: white; border-right: 1px solid #e5e7eb; 
+        padding: 20px 0; z-index: 100; display: flex; flex-direction: column;
     }
 
-    .sidebar-logo { 
-        padding: 0 30px 20px; border-bottom: 1px solid #e5e7eb; margin-bottom: 20px; 
-    }
+    .sidebar-logo { padding: 0 30px 20px; border-bottom: 1px solid #e5e7eb; margin-bottom: 20px; }
     
     .logo { 
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 20px;
-        font-weight: 600;
-        color: #6366f1;
-        text-decoration: none;
+        display: flex; align-items: center; gap: 10px;
+        font-size: 20px; font-weight: 600; color: #6366f1; text-decoration: none;
     }
 
-    /* REMOVED PADDING HERE TO REMOVE THE SPACE */
     .sidebar-nav { list-style: none; padding: 0; margin: 0; flex: 1; }
     .sidebar-nav li { margin: 5px 0; }
 
-    /* RECTANGULAR LINKS (No Border Radius, Edge-to-Edge) */
     .sidebar-nav a { 
         display: flex; align-items: center; gap: 15px; 
-        padding: 12px 30px; /* Aligns with logo padding */
-        text-decoration: none; color: #374151; 
-        transition: all 0.2s; font-size: 15px; 
-        border-radius: 0; /* Ensures no curves */
+        padding: 12px 30px; text-decoration: none; color: #374151; 
+        transition: all 0.2s; font-size: 15px; border-radius: 0;
     }
 
     .sidebar-nav a:hover { background-color: #f9fafb; }
-
-    /* ACTIVE STATE (Blue Border on Left/Right) */
-    .sidebar-nav a.active { 
-        background-color: #eff6ff; 
-        color: #2563eb; 
-        border-right: 3px solid #2563eb; 
-    }
-
+    .sidebar-nav a.active { background-color: #eff6ff; color: #2563eb; border-right: 3px solid #2563eb; }
     .sidebar-nav svg { width: 22px; height: 22px; }
+
+    /* Yellow Settings Link */
+    .settings-item a {
+        background-color: #fef9c3 !important; 
+        color: #854d0e !important; 
+        border-left: 4px solid #facc15;
+        font-weight: 600;
+    }
+    .settings-item a:hover { background-color: #fef08a !important; }
 
     /* --- MAIN CONTENT STYLES --- */
     .main-content { margin-left: 250px; flex: 1; padding: 40px; animation: fadeIn 0.6s ease-out; }
@@ -80,57 +139,33 @@
 
     /* --- BANNER & HERO --- */
     .profile-hero {
-        background: white; border-radius: 24px; 
-        border: 1px solid white;
-        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
-        overflow: hidden; margin-bottom: 30px;
-        position: relative;
+        background: white; border-radius: 24px; border: 1px solid white;
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08); overflow: hidden; margin-bottom: 30px; position: relative;
     }
-
-    .hero-banner {
-        height: 220px; width: 100%;
-        background-color: #1e293b; /* Dark Banner */
-        position: relative;
-    }
-    
-    .hero-banner img { 
-        width: 100%; height: 100%; object-fit: cover; 
-        filter: brightness(0.6); 
-    }
-    
+    .hero-banner { height: 220px; width: 100%; background-color: #1e293b; position: relative; }
+    .hero-banner img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6); }
     .hero-banner::after {
         content: ""; position: absolute; bottom: 0; left: 0; width: 100%; height: 100px;
         background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
     }
-
     .hero-content {
-        padding: 0 40px 30px 40px;
-        display: flex; justify-content: space-between; align-items: flex-end;
+        padding: 0 40px 30px 40px; display: flex; justify-content: space-between; align-items: flex-end;
         position: relative; margin-top: -60px;
     }
-
     .identity-group { display: flex; align-items: flex-end; gap: 24px; }
-
     .avatar-wrapper {
-        width: 140px; height: 140px;
-        border-radius: 50%; border: 5px solid white;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-        background: white; overflow: hidden;
-        position: relative; z-index: 2;
+        width: 140px; height: 140px; border-radius: 50%; border: 5px solid white;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15); background: white; overflow: hidden; position: relative; z-index: 2;
     }
     .avatar-wrapper img { width: 100%; height: 100%; object-fit: cover; }
-
     .user-text { padding-bottom: 10px; z-index: 2; }
     .username { font-size: 36px; font-weight: 800; color: #0f172a; line-height: 1; margin-bottom: 6px; text-shadow: 2px 2px 0px white; }
     .user-badge {
-        display: inline-flex; align-items: center; gap: 6px;
-        background: #0f172a; color: white; 
+        display: inline-flex; align-items: center; gap: 6px; background: #0f172a; color: white; 
         font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
         padding: 6px 14px; border-radius: 20px; box-shadow: 0 4px 10px rgba(15, 23, 42, 0.3);
     }
-
     .hero-actions { display: flex; gap: 12px; padding-bottom: 15px; }
-
     .btn-action {
         padding: 10px 20px; border-radius: 12px; font-weight: 600; font-size: 14px;
         text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
@@ -150,7 +185,6 @@
     /* --- DASHBOARD --- */
     .glass-panel { background: white; border-radius: 20px; padding: 24px; border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
     .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-
     .dash-item {
         background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(10px);
         border-radius: 24px; padding: 24px; position: relative; overflow: hidden; transition: all 0.3s;
@@ -158,7 +192,6 @@
         box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
     }
     .dash-item:hover { transform: translateY(-3px); background: rgba(255, 255, 255, 0.8); box-shadow: 0 12px 40px rgba(31, 38, 135, 0.1); }
-
     .level-section { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
     .level-icon { font-size: 40px; }
     .level-details { display: flex; flex-direction: column; }
@@ -167,13 +200,11 @@
     .card-separator { border: 0; height: 1px; background: rgba(100, 116, 139, 0.2); margin: 0 0 20px 0; }
     .badge-section { display: flex; align-items: center; justify-content: space-between; }
     .badge-stack { display: flex; }
-
     .mini-badge { width: 44px; height: 44px; border-radius: 50%; background: white; border: 3px solid white; box-shadow: 0 4px 8px rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center; font-size: 22px; margin-right: -12px; position: relative; }
     .bg-rank-1 { background-color: #f87171; }
     .bg-rank-2 { background-color: #fbbf24; }
     .bg-rank-3 { background-color: #60a5fa; }
     .badge-view-all { font-size: 14px; font-weight: 600; color: #4f46e5; display: flex; align-items: center; gap: 4px; }
-
     .points-section { display: flex; align-items: center; gap: 16px; margin: 24px 0; }
     .coin-icon-large {
         width: 50px; height: 50px; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
@@ -182,7 +213,6 @@
     }
     .points-num { font-size: 36px; font-weight: 800; color: #1e293b; line-height: 1; }
     .points-label { font-size: 14px; font-weight: 600; color: #64748b; }
-    
     .btn-exchange {
         background: linear-gradient(135deg, #eef2ff 0%, #c7d2fe 100%); color: #3730a3;
         border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; font-size: 15px; width: 100%;
@@ -191,13 +221,11 @@
     }
     .btn-exchange:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(199, 210, 254, 0.6); }
     .gift-icon { font-size: 18px; }
-
     .stats-bar { display: flex; gap: 20px; justify-content: space-between; background: #f8fafc; padding: 15px 25px; border-radius: 16px; border: 1px solid #f1f5f9; }
     .stat-box { display: flex; flex-direction: column; cursor: pointer; transition: 0.2s; align-items: center; }
     .stat-box:hover .stat-num { color: #4f46e5; }
     .stat-num { font-size: 18px; font-weight: 800; color: #1e293b; }
     .stat-label { font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; }
-
     .tags-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
     .skill-pill { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; position: relative; overflow: hidden; }
     .pill-green { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
@@ -222,11 +250,6 @@
     .list-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: white; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 15px; transition: 0.2s; }
     .list-item:hover { border-color: #4f46e5; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1); }
     .list-icon { width: 50px; height: 50px; background: #f1f5f9; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
-    
-    /* SENIOR MODE OVERRIDES FOR SIDEBAR */
-    body.senior-mode .sidebar { width: 280px; }
-    body.senior-mode .main-content { margin-left: 280px; }
-    body.senior-mode .sidebar-nav a { padding: 16px 30px; font-size: 18px; }
 
     @media (max-width: 1024px) {
         .profile-grid { grid-template-columns: 1fr; }
@@ -250,38 +273,31 @@
 <div class="container">
     
     <aside class="sidebar">
-    <div class="sidebar-logo">
-        <a href="/" class="logo">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-            <span>GenConnect</span>
-        </a>
-    </div>
-    <ul class="sidebar-nav">
-        <li><a href="{{ url_for('home') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a></li>
-        
-        <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg><span>Explore Activities</span></a></li>
-        
-        <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Community</span></a></li>
-        
-        <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>Create</span></a></li>
-        
-        <li><a href="{{ url_for('notifications_page') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Notification</span></a></li>
-        
-        <li><a href="{{ url_for('messages') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Message</span></a></li>
-        
-        <li><a href="{{ url_for('profile') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a></li>
-        
-        <li style="margin-top: 20px; border-top: 1px solid #e5e7eb;"></li>
-        
-        <li><a href="#" onclick="toggleSeniorMode()" style="color: #059669;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg><span>Senior Mode (Aa+)</span></a></li>
-        
-        <li><a href="{{ url_for('logout') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></a></li>
-    </ul>
-</aside>
+        <div class="sidebar-logo">
+            <a href="/" class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                <span>GenConnect</span>
+            </a>
+        </div>
+        <ul class="sidebar-nav">
+            <li><a href="{{ url_for('home') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a></li>
+            <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg><span>Explore Activities</span></a></li>
+            <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Community</span></a></li>
+            <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>Create</span></a></li>
+            <li><a href="{{ url_for('notifications_page') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Notification</span></a></li>
+            <li><a href="{{ url_for('messages') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Message</span></a></li>
+            <li><a href="{{ url_for('profile') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a></li>
+            
+            <li style="margin-top: 20px; border-top: 1px solid #e5e7eb;"></li>
+            
+            <li class="settings-item"><a href="{{ url_for('settings') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Settings</span></a></li>
+            
+            <li><a href="{{ url_for('logout') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></a></li>
+        </ul>
+    </aside>
 
     <main class="main-content">
         <div class="profile-container">
-            
             <div class="profile-hero">
                 <div class="hero-banner">
                     <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2070&auto=format&fit=crop" alt="Banner">
@@ -300,7 +316,6 @@
                             <div class="user-badge">{{ user.member_type }}</div>
                         </div>
                     </div>
-
                     <div class="hero-actions">
                         {% if is_own_profile %}
                             <a href="{{ url_for('edit_profile') }}" class="btn-action btn-glass">
@@ -316,7 +331,6 @@
             </div>
 
             <div class="profile-grid">
-                
                 <div class="content-column">
                     <div class="dash-grid">
                         <a href="{{ url_for('ranking') }}" class="dash-item">
@@ -332,15 +346,12 @@
                             <div class="badge-section">
                                 <div class="badge-stack">
                                     {% for badge in user_badges[:3] %}
-                                        <div class="mini-badge bg-rank-{{ loop.index }}" title="{{ badge.name }}">
-                                            {{ badge.icon }}
-                                        </div>
+                                        <div class="mini-badge bg-rank-{{ loop.index }}" title="{{ badge.name }}">{{ badge.icon }}</div>
                                     {% endfor %}
                                 </div>
                                 <span class="badge-view-all">View All →</span>
                             </div>
                         </a>
-                        
                         <a href="{{ url_for('rewards') }}" class="dash-item">
                             <span class="dash-label">Exchange Reward</span>
                             <div class="points-section">
@@ -350,9 +361,7 @@
                                     <span class="points-label">GenPoints</span>
                                 </div>
                             </div>
-                            <button class="btn-exchange">
-                                <span class="gift-icon">🎁</span> Exchange Rewards →
-                            </button>
+                            <button class="btn-exchange"><span class="gift-icon">🎁</span> Exchange Rewards →</button>
                         </a>
                     </div>
 
@@ -361,6 +370,7 @@
                             <div class="tab-link active" onclick="switchTab('posts', event)">Your Posts</div>
                             <div class="tab-link" onclick="switchTab('communities', event)">Communities</div>
                             <div class="tab-link" onclick="switchTab('saved', event)">Saved</div>
+                            <div class="tab-link" onclick="switchTab('Setting', event)">Setting</div>
                         </div>
 
                         <div id="tab-posts">
@@ -374,7 +384,6 @@
                                             <img src="{{ url_for('uploaded_file', filename=post.media_file) }}" class="card-thumb">
                                         {% endif %}
                                     {% endif %}
-
                                     <div class="card-body">
                                         <div class="card-h">{{ post.title if post.title else 'Posted an update' }}</div>
                                         <p class="card-p">{{ post.content }}</p>
@@ -389,7 +398,7 @@
                                 <div class="content-card">
                                     <div class="card-body">
                                         <div class="card-h">Welcome!</div>
-                                        <p class="card-p">You haven't posted anything yet. Go to the 'Create' tab to share your first update!</p>
+                                        <p class="card-p">You haven't posted anything yet.</p>
                                     </div>
                                 </div>
                             {% endif %}
@@ -398,47 +407,108 @@
                         <div id="tab-communities" style="display: none;">
                             <div class="list-item">
                                 <div class="list-icon" style="color: #3b82f6;">🐍</div>
-                                <div>
-                                    <div style="font-weight: 700; color: #0f172a;">Python Developers SG</div>
-                                    <div style="font-size: 13px; color: #64748b;">A group for Python enthusiasts to share code.</div>
-                                </div>
+                                <div><div style="font-weight: 700; color: #0f172a;">Python Developers SG</div><div style="font-size: 13px; color: #64748b;">A group for Python enthusiasts.</div></div>
                                 <button class="btn-action btn-glass" style="margin-left:auto; padding: 6px 12px; font-size:12px;">View</button>
                             </div>
-                            <div class="list-item">
-                                <div class="list-icon" style="color: #10b981;">🛡️</div>
-                                <div>
-                                    <div style="font-weight: 700; color: #0f172a;">CyberSecurity Juniors</div>
-                                    <div style="font-size: 13px; color: #64748b;">Learning about ethical hacking and safety.</div>
-                                </div>
-                                <button class="btn-action btn-glass" style="margin-left:auto; padding: 6px 12px; font-size:12px;">View</button>
                             </div>
-                            <div class="list-item">
-                                <div class="list-icon" style="color: #6366f1;">⚛️</div>
-                                <div>
-                                    <div style="font-weight: 700; color: #0f172a;">React & Frontend</div>
-                                    <div style="font-size: 13px; color: #64748b;">Discussing the latest in web development.</div>
-                                </div>
-                                <button class="btn-action btn-glass" style="margin-left:auto; padding: 6px 12px; font-size:12px;">View</button>
-                            </div>
-                        </div>
 
                         <div id="tab-saved" style="display: none;">
                             <div class="content-card">
                                 <div class="card-body">
                                     <div class="card-h">📄 SQL Cheat Sheet 2025</div>
-                                    <p class="card-p">Comprehensive guide to Joins, Unions, and Indexing optimization.</p>
                                     <div class="card-ft"><span>Saved from DataScienceHub</span></div>
                                 </div>
                             </div>
-                            <div class="content-card">
-                                <div class="card-body">
-                                    <div class="card-h">🎥 VS Code Extensions You Need</div>
-                                    <p class="card-p">Video tutorial on the best extensions for productivity and formatting.</p>
-                                    <div class="card-ft"><span>Saved from TechTube</span></div>
-                                </div>
-                            </div>
                         </div>
-                    </div>
+
+                        <div id="tab-Setting" style="display: none;">
+                            <form action="{{ url_for('update_settings') }}" method="POST">
+                                <div class="settings-wrapper">
+                                    
+                                    <div class="settings-section">
+                                        <div class="settings-header">
+                                            <i class="fas fa-universal-access"></i>
+                                            <h3>Display & Accessibility</h3>
+                                        </div>
+
+                                        <div class="setting-row">
+                                            <div class="setting-info">
+                                                <div class="setting-title">Font Size</div>
+                                                <div class="setting-desc">Adjust the text size for better reading comfort.</div>
+                                            </div>
+                                            <div class="font-selector">
+                                                {% for size in ['Normal', 'Large', 'X-Large'] %}
+                                                    <input type="radio" name="font_size" id="size-{{ size }}" value="{{ size }}" 
+                                                           {% if user.font_size == size %}checked{% endif %}>
+                                                    <label for="size-{{ size }}">
+                                                        <span style="font-size: {% if size=='Normal' %}14px{% elif size=='Large' %}16px{% else %}18px{% endif %};">Aa</span>
+                                                        {{ size }}
+                                                    </label>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+
+                                        <div class="setting-row">
+                                            <div class="setting-info">
+                                                <div class="setting-title"><i class="fas fa-adjust" style="font-size:12px; color:#94a3b8;"></i> High Contrast</div>
+                                                <div class="setting-desc">Increases the contrast between text and background colors.</div>
+                                            </div>
+                                            <label class="switch">
+                                                <input type="checkbox" name="high_contrast" {% if user.high_contrast %}checked{% endif %}>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
+
+                                        <div class="setting-row">
+                                            <div class="setting-info">
+                                                <div class="setting-title"><i class="fas fa-volume-up" style="font-size:12px; color:#94a3b8;"></i> Screen Reader Friendly</div>
+                                                <div class="setting-desc">Simplifies layout structure for assistive technologies.</div>
+                                            </div>
+                                            <label class="switch">
+                                                <input type="checkbox" name="screen_reader" {% if user.screen_reader %}checked{% endif %}>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="settings-section">
+                                        <div class="settings-header">
+                                            <i class="fas fa-bell"></i>
+                                            <h3>Notifications & Alerts</h3>
+                                        </div>
+
+                                        <div class="setting-row">
+                                            <div class="setting-info">
+                                                <div class="setting-title">Message Alerts</div>
+                                                <div class="setting-desc">Get notified immediately when someone messages you.</div>
+                                            </div>
+                                            <label class="switch">
+                                                <input type="checkbox" name="message_alerts" {% if user.message_alerts %}checked{% endif %}>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
+
+                                        <div class="setting-row">
+                                            <div class="setting-info">
+                                                <div class="setting-title">Event Reminders</div>
+                                                <div class="setting-desc">Receive reminders 24 hours before upcoming events.</div>
+                                            </div>
+                                            <label class="switch">
+                                                <input type="checkbox" name="event_reminders" {% if user.event_reminders %}checked{% endif %}>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="save-bar">
+                                        <div style="font-size:13px; color:#64748b;">Changes will apply immediately</div>
+                                        <button type="submit" class="btn-save">Save Preferences</button>
+                                    </div>
+
+                                </div>
+                            </form>
+                        </div>
+                        </div>
                 </div>
 
                 <div class="sidebar-column">
@@ -448,61 +518,26 @@
                             <div class="stat-box"><span class="stat-num">{{ user.get_follower_count() }}</span><span class="stat-label">Followers</span></div>
                             <div class="stat-box"><span class="stat-num">{{ user.get_following_count() }}</span><span class="stat-label">Following</span></div>
                         </div>
-
                         <div class="bio-section">
                             <h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> About</h3>
-                            <p class="bio-text">{{ user.bio or "IT Student passionate about bridging the digital divide. I love coding in Python and teaching seniors how to use smartphones safely!" }}</p>
-                            
+                            <p class="bio-text">{{ user.bio or "IT Student..." }}</p>
                             <h3 style="margin-top:20px; font-size:14px; text-transform: uppercase; color:#64748b;">Ask me about</h3>
                             <div class="tags-container">
                                 {% if user.interests %}
                                     {% for interest in user.interests.split(',') %}
-                                        <span class="skill-pill {% if loop.index % 3 == 0 %}pill-blue{% elif loop.index % 3 == 1 %}pill-green{% else %}pill-purple{% endif %}">
-                                            {{ interest }}
-                                        </span>
+                                        <span class="skill-pill pill-blue">{{ interest }}</span>
                                     {% endfor %}
                                 {% else %}
                                     <span class="skill-pill pill-blue">Web Dev</span>
-                                    <span class="skill-pill pill-green">Cybersecurity</span>
-                                    <span class="skill-pill pill-purple">Tech Support</span>
-                                    <span class="skill-pill pill-blue">Python</span>
                                 {% endif %}
                             </div>
                         </div>
                     </div>
-
                     <div class="glass-panel">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                            <h3 style="font-size:15px; font-weight:700;">Upcoming Events</h3>
-                            <span class="btn-mini" style="cursor:pointer;">+ Create</span>
-                        </div>
-                        
+                        <h3>Upcoming Events</h3>
                         <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:12px; margin-bottom:10px; display:flex; gap:12px;">
-                            <div style="background:#eff6ff; color:#2563eb; padding:5px 10px; border-radius:8px; text-align:center; min-width:50px; display:flex; flex-direction:column; justify-content:center;">
-                                <span style="font-size:10px; font-weight:700; text-transform:uppercase;">Dec</span>
-                                <span style="font-size:18px; font-weight:800;">12</span>
-                            </div>
-                            <div>
-                                <h4 style="font-size:14px; font-weight:700; color:#1e293b; margin-bottom:4px;">Python for Seniors</h4>
-                                <div style="font-size:12px; color:#64748b; display:flex; align-items:center; gap:4px;">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                                    Community Hall A
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="glass-panel">
-                        <h3 style="font-size:15px; font-weight:700; margin-bottom:15px;">Active Communities</h3>
-                        <div style="display:flex; flex-direction:column; gap:12px;">
-                            <div style="display:flex; gap:10px; align-items:center;">
-                                <div style="width:36px; height:36px; background:#e0e7ff; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#4f46e5; font-weight:bold;">T</div>
-                                <div style="font-size:14px; font-weight:600;">Tech Support Group</div>
-                            </div>
-                            <div style="display:flex; gap:10px; align-items:center;">
-                                <div style="width:36px; height:36px; background:#dcfce7; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#166534; font-weight:bold;">G</div>
-                                <div style="font-size:14px; font-weight:600;">Gen Z Coders</div>
-                            </div>
+                            <div style="background:#eff6ff; color:#2563eb; padding:5px 10px; border-radius:8px; text-align:center;"><span style="font-size:18px; font-weight:800;">19</span></div>
+                            <div><h4>Python for Seniors</h4></div>
                         </div>
                     </div>
                 </div>
@@ -512,28 +547,40 @@
 </div>
 
 <script>
+    // Run this when the page loads
+    document.addEventListener("DOMContentLoaded", function() {
+        // If the URL has #settings, open the settings tab immediately
+        if(window.location.hash === '#settings') {
+            switchTab('Setting', null);
+        }
+    });
+
     function switchTab(tabName, event) {
+        // 1. Remove 'active' class from all tab links
         document.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active'));
-        ['posts', 'communities', 'saved'].forEach(name => {
+        
+        // 2. Hide ALL tab content areas
+        ['posts', 'communities', 'saved', 'Setting'].forEach(name => {
             const el = document.getElementById('tab-' + name);
             if(el) el.style.display = 'none';
         });
-        if(event) event.currentTarget.classList.add('active');
+
+        // 3. Add 'active' class to the clicked tab (if event exists)
+        if(event) {
+            event.currentTarget.classList.add('active');
+        } else if (tabName === 'Setting') {
+            // Manually highlight the Settings tab link if no click event (e.g., from redirect)
+            // Note: This assumes the Settings tab link is the 4th one (index 3)
+            const links = document.querySelectorAll('.tab-link');
+            if(links.length > 3) links[3].classList.add('active');
+        }
+
+        // 4. Show the specific target tab content
         const target = document.getElementById('tab-' + tabName);
         if(target) {
             target.style.display = 'block';
             target.style.animation = 'fadeIn 0.5s ease';
         }
-    }
-
-    function toggleSeniorMode() {
-        document.body.classList.toggle('senior-mode');
-        const isSenior = document.body.classList.contains('senior-mode');
-        localStorage.setItem('seniorMode', isSenior);
-    }
-
-    if(localStorage.getItem('seniorMode') === 'true') {
-        document.body.classList.add('senior-mode');
     }
 </script>
 {% endblock %}

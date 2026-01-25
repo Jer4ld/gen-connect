@@ -1279,7 +1279,37 @@ def give_points():
         db.session.commit()
         return "Points updated to 1000!"
     return "Please log in first."
+# ================= SETTINGS ROUTES =================
 
+@app.route('/settings')
+def settings():
+    if 'user_id' not in session: return redirect(url_for('login'))
+    # Redirects to profile page and tells it to open the #settings tab
+    return redirect(url_for('profile') + '#settings')
+
+@app.route('/update_settings', methods=['POST'])
+def update_settings():
+    if 'user_id' not in session: return redirect(url_for('login'))
+    
+    user = User.query.get(session['user_id'])
+    
+    # Update Accessibility
+    user.font_size = request.form.get('font_size', 'Normal')
+    user.high_contrast = 'high_contrast' in request.form
+    user.screen_reader = 'screen_reader' in request.form
+    
+    # Update Notifications
+    user.message_alerts = 'message_alerts' in request.form
+    user.event_reminders = 'event_reminders' in request.form
+    
+    try:
+        db.session.commit()
+        flash('Settings updated successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error saving settings.', 'error')
+        
+    return redirect(url_for('profile') + '#settings')
 @app.errorhandler(404)
 def not_found(error): return '<h1>404 - Page Not Found</h1>', 404
 
