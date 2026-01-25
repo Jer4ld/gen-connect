@@ -6,6 +6,7 @@
     {% set displayName = contact.username if contact.username is defined else contact.name %}
     <title>Chat with {{ displayName }} - GenConnect</title>
     <style>
+        /* ... (Keep existing CSS) ... */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f5; transition: font-size 0.2s; }
         .container { display: flex; height: 100vh; }
@@ -20,21 +21,16 @@
         .sidebar-nav svg { width: 22px; height: 22px; }
         .messages-container { margin-left: 250px; flex: 1; display: flex; height: 100vh; background-color: #f9fafb; }
         .conversations-sidebar { width: 280px; background: white; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column; position: relative; }
-        
-        /* Conversations Header */
         .conversations-header { padding: 20px 20px 10px 20px; display: flex; justify-content: space-between; align-items: center; }
         .conversations-header h2 { font-size: 20px; font-weight: 700; color: #111827; }
-        
         .header-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.2s; color: #6b7280; }
         .header-icon:hover { background-color: #f3f4f6; }
-        
         .conversations-list { flex: 1; overflow-y: auto; }
         .conversation-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid #f3f4f6; text-decoration: none; color: inherit; cursor: pointer; }
         .conversation-item:hover { background-color: #f9fafb; }
         .conversation-item.active { background-color: #eff6ff; }
         .conversation-avatar { width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 16px; flex-shrink: 0; overflow: hidden;}
         .conversation-name { font-weight: 600; color: #111827; font-size: 15px; }
-        
         .chat-area { flex: 1; display: flex; flex-direction: column; background: white; position: relative; }
         .chat-header { display: flex; align-items: center; justify-content: space-between; padding: 15px 30px; border-bottom: 1px solid #e5e7eb; background: white; z-index: 10; }
         .chat-header-info { display: flex; align-items: center; gap: 15px; }
@@ -43,21 +39,17 @@
         .chat-user-info p { font-size: 13px; color: #10b981; }
         .action-icon { width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s; color: #6b7280; }
         .action-icon:hover { background: #f3f4f6; }
-        
         .pinned-message-bar { display: none; background: #f0f2f5; padding: 8px 15px; border-bottom: 1px solid #e5e7eb; align-items: center; gap: 10px; cursor: pointer; z-index: 9; }
         .pinned-icon svg { width: 18px; height: 18px; color: #00af9c; }
         .pinned-content { flex: 1; overflow: hidden; }
         .pinned-title { font-size: 12px; font-weight: bold; color: #00af9c; margin-bottom: 2px; }
         .pinned-text { font-size: 13px; color: #54656f; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .pinned-close { cursor: pointer; color: #6b7280; padding: 5px; }
-        
-        /* Floating Dropdowns */
         .dropdown-menu { position: absolute; top: 60px; right: 15px; background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px 0; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); display: none; z-index: 1000; min-width: 180px; }
         .dropdown-menu.active { display: block; }
         .menu-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; cursor: pointer; transition: background 0.2s; color: #374151; font-size: 14px; }
         .menu-item:hover { background-color: #f9fafb; }
         .menu-item.danger { color: #ef4444; }
-
         .messages-area { flex: 1; overflow-y: auto; padding: 20px; background: #f9fafb; transition: background 0.3s; }
         .message { display: flex; gap: 10px; margin-bottom: 15px; animation: fadeIn 0.3s ease; position: relative; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -100,7 +92,6 @@
         .send-button { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .file-preview { display: none; align-items: center; justify-content: space-between; padding: 10px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; margin-top: 10px; }
         .remove-file { width: 24px; height: 24px; border-radius: 50%; background: #ef4444; color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 3000; align-items: center; justify-content: center; }
         .modal.active { display: flex; }
         .modal-content { background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 450px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); }
@@ -110,21 +101,20 @@
         .modal-close:hover { background-color: #f3f4f6; }
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; margin-bottom: 8px; color: #374151; font-weight: 500; font-size: 14px; }
-        .form-group input { width: 100%; padding: 12px 15px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 15px; }
-        .form-group input:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
+        .form-group input, .form-group textarea { width: 100%; padding: 12px 15px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 15px; }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
         .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
         .btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; font-weight: 500; }
         .btn-cancel { background: white; border: 1px solid #d1d5db; color: #374151; }
         .btn-submit { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-danger:hover { background: #dc2626; }
         .contact-list { max-height: 300px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px; margin-top: 10px; }
-        
         .contact-item { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid #f3f4f6; cursor: pointer; }
         .contact-item:hover { background-color: #f9fafb; }
-        
         .contact-checkbox { width: 18px; height: 18px; cursor: pointer; }
         .contact-avatar { width: 35px; height: 35px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 14px; }
         .contact-name { font-size: 14px; color: #374151; }
-
         .info-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 3000; display: none; align-items: center; justify-content: center; }
         .info-modal.active { display: flex; }
         .info-card { background: white; width: 300px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
@@ -134,41 +124,42 @@
         .info-icon { margin-right: 10px; width: 20px; text-align: center; }
         .double-tick { color: #53bdeb; font-weight: bold; } 
         .grey-tick { color: #8696a0; font-weight: bold; }
-        .notification-toast { position: fixed; top: 20px; right: 20px; background: white; padding: 16px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); display: none; z-index: 5000; border-left: 4px solid #10b981; }
+        .notification-toast { position: fixed; top: 20px; right: 20px; background: white; padding: 16px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); display: none; align-items: center; gap: 12px; z-index: 5000; animation: slideIn 0.3s ease; }
         .notification-toast.active { display: flex; }
-
+        .notification-toast.success { border-left: 4px solid #10b981; }
+        .notification-toast.error { border-left: 4px solid #ef4444; }
+        .notification-icon svg { width: 20px; height: 20px; color: #10b981; }
+        .notification-content { flex: 1; }
+        .notification-title { font-weight: 600; font-size: 14px; color: #111827; margin-bottom: 2px; }
+        .notification-message { font-size: 13px; color: #6b7280; }
+        @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .member-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f3f4f6; }
         .badge-admin { background: #fee2e2; color: #ef4444; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
         .badge-admin.hidden { visibility: hidden; }
         .promote-link { font-size: 11px; color: #6366f1; cursor: pointer; text-decoration: underline; }
-
         .wallpaper-grid { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .color-circle { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; border: 2px solid #e5e7eb; transition: transform 0.2s; }
         .color-circle:hover { transform: scale(1.1); border-color: #6366f1; }
-
-        /* Text Size Classes */
         .text-large .message-text { font-size: 18px !important; line-height: 1.6; }
         .text-large .message-bubble { padding: 15px 18px; }
-        
         .text-xl .message-text { font-size: 24px !important; line-height: 1.6; }
         .text-xl .message-bubble { padding: 20px 24px; }
         .text-xl .conversation-name { font-size: 18px; }
         .text-xl .chat-user-info h3 { font-size: 20px; }
-
-        /* Accessibility Button Style */
         .access-btn { width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; color: #6b7280; border: 1px solid #e5e7eb; margin-right: 10px; font-size: 16px; transition: all 0.2s; }
         .access-btn:hover { background-color: #f3f4f6; color: #6366f1; border-color: #6366f1; }
+        /* Report Chips */
+        .report-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+        .report-chip { border: 1px solid #d1d5db; padding: 8px 12px; border-radius: 20px; cursor: pointer; font-size: 13px; color: #374151; background: white; transition: all 0.2s; }
+        .report-chip:hover { background-color: #f9fafb; }
+        .report-chip.selected { border-color: #2563eb; color: #2563eb; background-color: #eff6ff; font-weight: 500; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <aside class="sidebar">
-        <div class="sidebar-logo">
-            <a href="/" class="logo">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg><span>GenConnect</span>
-            </a>
-        </div>
+        <div class="sidebar-logo"><a href="/" class="logo"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg><span>GenConnect</span></a></div>
         <ul class="sidebar-nav">
             <li><a href="/home"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a></li>
             <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg><span>Explore Activities</span></a></li>
@@ -183,31 +174,22 @@
 
     <div class="messages-container">
         <div class="conversations-sidebar">
-            <div class="conversations-header">
-                <h2>Messages</h2>
-                <div class="header-icon" id="conversationMenuBtn" title="More Options" onclick="toggleDropdown('conversationMenu')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg></div>
-            </div>
-            
+            <div class="conversations-header"><h2>Messages</h2><div class="header-icon" id="conversationMenuBtn" onclick="toggleDropdown('conversationMenu')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg></div></div>
             <div style="padding: 0 20px 20px 20px; border-bottom: 1px solid #e5e7eb; position: relative;">
                 <div style="background:#f3f4f6; padding:8px 12px; border-radius:8px; display:flex; align-items:center; gap:8px;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#9ca3af"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     <input type="text" id="userSearchInput" placeholder="Search users/add users" style="border:none; background:transparent; outline:none; width:100%; font-size:14px;">
                 </div>
-                
-                <div id="searchResults" style="display:none; position:absolute; top:100%; left:20px; right:20px; background:white; border:1px solid #e5e7eb; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); max-height:300px; overflow-y:auto; z-index:1000; margin-top:5px;">
-                </div>
+                <div id="searchResults" style="display:none; position:absolute; top:100%; left:20px; right:20px; background:white; border:1px solid #e5e7eb; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); max-height:300px; overflow-y:auto; z-index:1000; margin-top:5px;"></div>
             </div>
-
             <div class="dropdown-menu" id="conversationMenu">
                 <div class="menu-item" onclick="openAddContactModal()"><span>Add Contact</span></div>
                 <div class="menu-item" onclick="openNewGroupModal()"><span>New Group</span></div>
             </div>
-
             <div class="conversations-list">
                 {% if conversations %}
                     {% for conv in conversations %}
-                    <a href="/messages/{{ conv.id }}?is_group={{ 'true' if conv.is_group else 'false' }}" 
-                       class="conversation-item {% if (is_group and conv.is_group and conv.id == contact.id) or (not is_group and not conv.is_group and conv.id == contact.id) %}active{% endif %}">
+                    <a href="/messages/{{ conv.id }}?is_group={{ 'true' if conv.is_group else 'false' }}" class="conversation-item {% if (is_group and conv.is_group and conv.id == contact.id) or (not is_group and not conv.is_group and conv.id == contact.id) %}active{% endif %}">
                         <div class="conversation-avatar">{{ conv.name[0].upper() }}</div>
                         <div class="conversation-name">{{ conv.name }}</div>
                     </a>
@@ -227,29 +209,22 @@
                         {% if contact.username is defined %}<p>● Active</p>{% endif %}
                     </div>
                 </div>
-                
                 <div style="display: flex; align-items: center;">
                     <div class="access-btn" title="Change Text Size" onclick="cycleTextSize()">Aa</div>
-                    
                     <div class="action-icon" id="moreOptionsBtn" title="More Options" onclick="toggleDropdown('optionsMenu')">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
                     </div>
                 </div>
             </div>
 
-            <div class="pinned-message-bar" id="pinnedMessageBar">
-                <div class="pinned-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg></div>
-                <div class="pinned-content" onclick="scrollToPinned()">
-                    <div class="pinned-title">Pinned Message</div>
-                    <div class="pinned-text" id="pinnedTextContent"></div>
-                </div>
-                <div class="pinned-close" onclick="unpinMessage()">✕</div>
-            </div>
+            <div class="pinned-message-bar" id="pinnedMessageBar"><div class="pinned-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg></div><div class="pinned-content" onclick="scrollToPinned()"><div class="pinned-title">Pinned Message</div><div class="pinned-text" id="pinnedTextContent"></div></div><div class="pinned-close" onclick="unpinMessage()">✕</div></div>
 
             <div class="dropdown-menu" id="optionsMenu">
                 {% if is_group %}
                     <div class="menu-item" onclick="openGroupInfo()">Group Info</div>
                     <div class="menu-item" onclick="openWallpaperModal()">Change Wallpaper</div>
+                    
+                    <div class="menu-item danger" onclick="openGroupReportModal()">Report Member</div>
                     
                     {% if user_is_admin %}
                     <div class="menu-item" onclick="openEditName()">Edit Group Name</div>
@@ -259,8 +234,8 @@
                     <div class="menu-item danger" onclick="confirmDeleteGroup()" style="color:#ef4444;">Delete & Exit Group</div>
                 {% else %}
                     <div class="menu-item" onclick="openWallpaperModal()">Change Wallpaper</div>
-                    <div class="menu-item" id="btn-remove-contact" onclick="removeContact('{{ contact.id }}')">Remove Contact</div>
-                    <div class="menu-item report-option" id="btn-report-user">Report User</div>
+                    <div class="menu-item" id="btn-remove-contact" data-id="{{ contact.id }}">Remove Contact</div>
+                    <div class="menu-item report-option" onclick="openReportModal()">Report User</div>
                 {% endif %}
             </div>
 
@@ -272,10 +247,8 @@
                                 {% if is_group and message.sender_id != current_user.id %}
                                     <div style="font-size: 11px; color: #6b7280; margin-bottom: 2px; margin-left: 2px;">{{ message.sender.username }}</div>
                                 {% endif %}
-
                                 <div class="message-bubble">
                                     <div class="message-text" data-content-id="{{ message.id }}">{{ message.content | safe }}</div>
-                                    
                                     {% if message.file_path %}
                                         <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.1);">
                                             <a href="{{ url_for('static', filename='uploads/' + message.file_path) }}" target="_blank" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 13px;">
@@ -285,13 +258,8 @@
                                         </div>
                                     {% endif %}
                                     <div class="message-reactions" id="reactions-{{ message.id }}" style="display: none;"></div>
-                                    
-                                    <div class="message-meta">
-                                        <span>{{ message.created_at.strftime('%H:%M') }}</span>
-                                        <span class="message-options-btn" onclick="toggleMessageMenu(event, '{{ message.id }}')">...</span>
-                                    </div>
+                                    <div class="message-meta"><span>{{ message.created_at.strftime('%H:%M') }}</span><span class="message-options-btn" onclick="toggleMessageMenu(event, '{{ message.id }}')">...</span></div>
                                 </div>
-                                
                                 <div class="message-dropdown" id="menu-{{ message.id }}">
                                     <div class="msg-option-item" onclick="showMessageInfo('{{ message.id }}')">Message Info</div>
                                     <div class="msg-option-item" onclick="startReply('{{ message.id }}')">Reply</div>
@@ -302,14 +270,7 @@
                                         <div class="msg-option-item delete" onclick="deleteMessage('{{ message.id }}')">Delete</div>
                                     {% endif %}
                                 </div>
-
-                                <div class="reaction-bar" id="react-bar-{{ message.id }}">
-                                    <span class="reaction-emoji" onclick="addReaction('{{ message.id }}', '👍')">👍</span>
-                                    <span class="reaction-emoji" onclick="addReaction('{{ message.id }}', '❤️')">❤️</span>
-                                    <span class="reaction-emoji" onclick="addReaction('{{ message.id }}', '😂')">😂</span>
-                                    <span class="reaction-emoji" onclick="addReaction('{{ message.id }}', '😮')">😮</span>
-                                    <span class="reaction-emoji" onclick="addReaction('{{ message.id }}', '😢')">😢</span>
-                                </div>
+                                <div class="reaction-bar" id="react-bar-{{ message.id }}"><span class="reaction-emoji" onclick="addReaction('{{ message.id }}', '👍')">👍</span><span class="reaction-emoji" onclick="addReaction('{{ message.id }}', '❤️')">❤️</span><span class="reaction-emoji" onclick="addReaction('{{ message.id }}', '😂')">😂</span><span class="reaction-emoji" onclick="addReaction('{{ message.id }}', '😮')">😮</span><span class="reaction-emoji" onclick="addReaction('{{ message.id }}', '😢')">😢</span></div>
                             </div>
                         </div>
                     {% endfor %}
@@ -319,46 +280,21 @@
             </div>
 
             <div class="message-input-area">
-                <div id="icebreakerContainer" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 5px;">
-                    </div>
-
-                <div class="reply-preview-bar" id="replyPreview">
-                    <div class="reply-preview-content">
-                        <span class="reply-preview-name" id="replyTargetUser">Replying to message</span>
-                        <span class="reply-preview-text" id="replyTargetText"></span>
-                    </div>
-                    <div class="reply-close" onclick="cancelReply()">✕</div>
-                </div>
-
+                <div id="icebreakerContainer" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 5px;"></div>
+                <div class="reply-preview-bar" id="replyPreview"><div class="reply-preview-content"><span class="reply-preview-name" id="replyTargetUser">Replying to message</span><span class="reply-preview-text" id="replyTargetText"></span></div><div class="reply-close" onclick="cancelReply()">✕</div></div>
                 <form id="messageForm" class="message-input-container" enctype="multipart/form-data">
                     <input type="file" id="fileInput" name="file" style="display: none;">
-                    
-                    <button type="button" class="attachment-button" onclick="toggleIcebreakers()" title="Get conversation ideas">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2v-1.26C6.19 14.47 5 12.38 5 10a7 7 0 0 1 7-7z"/></svg>
-                    </button>
-
-                    <button type="button" class="attachment-button" onclick="document.getElementById('fileInput').click()">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    </button>
-                    
+                    <button type="button" class="attachment-button" onclick="toggleIcebreakers()" title="Get conversation ideas"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2v-1.26C6.19 14.47 5 12.38 5 10a7 7 0 0 1 7-7z"/></svg></button>
+                    <button type="button" class="attachment-button" onclick="document.getElementById('fileInput').click()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
                     <div class="input-wrapper">
                         <textarea id="messageInput" name="content" placeholder="Type a message..." rows="1"></textarea>
-                        
-                        <div id="voiceInputBtn" style="cursor: pointer; color: #6b7280; padding: 5px;" onclick="toggleVoiceInput()">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-                        </div>
+                        <div id="voiceInputBtn" style="cursor: pointer; color: #6b7280; padding: 5px;" onclick="toggleVoiceInput()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></div>
                     </div>
-
                     <input type="hidden" name="receiver_id" value="{{ contact.id }}">
                     <input type="hidden" name="is_group" value="{{ 'true' if is_group else 'false' }}">
-                    <button type="submit" class="send-button" id="submitBtn">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                    </button>
+                    <button type="submit" class="send-button" id="submitBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
                 </form>
-                <div class="file-preview" id="filePreview" style="display: none;">
-                    <div class="file-info"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg> <span id="fileName"></span></div>
-                    <button type="button" class="remove-file" onclick="removeFile()">×</button>
-                </div>
+                <div class="file-preview" id="filePreview" style="display: none;"><div class="file-info"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg> <span id="fileName"></span></div><button type="button" class="remove-file" onclick="removeFile()">×</button></div>
             </div>
         </div>
     </div>
@@ -379,12 +315,91 @@
     <div class="notification-content"><div class="notification-title" id="notificationTitle"></div><div class="notification-message" id="notificationMessage"></div></div>
 </div>
 
+<div class="modal" id="reportModal">
+    <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+            <h3>Submit a Report</h3>
+            <span class="modal-close" onclick="closeModal('reportModal')">×</span>
+        </div>
+        <form id="reportForm">
+            <div class="form-group">
+                <div class="report-grid">
+                    <div class="report-chip" onclick="selectReportReason(this)">Impersonation</div>
+                    <div class="report-chip" onclick="selectReportReason(this)">Threatening Violence</div>
+                    <div class="report-chip" onclick="selectReportReason(this)">Harassment</div>
+                    <div class="report-chip" onclick="selectReportReason(this)">Self-harm or Suicide</div>
+                    <div class="report-chip" onclick="selectReportReason(this)">Spam</div>
+                    <div class="report-chip" onclick="selectReportReason(this)">Copyright violation</div>
+                    <div class="report-chip" onclick="selectReportReason(this)">Hate</div>
+                </div>
+                <input type="hidden" name="reason" id="selectedReason">
+            </div>
+            <div class="form-group">
+                <textarea name="details" rows="4" placeholder="Tell us more about it" style="resize: none;"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-submit" onclick="submitReport()">Submit</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal" id="groupReportModal">
+    <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+            <h3>Report Group Member</h3>
+            <span class="modal-close" onclick="closeModal('groupReportModal')">×</span>
+        </div>
+        <form id="groupReportForm">
+            <input type="hidden" name="group_id" value="{{ contact.id }}">
+            
+            <div class="form-group">
+                <label>Select Member to Report:</label>
+                <div class="contact-list" style="max-height: 150px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                    {% if group_members %}
+                        {% for m in group_members %}
+                            {% if m.id != current_user.id %}
+                            <label class="contact-item">
+                                <input type="radio" name="reported_user_id" value="{{ m.id }}" style="width: 16px; height: 16px; margin-right: 10px;">
+                                <div class="conversation-avatar" style="width: 30px; height: 30px; font-size: 12px;">
+                                    {% if m.user.profile_picture != 'default.jpg' %}
+                                        <img src="/static/uploads/{{ m.user.profile_picture }}" style="width:100%; height:100%; object-fit:cover;">
+                                    {% else %}
+                                        {{ m.username[0].upper() }}
+                                    {% endif %}
+                                </div>
+                                <span style="font-size:14px; margin-left:10px;">{{ m.username }}</span>
+                            </label>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="report-grid">
+                    <div class="report-chip" onclick="selectGroupReportReason(this)">Spam</div>
+                    <div class="report-chip" onclick="selectGroupReportReason(this)">Harassment</div>
+                    <div class="report-chip" onclick="selectGroupReportReason(this)">Inappropriate Content</div>
+                    <div class="report-chip" onclick="selectGroupReportReason(this)">Violence</div>
+                </div>
+                <input type="hidden" name="reason" id="selectedGroupReason">
+            </div>
+            
+            <div class="form-group">
+                <textarea name="details" rows="3" placeholder="Additional details..." style="resize: none;"></textarea>
+            </div>
+            
+            <div class="modal-actions">
+                <button type="button" class="btn btn-submit" onclick="submitGroupReport()">Send Report to Admin</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div class="modal" id="wallpaperModal">
     <div class="modal-content">
-        <div class="modal-header">
-            <h3>Change Wallpaper</h3>
-            <span class="modal-close" onclick="closeModal('wallpaperModal')">×</span>
-        </div>
+        <div class="modal-header"><h3>Change Wallpaper</h3><span class="modal-close" onclick="closeModal('wallpaperModal')">×</span></div>
         <div style="margin-bottom:15px; font-weight:500;">Solid Colors</div>
         <div class="wallpaper-grid">
             <div class="color-circle" style="background:#e5e7eb" onclick="setWallpaper('color', '#f9fafb')"></div>
@@ -395,17 +410,9 @@
             <div class="color-circle" style="background:#f3e8ff" onclick="setWallpaper('color', '#f3e8ff')"></div>
         </div>
         <div style="margin:15px 0; font-weight:500;">Custom Image</div>
-        
-        <label for="wallpaperInput" class="btn btn-submit" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; cursor:pointer; margin-bottom:15px;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-            Choose Photos
-        </label>
+        <label for="wallpaperInput" class="btn btn-submit" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; cursor:pointer; margin-bottom:15px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Choose Photos</label>
         <input type="file" id="wallpaperInput" accept="image/*" style="display:none;">
-        
-        <div class="modal-actions">
-            <button class="btn btn-cancel" onclick="resetWallpaper()">Reset Default</button>
-            <button class="btn btn-submit" onclick="closeModal('wallpaperModal')">Done</button>
-        </div>
+        <div class="modal-actions"><button class="btn btn-cancel" onclick="resetWallpaper()">Reset Default</button><button class="btn btn-submit" onclick="closeModal('wallpaperModal')">Done</button></div>
     </div>
 </div>
 
@@ -417,21 +424,12 @@
             {% for member in group_members %}
                 <div class="member-row" style="padding: 10px;">
                     <div style="display:flex; align-items:center; gap:10px;">
-                        {% if member.is_admin %}
-                            <div class="badge-admin">ADMIN</div>
-                        {% else %}
-                            <div class="badge-member">MEMBER</div>
-                        {% endif %}
-                        
+                        {% if member.is_admin %}<div class="badge-admin">ADMIN</div>{% else %}<div class="badge-member">MEMBER</div>{% endif %}
                         <span style="font-size:14px;">{{ member.username }}</span>
                     </div>
-                    
                     {% if user_is_admin and member.id != current_user.id %}
-                        {% if not member.is_admin %}
-                            <span class="promote-link" onclick="triggerPromote('{{ member.id }}', '{{ member.username }}')">Promote Admin</span>
-                        {% else %}
-                            <span class="promote-link" style="color: #ef4444;" onclick="triggerDismiss('{{ member.id }}', '{{ member.username }}')">Dismiss Admin</span>
-                        {% endif %}
+                        {% if not member.is_admin %}<span class="promote-link" onclick="triggerPromote('{{ member.id }}', '{{ member.username }}')">Promote Admin</span>
+                        {% else %}<span class="promote-link" style="color: #ef4444;" onclick="triggerDismiss('{{ member.id }}', '{{ member.username }}')">Dismiss Admin</span>{% endif %}
                     {% endif %}
                 </div>
             {% endfor %}
@@ -441,157 +439,17 @@
 
 <div class="modal" id="confirmationModal">
     <div class="modal-content" style="max-width: 400px;">
-        <div class="modal-header">
-            <h3 id="confirmTitle">Confirm Action</h3>
-            <span class="modal-close" onclick="closeModal('confirmationModal')">×</span>
-        </div>
-        <div style="margin-bottom: 25px;">
-            <p id="confirmMessage" style="color: #4b5563; font-size: 15px; line-height: 1.5;">Are you sure?</p>
-        </div>
-        <div class="modal-actions">
-            <button class="btn btn-cancel" onclick="closeModal('confirmationModal')">Cancel</button>
-            <button class="btn" id="confirmActionBtn">Confirm</button>
-        </div>
+        <div class="modal-header"><h3 id="confirmTitle">Confirm Action</h3><span class="modal-close" onclick="closeModal('confirmationModal')">×</span></div>
+        <div style="margin-bottom: 25px;"><p id="confirmMessage" style="color: #4b5563; font-size: 15px; line-height: 1.5;">Are you sure?</p></div>
+        <div class="modal-actions"><button class="btn btn-cancel" onclick="closeModal('confirmationModal')">Cancel</button><button class="btn" id="confirmActionBtn">Confirm</button></div>
     </div>
 </div>
 
-<div class="modal" id="editNameModal">
-    <div class="modal-content">
-        <div class="modal-header"><h3>Edit Group Name</h3><span class="modal-close" onclick="closeModal('editNameModal')">×</span></div>
-        <form id="editGroupNameForm">
-            <div class="form-group"><input type="text" name="new_name" value="{{ displayName }}" required></div>
-            <div class="modal-actions"><button type="submit" class="btn btn-submit">Update Name</button></div>
-        </form>
-    </div>
-</div>
-
-<div class="modal" id="addContactModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Add Contact</h3>
-            <span class="modal-close" onclick="closeAddContactModal()">×</span>
-        </div>
-        <form id="addContactForm">
-            <div class="form-group">
-                <label>Username</label>
-                <input type="text" id="contactUsername" name="username" placeholder="Enter username" required>
-            </div>
-            <div class="modal-actions">
-                <button type="button" class="btn btn-cancel" onclick="closeAddContactModal()">Cancel</button>
-                <button type="submit" class="btn btn-submit" id="addContactBtn">Add Contact</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<div class="modal" id="newGroupModal">
-    <div class="modal-content">
-        <div class="modal-header"><h3>Create Group</h3><span class="modal-close" onclick="closeModal('newGroupModal')">×</span></div>
-        <form id="newGroupForm">
-            <div class="form-group"><label>Group Name</label><input type="text" name="group_name" required></div>
-            <div class="form-group"><label>Select Members</label><div class="contact-list">{% for c in contacts %}
-                <label class="contact-item" style="display: flex; align-items: center; gap: 12px; padding: 10px; cursor: pointer; border-bottom: 1px solid #f9fafb;">
-                    <input type="checkbox" name="members" value="{{ c.id }}" style="width: 16px; height: 16px; cursor: pointer;">
-                    
-                    <div class="conversation-avatar" style="width: 36px; height: 36px; font-size: 14px;">
-                        {% if c.profile_picture and c.profile_picture != 'default.jpg' %}
-                            <img src="{{ url_for('static', filename='uploads/' + c.profile_picture) }}" alt="{{ c.username }}" style="width: 100%; height: 100%; object-fit: cover;">
-                        {% else %}
-                            {{ c.username[0].upper() }}
-                        {% endif %}
-                    </div>
-                    
-                    <span style="font-size: 14px; font-weight: 500; color: #374151;">{{ c.username }}</span>
-                </label>
-            {% endfor %}</div></div>
-            <div class="modal-actions"><button type="button" class="btn btn-cancel" onclick="closeNewGroupModal()">Cancel</button><button type="submit" class="btn btn-submit" id="createGroupBtn">Create</button></div>
-        </form>
-    </div>
-</div>
-
-<div class="modal" id="removeMembersModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Remove Users</h3>
-            <span class="modal-close" onclick="closeModal('removeMembersModal')">×</span>
-        </div>
-        <form id="removeMembersForm">
-            <input type="hidden" name="group_id" value="{{ contact.id }}">
-            <div class="form-group">
-                <label>Select members to remove:</label>
-                <div class="contact-list" style="max-height: 250px;">
-                    {% for member in group_members %}
-                        {% if member.id != current_user.id %}
-                        <label class="contact-item" style="display: flex; align-items: center; gap: 12px; padding: 10px; cursor: pointer; border-bottom: 1px solid #f9fafb;">
-                            <input type="checkbox" name="member_ids" value="{{ member.id }}" class="remove-checkbox" style="width: 16px; height: 16px; cursor: pointer;">
-                            
-                            <div class="conversation-avatar" style="width: 36px; height: 36px; font-size: 14px;">
-                                {% if member.user.profile_picture and member.user.profile_picture != 'default.jpg' %}
-                                    <img src="{{ url_for('static', filename='uploads/' + member.user.profile_picture) }}" alt="{{ member.username }}" style="width: 100%; height: 100%; object-fit: cover;">
-                                {% else %}
-                                    {{ member.username[0].upper() }}
-                                {% endif %}
-                            </div>
-                            
-                            <span style="font-size: 14px; font-weight: 500; color: #374151;">{{ member.username }}</span>
-                        </label>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-            </div>
-            <div class="modal-actions">
-                <button type="button" class="btn btn-cancel" onclick="closeModal('removeMembersModal')">Cancel</button>
-                <button type="button" class="btn btn-danger" onclick="triggerBulkRemove()">Remove Selected</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<div class="modal" id="addMembersModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Add Users</h3>
-            <span class="modal-close" onclick="closeModal('addMembersModal')">×</span>
-        </div>
-        <form id="addMembersForm">
-            <input type="hidden" name="group_id" value="{{ contact.id }}">
-            <div class="form-group">
-                <label>Select contacts to add:</label>
-                <div class="contact-list" style="max-height: 250px;">
-                    {% set existing_ids = group_members|map(attribute='id')|list %}
-                    {% set has_candidates = false %}
-                    
-                    {% for c in contacts %}
-                        {% if c.id not in existing_ids %}
-                            {% set has_candidates = true %}
-                            <label class="contact-item" style="display: flex; align-items: center; gap: 12px; padding: 10px; cursor: pointer; border-bottom: 1px solid #f9fafb;">
-                                <input type="checkbox" name="member_ids" value="{{ c.id }}" class="add-checkbox" style="width: 16px; height: 16px; cursor: pointer;">
-                                
-                                <div class="conversation-avatar" style="width: 36px; height: 36px; font-size: 14px;">
-                                    {% if c.profile_picture and c.profile_picture != 'default.jpg' %}
-                                        <img src="{{ url_for('static', filename='uploads/' + c.profile_picture) }}" alt="{{ c.username }}" style="width: 100%; height: 100%; object-fit: cover;">
-                                    {% else %}
-                                        {{ c.username[0].upper() }}
-                                    {% endif %}
-                                </div>
-                                
-                                <span style="font-size: 14px; font-weight: 500; color: #374151;">{{ c.username }}</span>
-                            </label>
-                        {% endif %}
-                    {% endfor %}
-                    
-                    {% if not has_candidates %}
-                        <div style="color:#9ca3af; text-align:center; padding:20px; font-size: 14px;">All your contacts are already in this group.</div>
-                    {% endif %}
-                </div>
-            </div>
-            <div class="modal-actions">
-                <button type="button" class="btn btn-cancel" onclick="closeModal('addMembersModal')">Cancel</button>
-                <button type="button" class="btn btn-submit" onclick="triggerAddMembers()">Add Selected</button>
-            </div>
-        </form>
-    </div>
-</div>
+<div class="modal" id="editNameModal"><div class="modal-content"><div class="modal-header"><h3>Edit Group Name</h3><span class="modal-close" onclick="closeModal('editNameModal')">×</span></div><form id="editGroupNameForm"><div class="form-group"><input type="text" name="new_name" value="{{ displayName }}" required></div><div class="modal-actions"><button type="submit" class="btn btn-submit">Update Name</button></div></form></div></div>
+<div class="modal" id="addContactModal"><div class="modal-content"><div class="modal-header"><h3>Add Contact</h3><span class="modal-close" onclick="closeAddContactModal()">×</span></div><form id="addContactForm"><div class="form-group"><label>Username</label><input type="text" id="contactUsername" name="username" placeholder="Enter username" required></div><div class="modal-actions"><button type="button" class="btn btn-cancel" onclick="closeAddContactModal()">Cancel</button><button type="submit" class="btn btn-submit" id="addContactBtn">Add Contact</button></div></form></div></div>
+<div class="modal" id="newGroupModal"><div class="modal-content"><div class="modal-header"><h3>Create Group</h3><span class="modal-close" onclick="closeModal('newGroupModal')">×</span></div><form id="newGroupForm"><div class="form-group"><label>Group Name</label><input type="text" name="group_name" required></div><div class="form-group"><label>Select Members</label><div class="contact-list">{% for c in contacts %}<label class="contact-item" style="display: flex; align-items: center; gap: 12px; padding: 10px; cursor: pointer; border-bottom: 1px solid #f9fafb;"><input type="checkbox" name="members" value="{{ c.id }}" style="width: 16px; height: 16px; cursor: pointer;"><div class="conversation-avatar" style="width: 36px; height: 36px; font-size: 14px;">{% if c.profile_picture and c.profile_picture != 'default.jpg' %}<img src="{{ url_for('static', filename='uploads/' + c.profile_picture) }}" alt="{{ c.username }}" style="width: 100%; height: 100%; object-fit: cover;">{% else %}{{ c.username[0].upper() }}{% endif %}</div><span style="font-size: 14px; font-weight: 500; color: #374151;">{{ c.username }}</span></label>{% endfor %}</div></div><div class="modal-actions"><button type="button" class="btn btn-cancel" onclick="closeNewGroupModal()">Cancel</button><button type="submit" class="btn btn-submit" id="createGroupBtn">Create</button></div></form></div></div>
+<div class="modal" id="removeMembersModal"><div class="modal-content"><div class="modal-header"><h3>Remove Users</h3><span class="modal-close" onclick="closeModal('removeMembersModal')">×</span></div><form id="removeMembersForm"><input type="hidden" name="group_id" value="{{ contact.id }}"><div class="form-group"><label>Select members to remove:</label><div class="contact-list" style="max-height: 250px;">{% for member in group_members %}{% if member.id != current_user.id %}<label class="contact-item" style="display: flex; align-items: center; gap: 12px; padding: 10px; cursor: pointer; border-bottom: 1px solid #f9fafb;"><input type="checkbox" name="member_ids" value="{{ member.id }}" class="remove-checkbox" style="width: 16px; height: 16px; cursor: pointer;"><div class="conversation-avatar" style="width: 36px; height: 36px; font-size: 14px;">{% if member.user.profile_picture and member.user.profile_picture != 'default.jpg' %}<img src="{{ url_for('static', filename='uploads/' + member.user.profile_picture) }}" alt="{{ member.username }}" style="width: 100%; height: 100%; object-fit: cover;">{% else %}{{ member.username[0].upper() }}{% endif %}</div><span style="font-size: 14px; font-weight: 500; color: #374151;">{{ member.username }}</span></label>{% endif %}{% endfor %}</div></div><div class="modal-actions"><button type="button" class="btn btn-cancel" onclick="closeModal('removeMembersModal')">Cancel</button><button type="button" class="btn btn-danger" onclick="triggerBulkRemove()">Remove Selected</button></div></form></div></div>
+<div class="modal" id="addMembersModal"><div class="modal-content"><div class="modal-header"><h3>Add Users</h3><span class="modal-close" onclick="closeModal('addMembersModal')">×</span></div><form id="addMembersForm"><input type="hidden" name="group_id" value="{{ contact.id }}"><div class="form-group"><label>Select contacts to add:</label><div class="contact-list" style="max-height: 250px;">{% set existing_ids = group_members|map(attribute='id')|list %}{% set has_candidates = false %}{% for c in contacts %}{% if c.id not in existing_ids %}{% set has_candidates = true %}<label class="contact-item" style="display: flex; align-items: center; gap: 12px; padding: 10px; cursor: pointer; border-bottom: 1px solid #f9fafb;"><input type="checkbox" name="member_ids" value="{{ c.id }}" class="add-checkbox" style="width: 16px; height: 16px; cursor: pointer;"><div class="conversation-avatar" style="width: 36px; height: 36px; font-size: 14px;">{% if c.profile_picture and c.profile_picture != 'default.jpg' %}<img src="{{ url_for('static', filename='uploads/' + c.profile_picture) }}" alt="{{ c.username }}" style="width: 100%; height: 100%; object-fit: cover;">{% else %}{{ c.username[0].upper() }}{% endif %}</div><span style="font-size: 14px; font-weight: 500; color: #374151;">{{ c.username }}</span></label>{% endif %}{% endfor %}{% if not has_candidates %}<div style="color:#9ca3af; text-align:center; padding:20px; font-size: 14px;">All your contacts are already in this group.</div>{% endif %}</div></div><div class="modal-actions"><button type="button" class="btn btn-cancel" onclick="closeModal('addMembersModal')">Cancel</button><button type="button" class="btn btn-submit" onclick="triggerAddMembers()">Add Selected</button></div></form></div></div>
 
 <script>
     let isEditing = false;
@@ -600,29 +458,82 @@
     let replyText = "";
     let currentQuoteHtml = "";
     let pinnedMessageId = null;
+    let pendingAction = null;
+    let pendingUserId = null;
+    let pendingUsername = null; 
 
-    // --- TOGGLE MENUS (Floating) ---
     function toggleDropdown(id) {
         document.querySelectorAll('.dropdown-menu').forEach(m => { if(m.id !== id) m.classList.remove('active'); });
         document.getElementById(id).classList.toggle('active');
     }
     
-    // Header Menus
-    const moreOptionsBtn = document.getElementById('moreOptionsBtn');
-    if (moreOptionsBtn) {
-        moreOptionsBtn.onclick = (e) => { e.stopPropagation(); toggleDropdown('optionsMenu'); };
+    // ⬇️ Report Modal Functions
+    function openReportModal() {
+        document.getElementById('reportForm').reset();
+        document.querySelectorAll('.report-chip').forEach(c => c.classList.remove('selected'));
+        document.getElementById('selectedReason').value = '';
+        toggleDropdown('optionsMenu');
+        document.getElementById('reportModal').classList.add('active');
     }
-    const conversationMenuBtn = document.getElementById('conversationMenuBtn');
-    if (conversationMenuBtn) {
-        conversationMenuBtn.onclick = (e) => { e.stopPropagation(); toggleDropdown('conversationMenu'); };
+    function selectReportReason(el) {
+        document.querySelectorAll('#reportModal .report-chip').forEach(c => c.classList.remove('selected'));
+        el.classList.add('selected');
+        document.getElementById('selectedReason').value = el.innerText;
+    }
+    async function submitReport() {
+        const reason = document.getElementById('selectedReason').value;
+        const details = document.querySelector('#reportForm textarea[name="details"]').value;
+        if (!reason) { alert("Please select a reason."); return; }
+        const formData = new FormData();
+        formData.append('reason', reason);
+        formData.append('details', details);
+        try {
+            const res = await fetch(`/report_and_remove_user/{{ contact.id }}`, { method: 'POST', body: formData });
+            const data = await res.json();
+            closeModal('reportModal');
+            if (data.success) { showNotification('success', 'Report Submitted', 'User reported and contact removed.'); setTimeout(() => window.location.href = '/messages', 1500); }
+            else { showNotification('error', 'Error', data.message); }
+        } catch (e) { showNotification('error', 'Error', 'Something went wrong'); }
     }
 
-    // Listeners for Remove/Report
+    // ⬇️ NEW: Group Report Functions
+    function openGroupReportModal() {
+        toggleDropdown('optionsMenu');
+        document.getElementById('groupReportModal').classList.add('active');
+    }
+
+    function selectGroupReportReason(el) {
+        document.querySelectorAll('#groupReportModal .report-chip').forEach(c => c.classList.remove('selected'));
+        el.classList.add('selected');
+        document.getElementById('selectedGroupReason').value = el.innerText;
+    }
+
+    async function submitGroupReport() {
+        const form = document.getElementById('groupReportForm');
+        const formData = new FormData(form);
+        
+        if (!formData.get('reported_user_id')) { alert("Please select a user."); return; }
+        if (!formData.get('reason')) { alert("Please select a reason."); return; }
+
+        try {
+            const res = await fetch('/report_group_member', { method: 'POST', body: formData });
+            const data = await res.json();
+            
+            closeModal('groupReportModal');
+            
+            if (data.success) {
+                showNotification('success', 'Report Sent', 'The group admin has been notified.');
+            } else {
+                showNotification('error', 'Error', data.message);
+            }
+        } catch (e) {
+            showNotification('error', 'Error', 'Something went wrong');
+        }
+    }
+
     const btnRemove = document.getElementById('btn-remove-contact');
     if (btnRemove) { btnRemove.onclick = () => removeContact(btnRemove.dataset.id); }
-    const btnReport = document.getElementById('btn-report-user');
-    if (btnReport) { btnReport.onclick = () => reportUser(); }
-
+    
     document.addEventListener('click', (e) => { 
         if (!e.target.closest('.header-icon') && !e.target.closest('.action-icon') && !e.target.closest('.message-options-btn')) {
             document.querySelectorAll('.message-dropdown, .dropdown-menu').forEach(m => m.classList.remove('active')); 
@@ -630,617 +541,94 @@
         document.querySelectorAll('.reaction-bar').forEach(r => r.classList.remove('active')); 
     });
 
-    // ⬇️ NEW: Text Resizer Logic
-    const fontSizes = ['', 'text-large', 'text-xl'];
-    let currentFontIndex = 0;
-    
-    function cycleTextSize() {
-        const body = document.body;
-        // Remove current class
-        if (fontSizes[currentFontIndex]) {
-            body.classList.remove(fontSizes[currentFontIndex]);
-        }
-        // Advance index
-        currentFontIndex = (currentFontIndex + 1) % fontSizes.length;
-        // Add new class
-        if (fontSizes[currentFontIndex]) {
-            body.classList.add(fontSizes[currentFontIndex]);
-        }
-    }
-
-    // ⬇️ NEW: Voice Dictation Logic
-    function toggleVoiceInput() {
-        if (!('webkitSpeechRecognition' in window)) {
-            alert("Voice input is not supported in this browser. Try Chrome.");
-            return;
-        }
-        
-        const recognition = new webkitSpeechRecognition();
-        recognition.lang = 'en-US';
-        recognition.start();
-        
-        const icon = document.getElementById('voiceInputBtn');
-        icon.style.color = '#ef4444'; // Red to indicate recording
-        
-        recognition.onresult = function(event) {
-            const transcript = event.results[0][0].transcript;
-            const input = document.getElementById('messageInput');
-            input.value += (input.value ? ' ' : '') + transcript;
-            icon.style.color = '#6b7280'; // Reset color
-        };
-        
-        recognition.onerror = function(event) {
-            console.error(event.error);
-            icon.style.color = '#6b7280';
-        };
-    }
-
-    // ⬇️ UPDATED: Expanded Icebreaker List (50+ Questions)
-    const icebreakers = [
-        // Nostalgia & History
-        "What was your favorite toy growing up?",
-        "What was the first music concert you ever went to?",
-        "How much did a movie ticket cost when you were a teenager?",
-        "What was your first job, and did you like it?",
-        "Did you have a nickname growing up?",
-        "What is the biggest change in the world you've witnessed?",
-        "Tell me about your best friend from primary school.",
-        "What was your favorite subject in school?",
-        "Did you ever get into trouble as a kid?",
-        "What was your favorite home-cooked meal?",
-
-        // Technology & Modern Life
-        "What app do you use the most on your phone?",
-        "What is one piece of technology you can't live without?",
-        "Do you prefer texting or calling?",
-        "What do you think about social media?",
-        "Is there a slang word today you don't understand?",
-        "What was the first computer you ever saw?",
-        "Do you prefer reading physical books or e-books?",
-        "What is the funniest thing you've seen on the internet recently?",
-
-        // Life Advice & Values
-        "What is the best piece of advice you've ever received?",
-        "What is one thing you wish you knew when you were 20?",
-        "What are you most proud of in your life?",
-        "What does a 'perfect day' look like to you?",
-        "Who is your role model?",
-        "What is a skill you think everyone should have?",
-        "How do you handle stress?",
-        "What makes a good friend?",
-
-        // Fun & Hypothetical
-        "If you could have dinner with anyone (dead or alive), who would it be?",
-        "If you could travel anywhere right now, where would you go?",
-        "What is your favorite movie of all time?",
-        "Do you have a hidden talent?",
-        "Are you a morning person or a night owl?",
-        "What is your favorite ice cream flavor?",
-        "If you won the lottery, what is the first thing you'd buy?",
-        "Do you collect anything?",
-        "What is the best gift you've ever given?"
-    ];
-
-    function toggleIcebreakers() {
-        const container = document.getElementById('icebreakerContainer');
-        
-        if (container.innerHTML !== '') {
-            container.innerHTML = ''; // Clear if already shown
-            return;
-        }
-        
-        // Pick 3 random
-        const shuffled = icebreakers.sort(() => 0.5 - Math.random());
-        const selected = shuffled.slice(0, 3);
-        
-        selected.forEach(text => {
-            const chip = document.createElement('div');
-            chip.innerText = text;
-            chip.style.cssText = "background: #eff6ff; color: #2563eb; padding: 6px 12px; border-radius: 20px; font-size: 13px; cursor: pointer; white-space: nowrap; border: 1px solid #dbeafe; transition: background 0.2s;";
-            chip.onmouseover = () => chip.style.background = "#dbeafe";
-            chip.onmouseout = () => chip.style.background = "#eff6ff";
-            
-            chip.onclick = () => {
-                document.getElementById('messageInput').value = text;
-                container.innerHTML = ''; // Hide after selection
-                document.getElementById('messageInput').focus();
-            };
-            container.appendChild(chip);
-        });
-    }
-
-    // ⬇️ NEW MODAL HELPERS
     function openGroupInfo() { document.getElementById('groupInfoModal').classList.add('active'); }
     function openEditName() { document.getElementById('editNameModal').classList.add('active'); }
-    function openWallpaperModal() { 
-        document.getElementById('wallpaperModal').classList.add('active'); 
-        toggleDropdown('optionsMenu');
-    }
+    function openWallpaperModal() { document.getElementById('wallpaperModal').classList.add('active'); toggleDropdown('optionsMenu'); }
     function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-
-    // ⬇️ NEW ADMIN ACTIONS & CONFIRMATION LOGIC
-    let pendingAction = null;
-    let pendingUserId = null;
-    let pendingUsername = null; 
-
-    // Open the selection modal
-    function openRemoveMembersModal() {
-        // Reset checkboxes
-        document.querySelectorAll('.remove-checkbox').forEach(cb => cb.checked = false);
-        toggleDropdown('optionsMenu'); 
-        document.getElementById('removeMembersModal').classList.add('active');
-    }
-
-    // Open Add Members Modal
-    function openAddMembersModal() {
-        document.querySelectorAll('.add-checkbox').forEach(cb => cb.checked = false);
-        toggleDropdown('optionsMenu');
-        document.getElementById('addMembersModal').classList.add('active');
-    }
-
-    // Trigger the confirmation for bulk removal
-    function triggerBulkRemove() {
-        const checkboxes = document.querySelectorAll('.remove-checkbox:checked');
-        if (checkboxes.length === 0) {
-            showNotification('error', 'Selection', 'Please select at least one user.');
-            return;
-        }
-        pendingAction = 'bulk_remove';
-        const count = checkboxes.length;
-        document.getElementById('confirmTitle').innerText = "Remove Users";
-        document.getElementById('confirmMessage').innerText = `Are you sure you want to remove ${count} selected user(s) from the group?`;
-        const btn = document.getElementById('confirmActionBtn');
-        btn.className = 'btn btn-danger';
-        btn.innerText = "Remove Users";
-        closeModal('removeMembersModal');
-        document.getElementById('confirmationModal').classList.add('active');
-    }
-
-    // Trigger Add Members Confirmation
-    function triggerAddMembers() {
-        const checkboxes = document.querySelectorAll('.add-checkbox:checked');
-        if (checkboxes.length === 0) {
-            showNotification('error', 'Selection', 'Please select at least one user.');
-            return;
-        }
-        pendingAction = 'add_members';
-        const count = checkboxes.length;
-        document.getElementById('confirmTitle').innerText = "Add Users";
-        document.getElementById('confirmMessage').innerText = `Are you sure you want to add ${count} selected user(s) to the group?`;
-        const btn = document.getElementById('confirmActionBtn');
-        btn.className = 'btn btn-submit';
-        btn.innerText = "Add Users";
-        closeModal('addMembersModal');
-        document.getElementById('confirmationModal').classList.add('active');
-    }
-
-    function triggerPromote(userId, username) {
-        pendingAction = 'promote';
-        pendingUserId = userId;
-        document.getElementById('confirmTitle').innerText = "Promote Member";
-        document.getElementById('confirmMessage').innerText = `Are you sure you want to promote ${username} to Admin? They will be able to manage the group settings.`;
-        const btn = document.getElementById('confirmActionBtn');
-        btn.className = 'btn btn-submit';
-        btn.innerText = "Promote";
-        closeModal('groupInfoModal');
-        document.getElementById('confirmationModal').classList.add('active');
-    }
-
-    function triggerDismiss(userId, username) {
-        pendingAction = 'dismiss';
-        pendingUserId = userId;
-        document.getElementById('confirmTitle').innerText = "Dismiss Admin";
-        document.getElementById('confirmMessage').innerText = `Are you sure you want to remove ${username} as Admin? They will become a regular member.`;
-        const btn = document.getElementById('confirmActionBtn');
-        btn.className = 'btn btn-danger';
-        btn.innerText = "Dismiss";
-        closeModal('groupInfoModal');
-        document.getElementById('confirmationModal').classList.add('active');
-    }
-
-    // NEW TRIGGER FOR SEARCH RESULTS
-    function triggerAddContactFromSearch(userId, username) {
-        pendingAction = 'add_contact_search';
-        pendingUserId = userId;
-        pendingUsername = username;
-        document.getElementById('confirmTitle').innerText = "Add Contact";
-        document.getElementById('confirmMessage').innerText = `Are you sure you want to send a contact request to ${username}?`;
-        const btn = document.getElementById('confirmActionBtn');
-        btn.className = 'btn btn-submit';
-        btn.innerText = "Send Request";
-        document.getElementById('confirmationModal').classList.add('active');
-        document.getElementById('searchResults').style.display = 'none'; 
-    }
-
-    // ⬇️ CENTRAL CONFIRMATION HANDLER
-    document.getElementById('confirmActionBtn').addEventListener('click', async function() {
-        let url = '';
-        let body = null;
-        let isFormData = false;
-
-        if (pendingAction === 'promote') {
-            url = '/promote_admin/{{ contact.id }}/' + pendingUserId;
-        } else if (pendingAction === 'dismiss') {
-            url = '/dismiss_admin/{{ contact.id }}/' + pendingUserId;
-        } else if (pendingAction === 'bulk_remove') {
-            url = '/remove_members';
-            body = new FormData(document.getElementById('removeMembersForm'));
-            isFormData = true;
-        } else if (pendingAction === 'add_members') {
-            url = '/add_group_members';
-            body = new FormData(document.getElementById('addMembersForm'));
-            isFormData = true;
-        } else if (pendingAction === 'add_contact_search') {
-            url = '/add_contact';
-            body = new FormData();
-            body.append('username', pendingUsername);
-            isFormData = true;
-        }
-
-        if (!url) return;
-
-        try {
-            const options = { method: 'POST' };
-            if (isFormData) options.body = body;
-
-            const res = await fetch(url, options);
-            const data = await res.json();
-            
-            closeModal('confirmationModal');
-            
-            if (data.success) {
-                showNotification('success', 'Success', data.message || 'Action completed successfully');
-                if (pendingAction !== 'add_contact_search') {
-                     setTimeout(() => window.location.reload(), 1000);
-                }
-            } else {
-                showNotification('error', 'Error', data.message || 'Action failed');
-                if(pendingAction === 'bulk_remove') setTimeout(() => document.getElementById('removeMembersModal').classList.add('active'), 500);
-                else if(pendingAction === 'add_members') setTimeout(() => document.getElementById('addMembersModal').classList.add('active'), 500);
-                else if (pendingAction === 'promote' || pendingAction === 'dismiss') setTimeout(() => openGroupInfo(), 500);
-            }
-        } catch (e) {
-            console.error(e);
-            showNotification('error', 'Error', 'Something went wrong');
-        }
-    });
-
-    // ⬇️ NEW: Wallpaper Logic
-    const chatArea = document.getElementById('messagesArea');
-    const currentChatId = "{{ contact.id }}";
-    const wpKey = `wallpaper_${currentChatId}`;
-
-    function loadWallpaper() {
-        const saved = localStorage.getItem(wpKey);
-        if(saved) {
-            if(saved.startsWith('data:image') || saved.startsWith('http')) {
-                chatArea.style.backgroundImage = `url("${saved}")`;
-                chatArea.style.backgroundSize = 'cover';
-                chatArea.style.backgroundPosition = 'center';
-                chatArea.style.backgroundAttachment = 'fixed';
-                chatArea.style.backgroundColor = 'transparent';
-            } else {
-                chatArea.style.backgroundImage = 'none';
-                chatArea.style.backgroundColor = saved;
-            }
-        }
-    }
-
-    function setWallpaper(type, value) {
-        if(type === 'color') {
-            chatArea.style.backgroundImage = 'none';
-            chatArea.style.backgroundColor = value;
-            localStorage.setItem(wpKey, value);
-            // ⬇️ ADDED: Validation message
-            showNotification('success', 'Wallpaper Updated', 'Background color has been set.');
-        }
-    }
-
-    document.getElementById('wallpaperInput').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if(file) {
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                const res = evt.target.result;
-                chatArea.style.backgroundImage = `url("${res}")`;
-                chatArea.style.backgroundSize = 'cover';
-                chatArea.style.backgroundPosition = 'center';
-                chatArea.style.backgroundAttachment = 'fixed';
-                chatArea.style.backgroundColor = 'transparent';
-                try {
-                    localStorage.setItem(wpKey, res);
-                    // ⬇️ ADDED: Validation message
-                    showNotification('success', 'Wallpaper Updated', 'Your custom image has been set as the background.');
-                } catch(e) {
-                    alert("Image too large to save as default, but applied for this session.");
-                }
-            };
-            reader.readAsDataURL(file);
-            e.target.value = '';
-        }
-    });
-
-    function resetWallpaper() {
-        localStorage.removeItem(wpKey);
-        chatArea.style.backgroundImage = 'none';
-        chatArea.style.backgroundColor = '#f9fafb';
-        closeModal('wallpaperModal');
-        showNotification('success', 'Wallpaper Reset', 'Background restored to default.');
-    }
-
-    // Call immediately
-    loadWallpaper();
-
-    async function confirmDeleteGroup() {
-        if(confirm("Are you sure you want to delete and exit this group?")) {
-            const res = await fetch('/leave_group/{{ contact.id }}', { method: 'POST' });
-            const data = await res.json();
-            if(data.success) { showNotification('success', 'Exited', data.message); setTimeout(() => window.location.href = '/messages', 1500); }
-        }
-    }
-
-    document.getElementById('editGroupNameForm').onsubmit = async function(e) {
-        e.preventDefault();
-        const res = await fetch('/edit_group_name/{{ contact.id }}', { method: 'POST', body: new FormData(this) });
-        const data = await res.json();
-        if(data.success) { showNotification('success', 'Updated', data.message); setTimeout(() => window.location.reload(), 1500); }
-    };
-
-    async function removeContact(id) {
-        if(confirm("Are you sure you want to remove this contact? WARNING: All chat history and data will be permanently deleted.")) {
-            try {
-                const res = await fetch('/remove_contact/' + id, {method: 'POST'});
-                if((await res.json()).success) window.location.href = '/messages';
-            } catch(e) {}
-        }
-    }
-
-    function reportUser() { alert("User reported. Thank you for keeping the community safe."); document.getElementById('optionsMenu').classList.remove('active'); }
-
-    function showMessageInfo(id) {
-        const timeEl = document.querySelector(`#msg-${id} .message-meta span`);
-        document.getElementById('infoTime').innerText = timeEl ? timeEl.innerText : "Unknown";
-        document.getElementById('messageInfoModal').classList.add('active');
-    }
-    function closeMessageInfo() { document.getElementById('messageInfoModal').classList.remove('active'); }
-
-    function startReply(id) {
-        isReplying = true;
-        isEditing = false;
-        const msgEl = document.querySelector(`[data-content-id="${id}"]`);
-        let text = msgEl ? msgEl.innerText : "";
-        let cleanText = text.replace(/Replying to message[\s\S]*?\n/, '').trim();
-        cleanText = cleanText.replace('📎 View Attachment', '').trim();
-        cleanText = cleanText.replace(/\(edited\)$/, '').trim();
-        replyText = cleanText;
-        
-        document.getElementById('replyTargetUser').innerText = "Replying to message";
-        document.getElementById('replyTargetText').innerText = cleanText;
-        document.getElementById('replyPreview').style.display = 'flex';
-        document.getElementById('messageInput').focus();
-    }
-    function cancelReply() { 
-        isReplying = false; 
-        isEditing = false;
-        editingId = null;
-        document.getElementById('replyPreview').style.display = 'none'; 
-        replyText = ""; 
-        document.getElementById('messageInput').value = ""; // Clear input if canceling edit
-    }
-
-    function toggleMessageMenu(e, id) { e.stopPropagation(); document.querySelectorAll('.message-dropdown').forEach(m => m.classList.remove('active')); document.getElementById('menu-' + id).classList.toggle('active'); }
-    function showReactionPicker(e, id) { e.stopPropagation(); document.getElementById('menu-' + id).classList.remove('active'); document.getElementById('react-bar-' + id).classList.add('active'); }
-    function addReaction(id, emoji) { const container = document.getElementById('reactions-' + id); container.style.display = 'flex'; container.innerHTML += `<span>${emoji}</span>`; }
-
-    function startEdit(id) {
-        isEditing = true;
-        isReplying = false;
-        editingId = id;
-        
-        const msgEl = document.querySelector(`[data-content-id="${id}"]`);
-        
-        const quoteBubble = msgEl.querySelector('.reply-quote-bubble');
-        if (quoteBubble) {
-            currentQuoteHtml = quoteBubble.outerHTML;
-            let clone = msgEl.cloneNode(true);
-            clone.querySelector('.reply-quote-bubble').remove();
-            textContent = clone.innerText;
-        } else {
-            currentQuoteHtml = "";
-            textContent = msgEl.innerText;
-        }
-        
-        textContent = textContent.replace('📎 View Attachment', '').trim();
-        textContent = textContent.replace(/\s*\(edited\)$/i, '').trim();
-        
-        document.getElementById('replyTargetUser').innerText = "Editing Message";
-        document.getElementById('replyTargetText').innerText = textContent;
-        document.getElementById('replyPreview').style.display = 'flex';
-        
-        const input = document.getElementById('messageInput');
-        input.value = textContent;
-        input.focus();
-    }
-
-    function pinMessage(id) {
-        pinnedMessageId = id;
-        const msgEl = document.querySelector(`[data-content-id="${id}"]`);
-        let text = msgEl ? msgEl.innerText : "";
-        text = text.replace(/Replying to message[\s\S]*?\n/, '').trim();
-        text = text.replace('📎 View Attachment', '').trim();
-        text = text.replace(/\s*\(edited\)$/i, '').trim();
-        document.getElementById('pinnedTextContent').innerText = text;
-        document.getElementById('pinnedMessageBar').style.display = 'flex';
-    }
-    function unpinMessage() { pinnedMessageId = null; document.getElementById('pinnedMessageBar').style.display = 'none'; }
-    function scrollToPinned() { if(pinnedMessageId) document.getElementById('msg-' + pinnedMessageId).scrollIntoView({behavior: 'smooth', block: 'center'}); }
-
-    async function deleteMessage(id) {
-        if(confirm("Delete this message?")) {
-            const res = await fetch('/delete_message/' + id, {method: 'POST'});
-            if((await res.json()).success) { document.getElementById('msg-' + id).remove(); if(pinnedMessageId === id) unpinMessage(); showNotification("Success", "Message deleted"); }
-        }
-    }
-    
-
-    document.getElementById('messageForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const input = document.getElementById('messageInput');
-        const content = input.value.trim();
-        const file = document.getElementById('fileInput').files[0];
-        if (!content && !file) return;
-
-        const formData = new FormData(this);
-
-        if (isEditing) {
-            let finalContent = content;
-            if (currentQuoteHtml) finalContent = currentQuoteHtml + finalContent; // Keep quote if existed
-            finalContent += ' <span class="edited-label">(edited)</span>';
-            formData.set('content', finalContent);
-            
-            const res = await fetch('/edit_message/' + editingId, { method: 'POST', body: formData });
-            if((await res.json()).success) window.location.reload();
-            return;
-        }
-
-        if (isReplying) {
-            const quoteHtml = `<div class="reply-quote-bubble"><span class="reply-quote-sender">Replying to message</span><span>${replyText}</span></div>${content}`;
-            formData.set('content', quoteHtml);
-        } else if (file && !content) {
-            formData.set('content', '[File Attachment]');
-        }
-
-        try {
-            const res = await fetch('/send_message', { method: 'POST', body: formData });
-            if ((await res.json()).success) window.location.reload();
-        } catch (err) {}
-    });
-
-    function showNotification(type, title, message) {
-        const toast = document.getElementById('notificationToast');
-        document.getElementById('notificationTitle').textContent = title;
-        document.getElementById('notificationMessage').textContent = message;
-        toast.classList.remove('success', 'error');
-        toast.classList.add(type, 'active');
-        setTimeout(() => toast.classList.remove('active'), 3000);
-    }
-    const fileInput = document.getElementById('fileInput');
-    fileInput.addEventListener('change', (e) => { if (e.target.files[0]) { document.getElementById('fileName').textContent = e.target.files[0].name; document.getElementById('filePreview').style.display = 'flex'; } });
-    function removeFile() { fileInput.value = ''; document.getElementById('filePreview').style.display = 'none'; }
-    
+    function openRemoveMembersModal() { document.querySelectorAll('.remove-checkbox').forEach(cb => cb.checked = false); toggleDropdown('optionsMenu'); document.getElementById('removeMembersModal').classList.add('active'); }
+    function openAddMembersModal() { document.querySelectorAll('.add-checkbox').forEach(cb => cb.checked = false); toggleDropdown('optionsMenu'); document.getElementById('addMembersModal').classList.add('active'); }
     function openAddContactModal() { document.getElementById('addContactModal').classList.add('active'); document.getElementById('conversationMenu').classList.remove('active'); }
     function closeAddContactModal() { document.getElementById('addContactModal').classList.remove('active'); }
     function openNewGroupModal() { document.getElementById('newGroupModal').classList.add('active'); document.getElementById('conversationMenu').classList.remove('active'); }
     function closeNewGroupModal() { document.getElementById('newGroupModal').classList.remove('active'); }
 
-    // Forms
-    document.getElementById('newGroupForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
+    function triggerBulkRemove() { const checkboxes = document.querySelectorAll('.remove-checkbox:checked'); if (checkboxes.length === 0) { showNotification('error', 'Selection', 'Select a user.'); return; } pendingAction = 'bulk_remove'; document.getElementById('confirmTitle').innerText = "Remove Users"; document.getElementById('confirmMessage').innerText = "Remove selected users?"; const btn = document.getElementById('confirmActionBtn'); btn.className = 'btn btn-danger'; btn.innerText = "Remove"; closeModal('removeMembersModal'); document.getElementById('confirmationModal').classList.add('active'); }
+    function triggerAddMembers() { const checkboxes = document.querySelectorAll('.add-checkbox:checked'); if (checkboxes.length === 0) { showNotification('error', 'Selection', 'Select a user.'); return; } pendingAction = 'add_members'; document.getElementById('confirmTitle').innerText = "Add Users"; document.getElementById('confirmMessage').innerText = "Add selected users?"; const btn = document.getElementById('confirmActionBtn'); btn.className = 'btn btn-submit'; btn.innerText = "Add"; closeModal('addMembersModal'); document.getElementById('confirmationModal').classList.add('active'); }
+    function triggerPromote(userId, username) { pendingAction = 'promote'; pendingUserId = userId; document.getElementById('confirmTitle').innerText = "Promote"; document.getElementById('confirmMessage').innerText = `Promote ${username}?`; const btn = document.getElementById('confirmActionBtn'); btn.className = 'btn btn-submit'; btn.innerText = "Promote"; closeModal('groupInfoModal'); document.getElementById('confirmationModal').classList.add('active'); }
+    function triggerDismiss(userId, username) { pendingAction = 'dismiss'; pendingUserId = userId; document.getElementById('confirmTitle').innerText = "Dismiss"; document.getElementById('confirmMessage').innerText = `Dismiss ${username}?`; const btn = document.getElementById('confirmActionBtn'); btn.className = 'btn btn-danger'; btn.innerText = "Dismiss"; closeModal('groupInfoModal'); document.getElementById('confirmationModal').classList.add('active'); }
+    function triggerAddContactFromSearch(userId, username) { pendingAction = 'add_contact_search'; pendingUserId = userId; pendingUsername = username; document.getElementById('confirmTitle').innerText = "Add Contact"; document.getElementById('confirmMessage').innerText = `Add ${username}?`; const btn = document.getElementById('confirmActionBtn'); btn.className = 'btn btn-submit'; btn.innerText = "Send"; document.getElementById('confirmationModal').classList.add('active'); document.getElementById('searchResults').style.display = 'none'; }
+    function removeContact(id) { pendingAction = 'remove_individual_contact'; pendingUserId = id; document.getElementById('confirmTitle').innerText = "Remove Contact"; document.getElementById('confirmMessage').innerText = "Remove contact? History will be deleted."; const btn = document.getElementById('confirmActionBtn'); btn.className = 'btn btn-danger'; btn.innerText = "Remove"; const menu = document.getElementById('optionsMenu'); if(menu) menu.classList.remove('active'); document.getElementById('confirmationModal').classList.add('active'); }
+
+    document.getElementById('confirmActionBtn').addEventListener('click', async function() {
+        let url = ''; let body = null; let isFormData = false;
+        if (pendingAction === 'promote') { url = '/promote_admin/{{ contact.id }}/' + pendingUserId; } 
+        else if (pendingAction === 'dismiss') { url = '/dismiss_admin/{{ contact.id }}/' + pendingUserId; } 
+        else if (pendingAction === 'bulk_remove') { url = '/remove_members'; body = new FormData(document.getElementById('removeMembersForm')); isFormData = true; } 
+        else if (pendingAction === 'add_members') { url = '/add_group_members'; body = new FormData(document.getElementById('addMembersForm')); isFormData = true; } 
+        else if (pendingAction === 'add_contact_search') { url = '/add_contact'; body = new FormData(); body.append('username', pendingUsername); isFormData = true; } 
+        else if (pendingAction === 'remove_individual_contact') { url = '/remove_contact/' + pendingUserId; }
+
+        if (!url) return;
         try {
-            const res = await fetch('/create_group', { method: 'POST', body: new FormData(this) });
-            const data = await res.json();
-            
-            if (data.success) { 
-                showNotification('success', 'Group Created', data.message); 
-                setTimeout(() => window.location.href = '/messages', 2500); 
-            } else {
-                showNotification('error', 'Error', data.message);
-            }
-        } catch(err) {
-            showNotification('error', 'Error', 'Failed to create group');
-        }
+            const options = { method: 'POST' }; if (isFormData) options.body = body;
+            const res = await fetch(url, options); const data = await res.json();
+            closeModal('confirmationModal');
+            if (data.success) {
+                showNotification('success', 'Success', data.message || 'Done');
+                if (pendingAction === 'remove_individual_contact') setTimeout(() => window.location.href = '/messages', 1000);
+                else if (pendingAction !== 'add_contact_search') setTimeout(() => window.location.reload(), 1000);
+            } else { showNotification('error', 'Error', data.message); }
+        } catch (e) { showNotification('error', 'Error', 'Failed'); }
     });
 
-    document.getElementById('addContactForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        try {
-            const res = await fetch('/add_contact', { method: 'POST', body: new FormData(this) });
-            const data = await res.json();
-            
-            if (data.success) { 
-                showNotification('success', 'Status', data.message); 
-                setTimeout(() => window.location.reload(), 2500);
-            } else {
-                showNotification('error', 'Error', data.message);
-            }
-        } catch(err) {
-            showNotification('error', 'Error', 'Failed to send request');
-        }
-    });
-    
-    // ⬇️ NEW: Live Search Logic
-    const searchInput = document.getElementById('userSearchInput');
-    const searchResults = document.getElementById('searchResults');
-    let searchTimeout = null;
+    // Wallpaper
+    const chatArea = document.getElementById('messagesArea');
+    const currentChatId = "{{ contact.id }}";
+    const wpKey = `wallpaper_${currentChatId}`;
+    function loadWallpaper() { const saved = localStorage.getItem(wpKey); if(saved) { if(saved.startsWith('data:image') || saved.startsWith('http')) { chatArea.style.backgroundImage = `url("${saved}")`; chatArea.style.backgroundSize = 'cover'; chatArea.style.backgroundPosition = 'center'; chatArea.style.backgroundAttachment = 'fixed'; chatArea.style.backgroundColor = 'transparent'; } else { chatArea.style.backgroundImage = 'none'; chatArea.style.backgroundColor = saved; } } }
+    function setWallpaper(type, value) { if(type === 'color') { chatArea.style.backgroundImage = 'none'; chatArea.style.backgroundColor = value; localStorage.setItem(wpKey, value); showNotification('success', 'Wallpaper Updated', 'Color set.'); } }
+    document.getElementById('wallpaperInput').addEventListener('change', function(e) { const file = e.target.files[0]; if(file) { const reader = new FileReader(); reader.onload = function(evt) { const res = evt.target.result; chatArea.style.backgroundImage = `url("${res}")`; chatArea.style.backgroundSize = 'cover'; chatArea.style.backgroundPosition = 'center'; chatArea.style.backgroundAttachment = 'fixed'; chatArea.style.backgroundColor = 'transparent'; try { localStorage.setItem(wpKey, res); showNotification('success', 'Wallpaper Updated', 'Image set.'); } catch(e) { alert("Image too large."); } }; reader.readAsDataURL(file); e.target.value = ''; } });
+    function resetWallpaper() { localStorage.removeItem(wpKey); chatArea.style.backgroundImage = 'none'; chatArea.style.backgroundColor = '#f9fafb'; closeModal('wallpaperModal'); showNotification('success', 'Reset', 'Restored.'); }
+    loadWallpaper();
 
-    if(searchInput) {
-        searchInput.addEventListener('input', function(e) {
-            const query = e.target.value.trim();
-            
-            if (searchTimeout) clearTimeout(searchTimeout);
-            
-            if (query.length === 0) {
-                searchResults.style.display = 'none';
-                searchResults.innerHTML = '';
-                return;
-            }
+    // Icebreakers
+    const icebreakers = [
+        "What was your favorite toy growing up?", "What was the first music concert you ever went to?", "How much did a movie ticket cost when you were a teenager?", "What was your first job, and did you like it?", "Did you have a nickname growing up?", "What is the biggest change in the world you've witnessed?", "Tell me about your best friend from primary school.", "What was your favorite subject in school?", "Did you ever get into trouble as a kid?", "What was your favorite home-cooked meal?",
+        "What app do you use the most on your phone?", "What is one piece of technology you can't live without?", "Do you prefer texting or calling?", "What do you think about social media?", "Is there a slang word today you don't understand?", "What was the first computer you ever saw?", "Do you prefer reading physical books or e-books?", "What is the funniest thing you've seen on the internet recently?",
+        "What is the best piece of advice you've ever received?", "What is one thing you wish you knew when you were 20?", "What are you most proud of in your life?", "What does a 'perfect day' look like to you?", "Who is your role model?", "What is a skill you think everyone should have?", "How do you handle stress?", "What makes a good friend?",
+        "If you could have dinner with anyone (dead or alive), who would it be?", "If you could travel anywhere right now, where would you go?", "What is your favorite movie of all time?", "Do you have a hidden talent?", "Are you a morning person or a night owl?", "What is your favorite ice cream flavor?", "If you won the lottery, what is the first thing you'd buy?", "Do you collect anything?", "What is the best gift you've ever given?"
+    ];
+    function toggleIcebreakers() { const container = document.getElementById('icebreakerContainer'); if (container.innerHTML !== '') { container.innerHTML = ''; return; } const shuffled = icebreakers.sort(() => 0.5 - Math.random()); const selected = shuffled.slice(0, 3); selected.forEach(text => { const chip = document.createElement('div'); chip.innerText = text; chip.style.cssText = "background: #eff6ff; color: #2563eb; padding: 6px 12px; border-radius: 20px; font-size: 13px; cursor: pointer; white-space: nowrap; border: 1px solid #dbeafe; transition: background 0.2s;"; chip.onmouseover = () => chip.style.background = "#dbeafe"; chip.onmouseout = () => chip.style.background = "#eff6ff"; chip.onclick = () => { document.getElementById('messageInput').value = text; container.innerHTML = ''; document.getElementById('messageInput').focus(); }; container.appendChild(chip); }); }
 
-            searchTimeout = setTimeout(async () => {
-                try {
-                    const res = await fetch(`/search_users?q=${encodeURIComponent(query)}`);
-                    const data = await res.json();
-                    
-                    searchResults.innerHTML = '';
-                    
-                    if (data.results.length > 0) {
-                        searchResults.style.display = 'block';
-                        data.results.forEach(user => {
-                            const div = document.createElement('div');
-                            div.style.cssText = 'padding:10px; display:flex; align-items:center; gap:10px; cursor:pointer; border-bottom:1px solid #f3f4f6;';
-                            div.onmouseover = () => div.style.backgroundColor = '#f9fafb';
-                            div.onmouseout = () => div.style.backgroundColor = 'white';
-                            
-                            // Main click goes to profile
-                            div.onclick = () => window.location.href = `/profile/${user.username}`;
-                            
-                            // ⬇️ UPDATED HTML structure to include Plus Button
-                            div.innerHTML = `
-                                <div style="width:30px; height:30px; border-radius:50%; background:#e5e7eb; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-                                    <img src="/static/uploads/${user.profile_picture}" onerror="this.style.display='none'" style="width:100%; height:100%; object-fit:cover;">
-                                    <span style="font-size:12px; font-weight:bold; color:#6b7280; display:${user.profile_picture !== 'default.jpg' ? 'none' : 'block'}">${user.username[0].toUpperCase()}</span>
-                                </div>
-                                <div style="flex:1;">
-                                    <div style="font-size:13px; font-weight:600; color:#1f2937;">${user.username}</div>
-                                    <div style="font-size:11px; color:#6b7280;">${user.fullname}</div>
-                                </div>
-                                <div class="add-user-btn" style="padding: 8px; cursor:pointer; color:#6366f1; border-radius:50%; display:flex; align-items:center; justify-content:center; transition:background 0.2s;"
-                                     onclick="event.stopPropagation(); triggerAddContactFromSearch('${user.id}', '${user.username}')"
-                                     onmouseover="this.style.backgroundColor='#e0e7ff'"
-                                     onmouseout="this.style.backgroundColor='transparent'">
-                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                                </div>
-                            `;
-                            searchResults.appendChild(div);
-                        });
-                    } else {
-                        searchResults.style.display = 'block';
-                        searchResults.innerHTML = '<div style="padding:15px; text-align:center; color:#9ca3af; font-size:13px;">No users found</div>';
-                    }
-                } catch (err) {
-                    console.error("Search failed", err);
-                }
-            }, 300);
-        });
+    // Text Resizer
+    const fontSizes = ['', 'text-large', 'text-xl']; let currentFontIndex = 0;
+    function cycleTextSize() { const body = document.body; if (fontSizes[currentFontIndex]) { body.classList.remove(fontSizes[currentFontIndex]); } currentFontIndex = (currentFontIndex + 1) % fontSizes.length; if (fontSizes[currentFontIndex]) { body.classList.add(fontSizes[currentFontIndex]); } }
 
-        document.addEventListener('click', function(e) {
-            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
-                searchResults.style.display = 'none';
-            }
-        });
-    }
+    // Voice Input
+    function toggleVoiceInput() { if (!('webkitSpeechRecognition' in window)) { alert("Voice input is not supported in this browser. Try Chrome."); return; } const recognition = new webkitSpeechRecognition(); recognition.lang = 'en-US'; recognition.start(); const icon = document.getElementById('voiceInputBtn'); icon.style.color = '#ef4444'; recognition.onresult = function(event) { const transcript = event.results[0][0].transcript; const input = document.getElementById('messageInput'); input.value += (input.value ? ' ' : '') + transcript; icon.style.color = '#6b7280'; }; recognition.onerror = function(event) { icon.style.color = '#6b7280'; }; }
 
-    const area = document.getElementById('messagesArea');
-    if(area) area.scrollTop = area.scrollHeight;
+    // Search
+    const searchInput = document.getElementById('userSearchInput'); const searchResults = document.getElementById('searchResults'); let searchTimeout = null;
+    if(searchInput) { searchInput.addEventListener('input', function(e) { const query = e.target.value.trim(); if (searchTimeout) clearTimeout(searchTimeout); if (query.length === 0) { searchResults.style.display = 'none'; searchResults.innerHTML = ''; return; } searchTimeout = setTimeout(async () => { try { const res = await fetch(`/search_users?q=${encodeURIComponent(query)}`); const data = await res.json(); searchResults.innerHTML = ''; if (data.results.length > 0) { searchResults.style.display = 'block'; data.results.forEach(user => { const div = document.createElement('div'); div.style.cssText = 'padding:10px; display:flex; align-items:center; gap:10px; cursor:pointer; border-bottom:1px solid #f3f4f6;'; div.onmouseover = () => div.style.backgroundColor = '#f9fafb'; div.onmouseout = () => div.style.backgroundColor = 'white'; div.onclick = () => window.location.href = `/profile/${user.username}`; div.innerHTML = `<div style="width:30px; height:30px; border-radius:50%; background:#e5e7eb; display:flex; align-items:center; justify-content:center; overflow:hidden;"><img src="/static/uploads/${user.profile_picture}" onerror="this.style.display='none'" style="width:100%; height:100%; object-fit:cover;"><span style="font-size:12px; font-weight:bold; color:#6b7280; display:${user.profile_picture !== 'default.jpg' ? 'none' : 'block'}">${user.username[0].toUpperCase()}</span></div><div style="flex:1;"><div style="font-size:13px; font-weight:600; color:#1f2937;">${user.username}</div><div style="font-size:11px; color:#6b7280;">${user.fullname}</div></div><div class="add-user-btn" style="padding: 8px; cursor:pointer; color:#6366f1; border-radius:50%; display:flex; align-items:center; justify-content:center; transition:background 0.2s;" onclick="event.stopPropagation(); triggerAddContactFromSearch('${user.id}', '${user.username}')" onmouseover="this.style.backgroundColor='#e0e7ff'" onmouseout="this.style.backgroundColor='transparent'"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>`; searchResults.appendChild(div); }); } else { searchResults.style.display = 'block'; searchResults.innerHTML = '<div style="padding:15px; text-align:center; color:#9ca3af; font-size:13px;">No users found</div>'; } } catch (err) { console.error("Search failed", err); } }, 300); }); document.addEventListener('click', function(e) { if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) { searchResults.style.display = 'none'; } }); }
+
+    async function confirmDeleteGroup() { if(confirm("Are you sure you want to delete and exit this group?")) { const res = await fetch('/leave_group/{{ contact.id }}', { method: 'POST' }); const data = await res.json(); if(data.success) { showNotification('success', 'Exited', data.message); setTimeout(() => window.location.href = '/messages', 1500); } } }
+    document.getElementById('editGroupNameForm').onsubmit = async function(e) { e.preventDefault(); const res = await fetch('/edit_group_name/{{ contact.id }}', { method: 'POST', body: new FormData(this) }); const data = await res.json(); if(data.success) { showNotification('success', 'Updated', data.message); setTimeout(() => window.location.reload(), 1500); } };
+    function showMessageInfo(id) { const timeEl = document.querySelector(`#msg-${id} .message-meta span`); document.getElementById('infoTime').innerText = timeEl ? timeEl.innerText : "Unknown"; document.getElementById('messageInfoModal').classList.add('active'); }
+    function closeMessageInfo() { document.getElementById('messageInfoModal').classList.remove('active'); }
+    function startReply(id) { isReplying = true; isEditing = false; const msgEl = document.querySelector(`[data-content-id="${id}"]`); let text = msgEl ? msgEl.innerText : ""; let cleanText = text.replace(/Replying to message[\s\S]*?\n/, '').trim(); cleanText = cleanText.replace('📎 View Attachment', '').trim(); cleanText = cleanText.replace(/\(edited\)$/, '').trim(); replyText = cleanText; document.getElementById('replyTargetUser').innerText = "Replying to message"; document.getElementById('replyTargetText').innerText = cleanText; document.getElementById('replyPreview').style.display = 'flex'; document.getElementById('messageInput').focus(); }
+    function cancelReply() { isReplying = false; isEditing = false; editingId = null; document.getElementById('replyPreview').style.display = 'none'; replyText = ""; document.getElementById('messageInput').value = ""; }
+    function toggleMessageMenu(e, id) { e.stopPropagation(); document.querySelectorAll('.message-dropdown').forEach(m => m.classList.remove('active')); document.getElementById('menu-' + id).classList.toggle('active'); }
+    function showReactionPicker(e, id) { e.stopPropagation(); document.getElementById('menu-' + id).classList.remove('active'); document.getElementById('react-bar-' + id).classList.add('active'); }
+    function addReaction(id, emoji) { const container = document.getElementById('reactions-' + id); container.style.display = 'flex'; container.innerHTML += `<span>${emoji}</span>`; }
+    function startEdit(id) { isEditing = true; isReplying = false; editingId = id; const msgEl = document.querySelector(`[data-content-id="${id}"]`); const quoteBubble = msgEl.querySelector('.reply-quote-bubble'); if (quoteBubble) { currentQuoteHtml = quoteBubble.outerHTML; let clone = msgEl.cloneNode(true); clone.querySelector('.reply-quote-bubble').remove(); textContent = clone.innerText; } else { currentQuoteHtml = ""; textContent = msgEl.innerText; } textContent = textContent.replace('📎 View Attachment', '').trim(); textContent = textContent.replace(/\s*\(edited\)$/i, '').trim(); document.getElementById('replyTargetUser').innerText = "Editing Message"; document.getElementById('replyTargetText').innerText = textContent; document.getElementById('replyPreview').style.display = 'flex'; const input = document.getElementById('messageInput'); input.value = textContent; input.focus(); }
+    function pinMessage(id) { pinnedMessageId = id; const msgEl = document.querySelector(`[data-content-id="${id}"]`); let text = msgEl ? msgEl.innerText : ""; text = text.replace(/Replying to message[\s\S]*?\n/, '').trim(); text = text.replace('📎 View Attachment', '').trim(); text = text.replace(/\s*\(edited\)$/i, '').trim(); document.getElementById('pinnedTextContent').innerText = text; document.getElementById('pinnedMessageBar').style.display = 'flex'; }
+    function unpinMessage() { pinnedMessageId = null; document.getElementById('pinnedMessageBar').style.display = 'none'; }
+    function scrollToPinned() { if(pinnedMessageId) document.getElementById('msg-' + pinnedMessageId).scrollIntoView({behavior: 'smooth', block: 'center'}); }
+    async function deleteMessage(id) { if(confirm("Delete this message?")) { const res = await fetch('/delete_message/' + id, {method: 'POST'}); if((await res.json()).success) { document.getElementById('msg-' + id).remove(); if(pinnedMessageId === id) unpinMessage(); showNotification("Success", "Message deleted"); } } }
+    document.getElementById('messageForm').addEventListener('submit', async function(e) { e.preventDefault(); const input = document.getElementById('messageInput'); const content = input.value.trim(); const file = document.getElementById('fileInput').files[0]; if (!content && !file) return; const formData = new FormData(this); if (isEditing) { let finalContent = content; if (currentQuoteHtml) finalContent = currentQuoteHtml + finalContent; finalContent += ' <span class="edited-label">(edited)</span>'; formData.set('content', finalContent); const res = await fetch('/edit_message/' + editingId, { method: 'POST', body: formData }); if((await res.json()).success) window.location.reload(); return; } if (isReplying) { const quoteHtml = `<div class="reply-quote-bubble"><span class="reply-quote-sender">Replying to message</span><span>${replyText}</span></div>${content}`; formData.set('content', quoteHtml); } else if (file && !content) { formData.set('content', '[File Attachment]'); } try { const res = await fetch('/send_message', { method: 'POST', body: formData }); if ((await res.json()).success) window.location.reload(); } catch (err) {} });
+    function showNotification(type, title, message) { const toast = document.getElementById('notificationToast'); document.getElementById('notificationTitle').textContent = title; document.getElementById('notificationMessage').textContent = message; toast.classList.remove('success', 'error'); toast.classList.add(type, 'active'); setTimeout(() => toast.classList.remove('active'), 3000); }
+    const fileInput = document.getElementById('fileInput'); fileInput.addEventListener('change', (e) => { if (e.target.files[0]) { document.getElementById('fileName').textContent = e.target.files[0].name; document.getElementById('filePreview').style.display = 'flex'; } }); function removeFile() { fileInput.value = ''; document.getElementById('filePreview').style.display = 'none'; }
+    const area = document.getElementById('messagesArea'); if(area) area.scrollTop = area.scrollHeight;
 </script>
 </body>
 </html>

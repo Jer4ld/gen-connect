@@ -173,13 +173,6 @@ class Post(db.Model):
     def user_has_liked(self, user_id):
         return Like.query.filter_by(user_id=user_id, post_id=self.id).first() is not None
 
-    # --- ADD THESE TWO METHODS BELOW ---
-    def get_like_count(self):
-        return Like.query.filter_by(post_id=self.id).count()
-
-    def get_comment_count(self):
-        return Comment.query.filter_by(post_id=self.id).count()
-
 class Comment(db.Model):
     __tablename__ = 'comments'
     id = db.Column(db.Integer, primary_key=True)
@@ -530,6 +523,8 @@ def edit_group_name(group_id):
         
     return jsonify({'success': False, 'message': 'No changes made or invalid group.'})
 
+
+
 @app.route('/add_group_members', methods=['POST'])
 def add_group_members():
     if 'user_id' not in session: return jsonify({'success': False}), 401
@@ -601,36 +596,176 @@ def add_contact():
 @app.route('/respond_notification/<int:notif_id>/<action>', methods=['POST'])
 def respond_notification(notif_id, action):
     if 'user_id' not in session: return jsonify({'success': False}), 401
+    
     notif = Notification.query.get_or_404(notif_id)
     if notif.recipient_id != session['user_id']: return jsonify({'success': False}), 403
+    
     current_user = User.query.get(session['user_id'])
+    
     if action == 'accept':
         notif.status = 'accepted'
         if notif.type == 'contact_request':
+            # ... (Existing contact request logic) ...
             db.session.add(Contact(user_id=notif.sender_id, contact_user_id=notif.recipient_id))
             db.session.add(Notification(recipient_id=notif.sender_id, sender_id=session['user_id'], type='request_accepted', message=f"{current_user.username} accepted your contact request!"))
+        
         elif notif.type == 'group_invite':
+            # ... (Existing group invite logic) ...
             db.session.add(CommunityMember(user_id=notif.recipient_id, community_id=notif.target_id))
             group = Community.query.get(notif.target_id)
             db.session.add(Notification(recipient_id=notif.sender_id, sender_id=session['user_id'], type='group_joined', message=f"{current_user.username} joined your group: {group.name}"))
             join_msg = Message(sender_id=session['user_id'], community_id=notif.target_id, content=f"🔔 {current_user.username} has joined the group via invitation.", is_read=True)
             db.session.add(join_msg)
+            
+        # ⬇️ NEW LOGIC: Admin Removes User via Report
+        elif notif.type == 'group_member_report':
+            member_to_remove = CommunityMember.query.filter_by(user_id=notif.sender_id, community_id=notif.target_id).first()
+            if member_to_remove:
+                db.session.delete(member_to_remove)
+                group = Community.query.get(notif.target_id)
+                # Notify removed user
+                db.session.add(Notification(
+                    recipient_id=notif.sender_id,
+                    sender_id=session['user_id'],
+                    type='group_removal', 
+                    message=f"You were removed from group '{group.name}' following a report."
+                ))
+    
     elif action == 'reject':
         notif.status = 'rejected'
         if notif.type == 'contact_request':
             db.session.add(Notification(recipient_id=notif.sender_id, sender_id=session['user_id'], type='request_rejected', message=f"{current_user.username} declined your contact request."))
+        
+        # ⬇️ NEW LOGIC: Admin ignores report
+        elif notif.type == 'group_member_report':
+            notif.status = 'ignored'
+
     db.session.commit()
     return jsonify({'success': True})
+@app.route('/report_group_member', methods=['POST'])
+def report_group_member():
+    if 'user_id' not in session: return jsonify({'success': False}), 401
+    
+    reporter_id = session['user_id']
+    group_id = request.form.get('group_id')
+    reported_user_id = request.form.get('reported_user_id')
+    reason = request.form.get('reason')
+    details = request.form.get('details')
+    
+    try:
+        # 1. Find the Group Admin(s)
+        # We need to send the notification to the admin(s)
+        admins = CommunityMember.query.filter_by(community_id=group_id, is_admin=True).all()
+        
+        if not admins:
+            return jsonify({'success': False, 'message': 'No admin found to receive report.'})
 
+        group = Community.query.get(group_id)
+        reporter = User.query.get(reporter_id)
+        reported_user = User.query.get(reported_user_id)
+
+        # 2. Create Notification for EACH Admin
+        # TRICK: We set 'sender_id' to the REPORTED USER. 
+        # This makes it easy for the Admin to "Remove Sender" in the notification logic.
+        for admin in admins:
+            # Don't send notification if the admin is the one being reported (edge case)
+            if admin.user_id == int(reported_user_id): continue 
+
+            notif = Notification(
+                recipient_id=admin.user_id,
+                sender_id=reported_user_id, # Pointing to the bad actor
+                type='group_member_report', # New Type
+                target_id=group_id,
+                message=f"⚠️ REPORT: {reporter.username} reported this user for: {reason}. Details: {details}"
+            )
+            db.session.add(notif)
+        
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Report sent to Group Admin.'})
+
+    except Exception as e:
+        db.session.rollback()
+        print(e)
+        return jsonify({'success': False, 'message': 'Error sending report'}), 500
+
+# ⬇️ ROUTE FOR REMOVING CONTACT (Updated to work with the frontend logic)
 @app.route('/remove_contact/<int:contact_id>', methods=['POST'])
 def remove_contact(contact_id):
+    # Ensure user is logged in
+    if 'user_id' not in session: 
+        return jsonify({'success': False, 'message': 'Please login first'}), 401
+        
+    current_user_id = session['user_id']
+    
+    try:
+        # 1. Delete Messages between these two users
+        deleted_msgs = Message.query.filter(or_(
+            and_(Message.sender_id == current_user_id, Message.receiver_id == contact_id), 
+            and_(Message.sender_id == contact_id, Message.receiver_id == current_user_id)
+        )).delete(synchronize_session=False)
+        
+        # 2. Delete the Contact relationship
+        deleted_contacts = Contact.query.filter(or_(
+            and_(Contact.user_id == current_user_id, Contact.contact_user_id == contact_id), 
+            and_(Contact.user_id == contact_id, Contact.contact_user_id == current_user_id)
+        )).delete(synchronize_session=False)
+        
+        # 3. Create Notification for the Removed User
+        # Important: Type is 'contact_removed' so buttons won't show in notifications.html
+        current_user = User.query.get(current_user_id)
+        db.session.add(Notification(
+            recipient_id=contact_id,
+            sender_id=current_user_id,
+            type='contact_removed', 
+            message=f"{current_user.username} has removed you from their contacts."
+        ))
+        
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Contact removed successfully.'})
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error removing contact: {e}")
+        return jsonify({'success': False, 'message': 'Database error occurred'}), 500
+
+@app.route('/report_and_remove_user/<int:contact_id>', methods=['POST'])
+def report_and_remove_user(contact_id):
     if 'user_id' not in session: return jsonify({'success': False}), 401
     current_user_id = session['user_id']
+    
+    # Get details from the request
+    reason = request.form.get('reason')
+    details = request.form.get('details')
+    
     try:
-        Message.query.filter(or_(and_(Message.sender_id == current_user_id, Message.receiver_id == contact_id), and_(Message.sender_id == contact_id, Message.receiver_id == current_user_id))).delete(synchronize_session=False)
-        Contact.query.filter(or_(and_(Contact.user_id == current_user_id, Contact.contact_user_id == contact_id), and_(Contact.user_id == contact_id, Contact.contact_user_id == current_user_id))).delete(synchronize_session=False)
+        # 1. (Optional) Save Report to Database 
+        # In a real app, you would save 'reason' and 'details' to a Reports table here.
+        print(f"REPORT FILED: User {current_user_id} reported {contact_id} for {reason}. Details: {details}")
+
+        # 2. Perform the Removal (Delete Messages & Contact)
+        Message.query.filter(or_(
+            and_(Message.sender_id == current_user_id, Message.receiver_id == contact_id), 
+            and_(Message.sender_id == contact_id, Message.receiver_id == current_user_id)
+        )).delete(synchronize_session=False)
+        
+        Contact.query.filter(or_(
+            and_(Contact.user_id == current_user_id, Contact.contact_user_id == contact_id), 
+            and_(Contact.user_id == contact_id, Contact.contact_user_id == current_user_id)
+        )).delete(synchronize_session=False)
+        
+        # 3. Create Notification for the Reported User
+        # We use 'system_alert' so they don't see buttons, just the message.
+        current_user = User.query.get(current_user_id)
+        db.session.add(Notification(
+            recipient_id=contact_id,
+            sender_id=current_user_id,
+            type='system_alert', 
+            message=f"You have been removed from {current_user.username}'s contacts due to a report."
+        ))
+        
         db.session.commit()
-        return jsonify({'success': True})
+        return jsonify({'success': True, 'message': 'User reported and removed successfully.'})
+        
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500

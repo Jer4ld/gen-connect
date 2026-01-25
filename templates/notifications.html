@@ -10,7 +10,7 @@
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f5; }
         .container { display: flex; min-height: 100vh; }
 
-        /* Sidebar Styles (Fixed Left) */
+        /* Sidebar Styles */
         .sidebar { position: fixed; left: 0; top: 0; width: 250px; height: 100vh; background-color: white; border-right: 1px solid #e5e7eb; padding: 20px 0; z-index: 100; }
         .sidebar-logo { padding: 0 30px 20px; border-bottom: 1px solid #e5e7eb; margin-bottom: 20px; }
         
@@ -24,34 +24,33 @@
         .sidebar-nav a.active { background-color: #eff6ff; color: #2563eb; border-right: 3px solid #2563eb; }
         .sidebar-nav svg { width: 20px; height: 20px; flex-shrink: 0; }
 
-        /* Main Content Layout (Centered Notification Box) */
+        /* Main Content Layout */
         .main-content { 
             margin-left: 250px; 
             flex: 1; 
-            padding: 40px 20px; 
+            padding: 40px; 
             background-color: #f9fafb; 
-            min-height: 100vh;
+            min-height: 100vh; 
             display: flex;
-            justify-content: center; /* Center horizontally */
-            align-items: flex-start; /* Start from top */
+            justify-content: center;
+            align-items: flex-start;
         }
 
         .notification-wrapper {
             width: 100%;
-            max-width: 700px; /* Limits width for the centered look */
+            max-width: 800px;
             background: white;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             border: 1px solid #e5e7eb;
+            overflow: hidden;
         }
 
-        /* Header with Mark as Read */
         .notif-header { 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            padding: 20px 30px;
+            padding: 20px 25px;
             border-bottom: 1px solid #f3f4f6;
             background: white;
         }
@@ -62,53 +61,55 @@
             font-size: 13px;
             color: #2563eb;
             font-weight: 500;
-            cursor: pointer;
             background: none;
             border: none;
-            padding: 5px 10px;
-            border-radius: 6px;
-            transition: background 0.2s;
+            cursor: pointer;
         }
-        .mark-read-btn:hover { background-color: #eff6ff; }
+        .mark-read-btn:hover { text-decoration: underline; }
 
-        /* Notification List */
         .notif-list { display: flex; flex-direction: column; }
         
         .notif-card { 
-            padding: 20px 30px; 
+            padding: 20px 25px; 
             border-bottom: 1px solid #f3f4f6; 
             display: flex; 
-            justify-content: space-between; 
-            align-items: flex-start; 
-            transition: all 0.2s ease;
+            flex-direction: column;
+            gap: 10px;
             position: relative;
+            transition: background 0.2s;
         }
         
-        .notif-card:last-child { border-bottom: none; }
         .notif-card:hover { background-color: #f9fafb; }
+        .notif-card:last-child { border-bottom: none; }
 
-        /* Unread Styling */
-        .notif-card.unread { background-color: #f0f9ff; } /* Light blue bg for unread */
+        /* Unread Indicator */
+        .notif-card.unread { background-color: #f0f9ff; }
         .notif-card.unread::after {
             content: '';
             position: absolute;
-            top: 25px;
-            right: 20px;
+            top: 24px;
+            right: 25px;
             width: 8px;
             height: 8px;
-            background-color: #2563eb; /* Blue dot */
+            background-color: #2563eb;
             border-radius: 50%;
         }
 
-        .notif-info { flex: 1; padding-right: 15px; }
-        .notif-info h4 { font-size: 14px; color: #6366f1; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
-        .notif-info p { font-size: 15px; color: #374151; line-height: 1.4; }
+        .notif-info h4 { 
+            font-size: 13px; 
+            color: #6366f1; 
+            margin-bottom: 6px; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px; 
+            font-weight: 700;
+        }
         
-        /* Reject Status Color */
-        .notif-info h4.rejected { color: #ef4444; }
+        /* Red color for negative notifications */
+        .notif-info h4.alert { color: #ef4444; }
+
+        .notif-info p { font-size: 15px; color: #374151; margin: 0; line-height: 1.4; }
         
-        /* Buttons */
-        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-group { display: flex; gap: 10px; margin-top: 5px; }
         .btn { padding: 8px 16px; border-radius: 6px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
         .accept-btn { background: #10b981; color: white; }
         .accept-btn:hover { opacity: 0.9; }
@@ -116,7 +117,6 @@
         .reject-btn:hover { background: #fecaca; }
         
         .time-stamp { font-size: 12px; color: #9ca3af; margin-top: 5px; display: block; }
-
         .empty-state { text-align: center; padding: 60px 20px; color: #9ca3af; }
     </style>
 </head>
@@ -151,21 +151,22 @@
             </div>
 
             <div class="notif-list">
-                {% for n in notifications if n.status == 'pending' or n.type in ['request_accepted', 'group_joined', 'request_rejected', 'group_invite'] %}
-                <div class="notif-card {% if n.status == 'pending' or (n.is_read is defined and not n.is_read) %}unread{% endif %}" id="notif-{{ n.id }}">
+                {% for n in notifications if n.status == 'pending' or n.type in ['request_accepted', 'group_joined', 'request_rejected', 'contact_removed', 'group_removal'] %}
+                
+                <div class="notif-card {% if n.status == 'pending' %}unread{% endif %}" id="notif-{{ n.id }}">
                     <div class="notif-info">
-                        <h4 class="{% if n.type == 'request_rejected' %}rejected{% endif %}">
+                        <h4 class="{% if n.type in ['request_rejected', 'contact_removed', 'group_removal'] %}alert{% endif %}">
                             {{ n.type.replace('_', ' ') }}
                         </h4>
                         <p>{{ n.message }}</p>
                         
-                        {% if n.status == 'pending' and n.type not in ['request_accepted', 'group_joined', 'request_rejected'] %}
+                        {% if n.status == 'pending' and n.type in ['contact_request', 'group_invite'] %}
                         <div class="btn-group">
                             <button class="btn accept-btn" data-id="{{ n.id }}" onclick="respondToInvite(this, 'accept')">Accept</button>
                             <button class="btn reject-btn" data-id="{{ n.id }}" onclick="respondToInvite(this, 'reject')">Decline</button>
                         </div>
                         {% else %}
-                        <span class="time-stamp">{{ n.created_at.strftime('%H:%M') }}</span>
+                        <span class="time-stamp">{{ n.created_at.strftime('%b %d, %H:%M') }}</span>
                         {% endif %}
                     </div>
                 </div>
@@ -180,13 +181,13 @@
 </div>
 
 <script>
-    // 1. Real-time Respond Logic (Accept/Reject)
     async function respondToInvite(buttonElement, action) {
         const notifId = buttonElement.getAttribute('data-id');
         const card = document.getElementById(`notif-${notifId}`);
         
-        // Immediate visual feedback
-        buttonElement.disabled = true;
+        // Disable buttons immediately
+        const btns = card.querySelectorAll('.btn');
+        btns.forEach(b => b.disabled = true);
         buttonElement.innerText = "Processing...";
 
         try {
@@ -194,41 +195,28 @@
             const data = await response.json();
             
             if (data.success) {
-                // Fade out card
                 card.style.opacity = '0';
                 setTimeout(() => {
                     card.remove();
-                    // Check if list is empty to show empty state
                     const list = document.querySelector('.notif-list');
                     if (list.children.length === 0) {
                         list.innerHTML = '<div class="empty-state"><p>No new notifications at the moment.</p></div>';
                     }
                 }, 300);
             } else {
-                alert("Action failed: " + data.message);
-                buttonElement.disabled = false;
+                alert("Error: " + data.message);
+                btns.forEach(b => b.disabled = false);
             }
         } catch (err) {
             console.error("Error:", err);
-            buttonElement.disabled = false;
+            btns.forEach(b => b.disabled = false);
         }
     }
 
-    // 2. Mark All As Read Logic
     async function markAllAsRead() {
-        // Visual Update first for responsiveness
-        const unreadCards = document.querySelectorAll('.notif-card.unread');
-        unreadCards.forEach(card => {
-            card.classList.remove('unread');
-        });
-
-        // Backend Update
-        try {
-            // Note: You need to implement this route in app.py if it doesn't exist
-            await fetch('/mark_notifications_read', { method: 'POST' });
-        } catch (err) {
-            console.error("Failed to mark as read on server", err);
-        }
+        document.querySelectorAll('.notif-card.unread').forEach(c => c.classList.remove('unread'));
+        // Optional backend call
+        // fetch('/mark_notifications_read', { method: 'POST' });
     }
 </script>
 </body>
