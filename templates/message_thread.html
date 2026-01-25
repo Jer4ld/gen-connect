@@ -462,7 +462,8 @@
     let pinnedMessageId = null;
     let pendingAction = null;
     let pendingUserId = null;
-    let pendingUsername = null; 
+    let pendingUsername = null;
+    let pendingMessageId = null; // Added for message deletion support
 
     function toggleDropdown(id) {
         document.querySelectorAll('.dropdown-menu').forEach(m => { if(m.id !== id) m.classList.remove('active'); });
@@ -562,6 +563,32 @@
     function removeContact(id) { pendingAction = 'remove_individual_contact'; pendingUserId = id; document.getElementById('confirmTitle').innerText = "Remove Contact"; document.getElementById('confirmMessage').innerText = "Remove contact? History will be deleted."; const btn = document.getElementById('confirmActionBtn'); btn.className = 'btn btn-danger'; btn.innerText = "Remove"; const menu = document.getElementById('optionsMenu'); if(menu) menu.classList.remove('active'); document.getElementById('confirmationModal').classList.add('active'); }
 
     document.getElementById('confirmActionBtn').addEventListener('click', async function() {
+        // --- New logic for message deletion ---
+        if (pendingAction === 'delete_message') {
+            closeModal('confirmationModal');
+            try {
+                const res = await fetch('/delete_message/' + pendingMessageId, {method: 'POST'});
+                const data = await res.json();
+                if(data.success) {
+                    // Remove the message element from the DOM
+                    const msgEl = document.getElementById('msg-' + pendingMessageId);
+                    if (msgEl) msgEl.remove();
+                    // If the deleted message was pinned, unpin it
+                    if(pinnedMessageId === pendingMessageId) unpinMessage();
+                    showNotification("success", "Success", "Message deleted");
+                } else {
+                    showNotification("error", "Error", data.message || "Could not delete message");
+                }
+            } catch (e) {
+                showNotification("error", "Error", "Failed to delete message");
+            }
+            // Reset pending actions
+            pendingAction = null;
+            pendingMessageId = null;
+            return; // Exit early, no need to reload page
+        }
+        // ------------------------------------
+
         let url = ''; let body = null; let isFormData = false;
         if (pendingAction === 'promote') { url = '/promote_admin/{{ contact.id }}/' + pendingUserId; } 
         else if (pendingAction === 'dismiss') { url = '/dismiss_admin/{{ contact.id }}/' + pendingUserId; } 
@@ -626,7 +653,27 @@
     function pinMessage(id) { pinnedMessageId = id; const msgEl = document.querySelector(`[data-content-id="${id}"]`); let text = msgEl ? msgEl.innerText : ""; text = text.replace(/Replying to message[\s\S]*?\n/, '').trim(); text = text.replace('📎 View Attachment', '').trim(); text = text.replace(/\s*\(edited\)$/i, '').trim(); document.getElementById('pinnedTextContent').innerText = text; document.getElementById('pinnedMessageBar').style.display = 'flex'; }
     function unpinMessage() { pinnedMessageId = null; document.getElementById('pinnedMessageBar').style.display = 'none'; }
     function scrollToPinned() { if(pinnedMessageId) document.getElementById('msg-' + pinnedMessageId).scrollIntoView({behavior: 'smooth', block: 'center'}); }
-    async function deleteMessage(id) { if(confirm("Delete this message?")) { const res = await fetch('/delete_message/' + id, {method: 'POST'}); if((await res.json()).success) { document.getElementById('msg-' + id).remove(); if(pinnedMessageId === id) unpinMessage(); showNotification("Success", "Message deleted"); } } }
+
+    // --- Updated deleteMessage function ---
+    function deleteMessage(id) {
+        // Close any open message menus first
+        document.querySelectorAll('.message-dropdown').forEach(m => m.classList.remove('active'));
+
+        pendingAction = 'delete_message';
+        pendingMessageId = id;
+
+        document.getElementById('confirmTitle').innerText = "Delete Message";
+        // Using \n for line break in alert/prompt, but for HTML element innerText it works if style is white-space: pre-line, otherwise use innerHTML
+        document.getElementById('confirmMessage').innerHTML = "Are you sure you want to delete this message?<br>This action cannot be undone.";
+
+        const btn = document.getElementById('confirmActionBtn');
+        btn.className = 'btn btn-danger'; // Make button red
+        btn.innerText = "Delete";
+
+        document.getElementById('confirmationModal').classList.add('active');
+    }
+    // ------------------------------------
+
     document.getElementById('messageForm').addEventListener('submit', async function(e) { e.preventDefault(); const input = document.getElementById('messageInput'); const content = input.value.trim(); const file = document.getElementById('fileInput').files[0]; if (!content && !file) return; const formData = new FormData(this); if (isEditing) { let finalContent = content; if (currentQuoteHtml) finalContent = currentQuoteHtml + finalContent; finalContent += ' <span class="edited-label">(edited)</span>'; formData.set('content', finalContent); const res = await fetch('/edit_message/' + editingId, { method: 'POST', body: formData }); if((await res.json()).success) window.location.reload(); return; } if (isReplying) { const quoteHtml = `<div class="reply-quote-bubble"><span class="reply-quote-sender">Replying to message</span><span>${replyText}</span></div>${content}`; formData.set('content', quoteHtml); } else if (file && !content) { formData.set('content', '[File Attachment]'); } try { const res = await fetch('/send_message', { method: 'POST', body: formData }); if ((await res.json()).success) window.location.reload(); } catch (err) {} });
     function showNotification(type, title, message) { const toast = document.getElementById('notificationToast'); document.getElementById('notificationTitle').textContent = title; document.getElementById('notificationMessage').textContent = message; toast.classList.remove('success', 'error'); toast.classList.add(type, 'active'); setTimeout(() => toast.classList.remove('active'), 3000); }
     const fileInput = document.getElementById('fileInput'); fileInput.addEventListener('change', (e) => { if (e.target.files[0]) { document.getElementById('fileName').textContent = e.target.files[0].name; document.getElementById('filePreview').style.display = 'flex'; } }); function removeFile() { fileInput.value = ''; document.getElementById('filePreview').style.display = 'none'; }
