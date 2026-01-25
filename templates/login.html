@@ -43,8 +43,8 @@
     }
 
     /* FIX 1: Brand Colors for Text */
-    .text-gen { color:#6366f1}
-    .text-connect { color:#6366f1}
+    .text-gen { color:#6366f1;font-size: 20px;font-weight: 600;}
+    .text-connect { color:#6366f1;font-size: 20px;font-weight: 600;}
 
     .header-btn {
         padding: 10px 24px;
@@ -200,7 +200,7 @@
 {% block content %}
 <header class="auth-header">
     <a href="/" class="header-logo">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2.5">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
             <path d="M12 2L2 7l10 5 10-5-10-5z"/>
             <path d="M2 17l10 5 10-5"/>
             <path d="M2 12l10 5 10-5"/>
@@ -248,7 +248,7 @@
 
                 <div class="form-group">
                     <label class="form-label">Password</label>
-                    <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                    <input type="password" name="password" class="form-control" placeholder="Password" required>
                 </div>
 
                 <div class="form-actions">

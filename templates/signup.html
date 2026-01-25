@@ -19,7 +19,7 @@
 
     body {
         font-family: 'Plus Jakarta Sans', sans-serif;
-        background-color: #f8fafc;
+        background-color:#f1f5f9;
         min-height: 100vh;
         display: flex;
         flex-direction: column;
@@ -42,24 +42,24 @@
     }
 
     .header-logo {
-        font-size: 24px;
-        font-weight: 800;
-        color: var(--primary);
-        text-decoration: none;
         display: flex;
         align-items: center;
         gap: 10px;
+        font-size: 20px;
+        font-weight: 600;
+        color: #6366f1;
+        text-decoration: none;
     }
 
     .header-btn {
-        background: var(--primary);
-        color: white;
-        text-decoration: none;
-        padding: 10px 24px;
-        border-radius: 8px;
-        font-weight: 700;
-        font-size: 14px;
-        transition: 0.2s;
+            padding: 10px 24px;
+    background-color: #4f46e5;
+    color: white;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    transition: transform 0.2s, background-color 0.2s;
     }
     .header-btn:hover { background: var(--primary-dark); }
 
@@ -188,7 +188,7 @@
 
 <header class="auth-header">
     <a href="/" class="header-logo">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
         GenConnect
     </a>
     <a href="{{ url_for('login') }}" class="header-btn">Log In</a>
