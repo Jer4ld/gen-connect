@@ -1,80 +1,160 @@
 {% extends "base.html" %}
 
-{% block title %}GenConnect Rewards{% endblock %}
+{% block title %}Rewards Center - GenConnect{% endblock %}
 
 {% block extra_css %}
-<style>
-    /* --- HERO REWARD SECTION --- */
-    .reward-hero {
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-        border-radius: 24px; padding: 40px;
-        box-shadow: 0 20px 40px -10px rgba(0,0,0,0.05); margin-bottom: 30px;
-        display: flex; justify-content: space-between; align-items: center;
-        border: 1px solid rgba(255,255,255,0.6);
-    }
-    
-    .points-display { display: flex; align-items: center; gap: 20px; }
-    .big-coin {
-        width: 80px; height: 80px;
-        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-        border-radius: 50%; display: flex; align-items: center; justify-content: center;
-        font-size: 40px; color: #92400e; border: 4px solid #fcd34d;
-        box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3);
-    }
-    
-    .daily-claim-box {
-        background: rgba(255,255,255,0.8); border: 1px solid #e2e8f0;
-        padding: 20px; border-radius: 16px; text-align: center; width: 200px;
-    }
-    .btn-claim {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        color: white; border: none; padding: 10px 20px; border-radius: 12px;
-        font-weight: 700; width: 100%; cursor: pointer; transition: 0.2s;
-        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
-    }
-    .btn-claim:disabled { background: #cbd5e1; cursor: not-allowed; box-shadow: none; }
-    .btn-claim:hover:not(:disabled) { transform: translateY(-2px); }
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    /* --- REWARD GRID --- */
-    .rewards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 24px; }
+<style>
+    /* --- GLOBAL RESET & BACKGROUND --- */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     
-    .reward-card {
-        background: white; border-radius: 20px; overflow: hidden;
-        border: 1px solid #e2e8f0; transition: 0.3s;
+    body { 
+        background: 
+            linear-gradient(rgba(248, 250, 252, 0.92), rgba(248, 250, 252, 0.92)),
+            url('https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1600&fit=crop'); 
+        background-size: cover; background-attachment: fixed; background-position: center;
+        font-family: 'Outfit', -apple-system, sans-serif; color: #1e293b;
+    }
+
+    /* --- SIDEBAR (Solid White - Matches Messages/Profile) --- */
+    .container { display: flex; min-height: 100vh; }
+    .sidebar { position: fixed; left: 0; top: 0; width: 250px; height: 100vh; background-color: white; border-right: 1px solid #e5e7eb; padding: 20px 0; z-index: 100; display: flex; flex-direction: column; }
+    .sidebar-logo { padding: 0 30px 20px; border-bottom: 1px solid #e5e7eb; margin-bottom: 20px; }
+    .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 600; color: #6366f1; text-decoration: none; }
+    
+    .sidebar-nav { list-style: none; padding: 0; margin: 0; flex: 1; }
+    .sidebar-nav li { margin: 5px 0; }
+    .sidebar-nav a { display: flex; align-items: center; gap: 15px; padding: 12px 30px; text-decoration: none; color: #374151; transition: all 0.2s; font-size: 15px; border-radius: 0; }
+    .sidebar-nav a:hover { background-color: #f9fafb; }
+    .sidebar-nav a.active { background-color: #eff6ff; color: #2563eb; border-right: 3px solid #2563eb; }
+    .sidebar-nav svg { width: 22px; height: 22px; }
+
+    /* --- MAIN LAYOUT --- */
+    .main-content { margin-left: 250px; flex: 1; padding: 40px; }
+    .rewards-container { max-width: 1100px; margin: 0 auto; }
+
+    /* --- HEADER (Updated for Top-Right Button) --- */
+    .page-header { 
+        margin-bottom: 30px; 
+        display: flex; 
+        justify-content: space-between; /* Pushes items to Left and Right */
+        align-items: center; 
+    }
+    
+    .header-text h1 { font-size: 32px; font-weight: 800; color: #1e293b; letter-spacing: -0.5px; margin-bottom: 5px;}
+    .header-text p { color: #64748b; font-size: 16px; }
+
+    /* The Top Right Profile Button */
+    .btn-back-profile {
+        display: flex; align-items: center; gap: 8px;
+        padding: 12px 24px;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        color: #4f46e5;
+        font-weight: 700;
+        font-size: 14px;
+        text-decoration: none;
+        transition: all 0.2s;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+    .btn-back-profile:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        background: #f8fafc;
+        border-color: #cbd5e1;
+    }
+
+    /* Top Stats Grid */
+    .stats-row { display: grid; grid-template-columns: 2fr 1fr; gap: 25px; margin-bottom: 40px; }
+
+    .balance-card {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border: 1px solid #e2e8f0; border-radius: 24px; padding: 35px;
+        position: relative; overflow: hidden; display: flex; align-items: center; justify-content: space-between;
+        box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+    }
+    .balance-card::after {
+        content: ''; position: absolute; right: -20px; top: -50px; width: 200px; height: 200px;
+        background: linear-gradient(135deg, #fef3c7 0%, #fcd34d 100%); opacity: 0.15; border-radius: 50%;
+    }
+    
+    .bal-label { font-size: 13px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+    .bal-amount { font-size: 56px; font-weight: 800; color: #1e293b; line-height: 1; margin: 5px 0; }
+    .bal-sub { font-size: 14px; color: #10b981; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+    
+    .coin-visual { font-size: 60px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1)); animation: float 3s ease-in-out infinite; }
+    @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+
+    /* Daily Action Card */
+    .daily-card {
+        background: #4f46e5; border-radius: 24px; padding: 30px;
+        color: white; text-align: center; display: flex; flex-direction: column;
+        justify-content: center; align-items: center;
+        box-shadow: 0 10px 25px rgba(79, 70, 229, 0.25);
+    }
+    .daily-icon { font-size: 32px; margin-bottom: 10px; }
+    .daily-title { font-size: 18px; font-weight: 700; margin-bottom: 5px; }
+    .daily-btn {
+        margin-top: 15px; background: white; color: #4f46e5;
+        border: none; padding: 10px 24px; border-radius: 50px;
+        font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.2s;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%;
+    }
+    .daily-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.15); }
+    .daily-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+    /* --- REWARDS GRID --- */
+    .section-title { font-size: 20px; font-weight: 800; color: #1e293b; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    
+    .items-grid {
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px;
+    }
+
+    .item-card {
+        background: white; border-radius: 20px; border: 1px solid #e2e8f0;
+        overflow: hidden; transition: 0.3s; position: relative;
         display: flex; flex-direction: column;
     }
-    .reward-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-    
-    .reward-img { width: 100%; height: 160px; object-fit: cover; }
-    .reward-body { padding: 20px; flex: 1; display: flex; flex-direction: column; }
-    .reward-title { font-weight: 700; font-size: 16px; margin-bottom: 5px; color: #1e293b; }
-    .reward-desc { font-size: 13px; color: #64748b; margin-bottom: 15px; flex: 1; }
-    
-    .reward-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
-    .cost-badge { 
-        background: #fffbeb; color: #d97706; padding: 5px 10px; 
-        border-radius: 20px; font-weight: 700; font-size: 13px; border: 1px solid #fcd34d;
-    }
-    
-    .btn-buy {
-        background: #4f46e5; color: white; border: none; padding: 8px 16px;
-        border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.2s;
-    }
-    .btn-buy:hover { background: #4338ca; }
+    .item-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px -5px rgba(0,0,0,0.08); border-color: #cbd5e1; }
 
-    /* --- QR MODAL --- */
-    .modal {
-        display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); 
-        z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px);
+    .item-icon-area {
+        height: 140px; background: #f8fafc; display: flex; align-items: center; justify-content: center;
+        font-size: 60px; border-bottom: 1px solid #f1f5f9;
     }
-    .modal-content {
-        background: white; padding: 40px; border-radius: 24px; text-align: center;
-        max-width: 400px; width: 90%; animation: popIn 0.3s ease;
-    }
-    @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     
-    .qr-image { width: 200px; height: 200px; margin: 20px auto; border: 2px solid #e2e8f0; border-radius: 10px; }
-    .success-icon { font-size: 40px; margin-bottom: 10px; display: block; }
+    .item-content { padding: 25px; flex: 1; display: flex; flex-direction: column; }
+    .item-tag { 
+        display: inline-block; padding: 4px 10px; border-radius: 6px; 
+        font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; width: fit-content;
+    }
+    .tag-community { background: #e0e7ff; color: #4338ca; }
+    .tag-profile { background: #fef3c7; color: #b45309; }
+    
+    .item-title { font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 8px; }
+    .item-desc { font-size: 14px; color: #64748b; line-height: 1.5; margin-bottom: 20px; flex: 1; }
+    
+    .item-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+    .item-price { font-size: 18px; font-weight: 800; color: #1e293b; }
+    
+    .btn-redeem {
+        padding: 8px 16px; border-radius: 10px; font-weight: 600; font-size: 13px;
+        border: 1px solid #e2e8f0; background: white; color: #1e293b;
+        cursor: pointer; transition: 0.2s;
+    }
+    .btn-redeem:hover { background: #1e293b; color: white; border-color: #1e293b; }
+
+    body.senior-mode .main-content { margin-left: 280px; }
+    body.senior-mode .sidebar { width: 280px; }
+    
+    @media (max-width: 1024px) {
+        .stats-row { grid-template-columns: 1fr; }
+        .sidebar { display: none; }
+        .main-content { margin-left: 0; padding: 20px; }
+        .page-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+        .btn-back-profile { width: 100%; justify-content: center; }
+    }
 </style>
 {% endblock %}
 
@@ -82,139 +162,160 @@
 <div class="container">
     <aside class="sidebar">
         <div class="sidebar-logo">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-            <span>GenConnect</span>
+            <a href="/" class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                <span>GenConnect</span>
+            </a>
         </div>
         <ul class="sidebar-nav">
-            <li><a href="{{ url_for('home') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a></li>
-            <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg><span>Activities</span></a></li>
-            <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Community</span></a></li>
-            <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>Create</span></a></li>
-            <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Alerts</span></a></li>
-            <li><a href="{{ url_for('messages') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Chat</span></a></li>
-            <li><a href="{{ url_for('profile') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a></li>
-            <li><a href="{{ url_for('logout') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></a></li>
+            <li><a href="{{ url_for('home') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a></li>
+            <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg><span>Activities</span></a></li>
+            <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Community</span></a></li>
+            <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>Create</span></a></li>
+            <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Alerts</span></a></li>
+            <li><a href="{{ url_for('messages') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Chat</span></a></li>
+            <li><a href="{{ url_for('profile') }}" class="active"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a></li>
+            <li><a href="#" onclick="toggleSeniorMode()" style="color: #059669; border-top: 1px solid #e5e7eb; margin-top:20px; padding-top:20px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg><span>Senior Mode (Aa+)</span></a></li>
+            <li><a href="{{ url_for('logout') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></a></li>
         </ul>
     </aside>
 
     <main class="main-content">
-        <div class="profile-container">
+        <div class="rewards-container">
             
-            <div class="reward-hero">
-                <div class="points-display">
-                    <div class="big-coin">$</div>
+            <div class="page-header">
+                <div class="header-text">
+                    <h1>Rewards Center</h1>
+                    <p>Redeem your GenPoints for exclusive perks.</p>
+                </div>
+                <a href="{{ url_for('profile') }}" class="btn-back-profile">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Back to Profile
+                </a>
+            </div>
+
+            <div class="stats-row">
+                <div class="balance-card">
                     <div>
-                        <h1 style="font-size:32px; font-weight:800; color:#1e293b; line-height:1;">
-                            <span id="userPoints">{{ user.points }}</span>
-                        </h1>
-                        <p style="color:#64748b; font-weight:600;">Available GenPoints</p>
+                        <div class="bal-label">Current Balance</div>
+                        <div class="bal-amount" id="displayPoints">{{ user.points }}</div>
+                        <div class="bal-sub">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+                            Earned +150 this week
+                        </div>
                     </div>
+                    <div class="coin-visual">💰</div>
                 </div>
 
-                <div class="daily-claim-box">
-                    <div style="font-size:12px; font-weight:700; color:#64748b; margin-bottom:8px;">DAILY LOGIN BONUS</div>
-                    <button class="btn-claim" id="dailyBtn" onclick="claimDaily()" {% if not can_claim %}disabled{% endif %}>
-                        {% if can_claim %}
-                            Claim +50 ⚡
-                        {% else %}
-                            Claimed ✅
-                        {% endif %}
+                <div class="daily-card">
+                    <div class="daily-icon">📅</div>
+                    <div class="daily-title">Daily Streak</div>
+                    <button class="daily-btn" id="dailyBtn" onclick="claimDailyPoints()">
+                        Claim +50 Pts
                     </button>
-                    <div style="font-size:11px; color:#94a3b8; margin-top:5px;">Resets at 00:00 UTC</div>
                 </div>
             </div>
 
-            <h2 style="font-size:20px; font-weight:800; color:#1e293b; margin-bottom:20px;">Redeem Rewards</h2>
-
-            <div class="rewards-grid">
-                {% for item in rewards %}
-                <div class="reward-card">
-                    <img src="{{ item.image_url }}" class="reward-img" alt="{{ item.name }}">
-                    <div class="reward-body">
-                        <div class="reward-title">{{ item.name }}</div>
-                        <div class="reward-desc">{{ item.description }}</div>
-                        <div class="reward-footer">
-                            <div class="cost-badge">{{ item.cost }} GP</div>
-                            <button class="btn-buy" onclick="redeemItem('{{ item.id }}', '{{ item.name }}', {{ item.cost }})">Redeem</button>
+            <div class="section-title">
+                <svg width="24" height="24" fill="none" stroke="#6366f1" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                Community Perks
+            </div>
+            
+            <div class="items-grid">
+                
+                <div class="item-card">
+                    <div class="item-icon-area">🎨</div>
+                    <div class="item-content">
+                        <span class="item-tag tag-profile">Cosmetic</span>
+                        <div class="item-title">Gold Profile Frame</div>
+                        <div class="item-desc">Unlock a prestigious gold border for your avatar in chat and comments.</div>
+                        <div class="item-footer">
+                            <div class="item-price">500 Pts</div>
+                            <button class="btn-redeem" onclick="redeemItem(500, 'Gold Frame')">Redeem</button>
                         </div>
                     </div>
                 </div>
-                {% else %}
-                 <p style="grid-column: 1/-1; text-align: center; color: #64748b;">No rewards currently available. Check back soon!</p>
-                {% endfor %}
+
+                <div class="item-card">
+                    <div class="item-icon-area">🔥</div>
+                    <div class="item-content">
+                        <span class="item-tag tag-community">Visibility</span>
+                        <div class="item-title">Post Spotlight</div>
+                        <div class="item-desc">Pin your help request or project to the top of the community feed for 24h.</div>
+                        <div class="item-footer">
+                            <div class="item-price">300 Pts</div>
+                            <button class="btn-redeem" onclick="redeemItem(300, 'Post Spotlight')">Redeem</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-icon-area">🎫</div>
+                    <div class="item-content">
+                        <span class="item-tag tag-community">Event</span>
+                        <div class="item-title">Workshop Fast-Pass</div>
+                        <div class="item-desc">Skip the waitlist and get guaranteed entry to the next "Tech for Seniors" workshop.</div>
+                        <div class="item-footer">
+                            <div class="item-price">200 Pts</div>
+                            <button class="btn-redeem" onclick="redeemItem(200, 'Workshop Pass')">Redeem</button>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
         </div>
     </main>
 </div>
 
-<div class="modal" id="qrModal">
-    <div class="modal-content">
-        <span class="success-icon">🎉</span>
-        <h2 style="font-size:24px; font-weight:800; color:#1e293b;">Redemption Success!</h2>
-        <p style="color:#64748b; font-size:14px; margin-top:5px;">Show this QR code to the store staff.</p>
-        
-        <img id="qrImageDisplay" class="qr-image" src="" alt="QR Code">
-        
-        <div style="background:#f1f5f9; padding:10px; border-radius:8px; font-family:monospace; font-weight:700; color:#334155; margin-bottom:20px;" id="textCodeDisplay">
-            GEN-XXXX-XXXX
-        </div>
-        
-        <button class="btn-buy" style="width:100%; background:#64748b;" onclick="closeModal()">Close</button>
-    </div>
-</div>
-
 <script>
-    function claimDaily() {
+    let currentPoints = parseInt("{{ user.points }}") || 0;
+    
+    // Check Daily Status on Load
+    const lastClaimDate = localStorage.getItem('lastClaimDate');
+    const today = new Date().toDateString();
+    
+    if(lastClaimDate === today) {
         const btn = document.getElementById('dailyBtn');
         btn.disabled = true;
-        btn.innerText = "Claiming...";
-
-        fetch("{{ url_for('claim_daily') }}", { method: "POST" })
-        .then(res => res.json())
-        .then(data => {
-            if(data.success) {
-                document.getElementById('userPoints').innerText = data.new_balance;
-                btn.innerText = "Claimed ✅";
-            } else {
-                alert(data.message);
-                btn.innerText = "Claimed ✅";
-            }
-        })
-        .catch(err => {
-            alert("Error claiming points");
-            btn.disabled = false;
-        });
+        btn.innerText = "Come back tomorrow";
+        btn.style.opacity = "0.7";
     }
 
-    function redeemItem(id, name, cost) {
-        const currentPoints = parseInt(document.getElementById('userPoints').innerText);
-        if(currentPoints < cost) {
-            alert("Not enough GenPoints!");
-            return;
+    function claimDailyPoints() {
+        currentPoints += 50;
+        updateUI();
+        localStorage.setItem('lastClaimDate', new Date().toDateString());
+        const btn = document.getElementById('dailyBtn');
+        btn.disabled = true;
+        btn.innerText = "Claimed!";
+        alert("Success! You've earned 50 points.");
+    }
+
+    function redeemItem(cost, name) {
+        if(currentPoints >= cost) {
+            if(confirm(`Spend ${cost} points for ${name}?`)) {
+                currentPoints -= cost;
+                updateUI();
+                alert(`Successfully redeemed: ${name}!`);
+            }
+        } else {
+            alert("Not enough points! Participate in the community to earn more.");
         }
-
-        if(!confirm("Confirm redemption of " + name + " for " + cost + " points?")) return;
-
-        fetch("/redeem_reward/" + id, { method: "POST" })
-        .then(res => res.json())
-        .then(data => {
-            if(data.success) {
-                // Update Balance
-                document.getElementById('userPoints').innerText = data.new_balance;
-                
-                // Show QR Modal
-                document.getElementById('qrImageDisplay').src = "/qr_code/" + data.code;
-                document.getElementById('textCodeDisplay').innerText = data.code;
-                document.getElementById('qrModal').style.display = 'flex';
-            } else {
-                alert(data.message);
-            }
-        });
     }
 
-    function closeModal() {
-        document.getElementById('qrModal').style.display = 'none';
+    function updateUI() {
+        document.getElementById('displayPoints').innerText = currentPoints;
+    }
+
+    function toggleSeniorMode() {
+        document.body.classList.toggle('senior-mode');
+        const isSenior = document.body.classList.contains('senior-mode');
+        localStorage.setItem('seniorMode', isSenior);
+    }
+    
+    if(localStorage.getItem('seniorMode') === 'true') {
+        document.body.classList.add('senior-mode');
     }
 </script>
 {% endblock %}

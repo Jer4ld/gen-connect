@@ -65,7 +65,8 @@ class User(db.Model):
     banner_image = db.Column(db.String(255), default='default_banner.jpg')
     member_type = db.Column(db.String(50), default='Youth Member')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+    points = db.Column(db.Integer, default=10000)
+    last_daily_claim = db.Column(db.DateTime, nullable=True)
     posts = db.relationship('Post', backref='author', lazy=True, cascade='all, delete-orphan')
     comments = db.relationship('Comment', backref='author', lazy=True, cascade='all, delete-orphan')
     likes = db.relationship('Like', backref='user', lazy=True, cascade='all, delete-orphan')
@@ -502,15 +503,73 @@ def dismiss_admin(group_id, target_user_id):
 @app.route('/edit_group_name/<int:group_id>', methods=['POST'])
 def edit_group_name(group_id):
     if 'user_id' not in session: return jsonify({'success': False}), 401
+    
+    # Verify Admin
     member = CommunityMember.query.filter_by(user_id=session['user_id'], community_id=group_id).first()
     if not member or not member.is_admin:
         return jsonify({'success': False, 'message': 'Only admins can edit name'})
+    
     new_name = request.form.get('new_name')
     group = Community.query.get(group_id)
-    group.name = new_name
-    db.session.commit()
-    return jsonify({'success': True, 'message': 'Group name updated!'})
+    
+    if group and new_name and group.name != new_name:
+        old_name = group.name
+        group.name = new_name
+        
+        # ⬇️ NEW: Add System Message to Chat
+        sys_msg = Message(
+            sender_id=session['user_id'], 
+            community_id=group_id, 
+            content=f"✏️ <b>{session['username']}</b> changed the group name from '<b>{old_name}</b>' to '<b>{new_name}</b>'.", 
+            is_read=True
+        )
+        db.session.add(sys_msg)
+        
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Group name updated!'})
+        
+    return jsonify({'success': False, 'message': 'No changes made or invalid group.'})
 
+@app.route('/add_group_members', methods=['POST'])
+def add_group_members():
+    if 'user_id' not in session: return jsonify({'success': False}), 401
+    
+    group_id = request.form.get('group_id')
+    member_ids = request.form.getlist('member_ids') # List of IDs to invite
+    
+    # 1. Verify Admin Status
+    caller = CommunityMember.query.filter_by(user_id=session['user_id'], community_id=group_id).first()
+    if not caller or not caller.is_admin:
+        return jsonify({'success': False, 'message': 'Unauthorized'})
+    
+    invited_count = 0
+    group = Community.query.get(group_id)
+    
+    for m_id in member_ids:
+        # Check if already a member
+        exists = CommunityMember.query.filter_by(user_id=m_id, community_id=group_id).first()
+        if not exists:
+            # Check if invite already pending to prevent spam
+            pending = Notification.query.filter_by(recipient_id=m_id, type='group_invite', target_id=group_id, status='pending').first()
+            
+            if not pending:
+                # 2. Create Invitation Notification
+                db.session.add(Notification(
+                    recipient_id=m_id, 
+                    sender_id=session['user_id'], 
+                    type='group_invite', # Special type for group invites
+                    target_id=group_id,
+                    message=f"{session['username']} invited you to join the group: {group.name}"
+                ))
+                invited_count += 1
+
+    db.session.commit()
+    
+    if invited_count > 0:
+        return jsonify({'success': True, 'message': f'Invitations sent to {invited_count} users.'})
+    else:
+        return jsonify({'success': False, 'message': 'No new invitations sent (users may already be members or pending).'})
+    
 @app.route('/leave_group/<int:group_id>', methods=['POST'])
 def leave_group(group_id):
     if 'user_id' not in session: return jsonify({'success': False}), 401
@@ -996,7 +1055,74 @@ def reset_password():
 # Inside class User(db.Model):
 last_daily_claim = db.Column(db.DateTime, nullable=True)
 
+@app.route('/ranking')
+def ranking():
+    if 'user_id' not in session: return redirect(url_for('login'))
+    
+    # 1. Get the current user
+    user = User.query.get(session['user_id'])
+    
+    # 2. OPTIONAL: Get top 3 users for the leaderboard
+    # (If you want to replace the hardcoded "Sarah Chen" in your HTML later)
+    top_users = User.query.order_by(User.points.desc()).limit(3).all()
+    
+    return render_template('ranking.html', user=user, top_users=top_users)
 
+@app.route('/rewards')
+def rewards():
+    if 'user_id' not in session: return redirect(url_for('login'))
+    
+    user = User.query.get(session['user_id'])
+    
+    return render_template('rewards.html', user=user)
+
+@app.route('/api/claim_daily', methods=['POST'])
+def claim_daily():
+    if 'user_id' not in session: return jsonify({'success': False}), 401
+    
+    user = User.query.get(session['user_id'])
+    
+    # Check if already claimed today
+    if user.last_daily_claim:
+        if user.last_daily_claim.date() == datetime.utcnow().date():
+             return jsonify({'success': False, 'message': 'Already claimed today'})
+
+    # Update points and date
+    user.points += 50
+    user.last_daily_claim = datetime.utcnow()
+    db.session.commit()
+    
+    return jsonify({'success': True, 'new_points': user.points})
+@app.route('/api/redeem_item', methods=['POST'])
+def redeem_item():
+    if 'user_id' not in session: 
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    
+    data = request.get_json()
+    cost = data.get('cost')
+    item_name = data.get('itemName')
+    
+    user = User.query.get(session['user_id'])
+    
+    if user.points >= cost:
+        user.points -= cost
+        db.session.commit()
+        return jsonify({
+            'success': True, 
+            'new_points': user.points, 
+            'message': f'Successfully redeemed {item_name}!'
+        })
+    else:
+        return jsonify({'success': False, 'message': 'Not enough points!'}), 400
+
+@app.route('/give_points')
+def give_points():
+    if 'user_id' in session:
+        user = User.query.get(session['user_id'])
+        user.points = 1000
+        db.session.commit()
+        return "Points updated to 1000!"
+    return "Please log in first."
 
 @app.errorhandler(404)
 def not_found(error): return '<h1>404 - Page Not Found</h1>', 404
