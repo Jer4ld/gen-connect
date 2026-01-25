@@ -837,18 +837,39 @@ def profile(username=None):
 def edit_profile():
     if 'user_id' not in session: return redirect(url_for('login'))
     user = User.query.get(session['user_id'])
+    
     if request.method == 'POST':
+        # 1. Update Text Fields
         user.username = request.form.get('username')
         user.email = request.form.get('email')
         user.bio = request.form.get('bio')
         user.interests = ",".join(request.form.getlist('interests'))
+
+        # 2. Handle Profile Picture Upload
+        if 'profile_picture' in request.files:
+            file = request.files['profile_picture']
+            if file and file.filename != '' and allowed_file(file.filename):
+                filename = secure_filename(f"pfp_{user.id}_{int(datetime.utcnow().timestamp())}.{file.filename.split('.')[-1]}")
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                user.profile_picture = url_for('uploaded_file', filename=filename)
+
+        # 3. Handle Banner Image Upload (NEW)
+        if 'banner_image' in request.files:
+            file = request.files['banner_image']
+            if file and file.filename != '' and allowed_file(file.filename):
+                filename = secure_filename(f"banner_{user.id}_{int(datetime.utcnow().timestamp())}.{file.filename.split('.')[-1]}")
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                user.banner_image = url_for('uploaded_file', filename=filename)
+
         try:
             db.session.commit()
             flash('Profile updated successfully!', 'success')
             return redirect(url_for('profile')) 
-        except:
+        except Exception as e:
             db.session.rollback()
+            print(e)
             flash('Error updating profile.', 'error')
+
     return render_template('edit_profile.html', user=user)
 
 @app.route('/delete_account', methods=['POST'])
