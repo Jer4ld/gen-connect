@@ -224,13 +224,14 @@
                     <div class="menu-item" onclick="openGroupInfo()">Group Info</div>
                     <div class="menu-item" onclick="openWallpaperModal()">Change Wallpaper</div>
                     
-                    <div class="menu-item danger" onclick="openGroupReportModal()">Report Member</div>
-                    
                     {% if user_is_admin %}
                     <div class="menu-item" onclick="openEditName()">Edit Group Name</div>
                     <div class="menu-item" onclick="openAddMembersModal()">Add Users</div>
                     <div class="menu-item danger" onclick="openRemoveMembersModal()" style="color: #ef4444;">Remove Users</div>
                     {% endif %}
+                    
+                    <div class="menu-item danger" onclick="openGroupReportModal()">Report Member</div>
+                    
                     <div class="menu-item danger" onclick="confirmDeleteGroup()" style="color:#ef4444;">Delete & Exit Group</div>
                 {% else %}
                     <div class="menu-item" onclick="openWallpaperModal()">Change Wallpaper</div>
@@ -359,16 +360,16 @@
                     {% if group_members %}
                         {% for m in group_members %}
                             {% if m.id != current_user.id %}
-                            <label class="contact-item">
-                                <input type="radio" name="reported_user_id" value="{{ m.id }}" style="width: 16px; height: 16px; margin-right: 10px;">
-                                <div class="conversation-avatar" style="width: 30px; height: 30px; font-size: 12px;">
+                            <label class="contact-item" style="display: flex; align-items: center; gap: 12px; padding: 10px; cursor: pointer; border-bottom: 1px solid #f9fafb;">
+                                <input type="radio" name="reported_user_id" value="{{ m.id }}" style="width: 16px; height: 16px; cursor: pointer;">
+                                <div class="conversation-avatar" style="width: 36px; height: 36px; font-size: 14px;">
                                     {% if m.user.profile_picture != 'default.jpg' %}
-                                        <img src="/static/uploads/{{ m.user.profile_picture }}" style="width:100%; height:100%; object-fit:cover;">
+                                        <img src="/static/uploads/{{ m.user.profile_picture }}" style="width:100%; height:100%; object-fit: cover;">
                                     {% else %}
                                         {{ m.username[0].upper() }}
                                     {% endif %}
                                 </div>
-                                <span style="font-size:14px; margin-left:10px;">{{ m.username }}</span>
+                                <span style="font-size: 14px; font-weight: 500; color: #374151;">{{ m.username }}</span>
                             </label>
                             {% endif %}
                         {% endfor %}
@@ -382,6 +383,7 @@
                     <div class="report-chip" onclick="selectGroupReportReason(this)">Harassment</div>
                     <div class="report-chip" onclick="selectGroupReportReason(this)">Inappropriate Content</div>
                     <div class="report-chip" onclick="selectGroupReportReason(this)">Violence</div>
+                    <div class="report-chip" onclick="selectGroupReportReason(this)">Other</div>
                 </div>
                 <input type="hidden" name="reason" id="selectedGroupReason">
             </div>
