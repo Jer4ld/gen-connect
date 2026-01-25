@@ -367,9 +367,16 @@
                             {% if user.posts %}
                                 {% for post in user.posts %}
                                 <div class="content-card">
-                                    <img src="{{ post.image_url if post.image_url else 'https://source.unsplash.com/random/400x300/?tech,coding' }}" class="card-thumb">
+                                    {% if post.media_file %}
+                                        {% if post.media_type == 'video' %}
+                                            <video src="{{ url_for('uploaded_file', filename=post.media_file) }}" class="card-thumb" style="object-fit: cover;"></video>
+                                        {% else %}
+                                            <img src="{{ url_for('uploaded_file', filename=post.media_file) }}" class="card-thumb">
+                                        {% endif %}
+                                    {% endif %}
+
                                     <div class="card-body">
-                                        <div class="card-h">Posted an update</div>
+                                        <div class="card-h">{{ post.title if post.title else 'Posted an update' }}</div>
                                         <p class="card-p">{{ post.content }}</p>
                                         <div class="card-ft">
                                             <span>{{ post.created_at.strftime('%B %d, %Y') }}</span>
@@ -380,25 +387,9 @@
                                 {% endfor %}
                             {% else %}
                                 <div class="content-card">
-                                    <img src="https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=400&fit=crop" class="card-thumb">
                                     <div class="card-body">
-                                        <div class="card-h">Debugging Late Night ☕</div>
-                                        <p class="card-p">Finally fixed that database connection error! Turns out it was just a missing comma in the connection string. Classic.</p>
-                                        <div class="card-ft">
-                                            <span>2 hours ago</span>
-                                            <span>❤️ 85 &nbsp; 💬 14</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="content-card">
-                                    <img src="https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=400&fit=crop" class="card-thumb">
-                                    <div class="card-body">
-                                        <div class="card-h">Hackathon Ready</div>
-                                        <p class="card-p">Building a new app to help seniors track their medication easily. Looking for UI designers to join the team!</p>
-                                        <div class="card-ft">
-                                            <span>Yesterday</span>
-                                            <span>❤️ 120 &nbsp; 💬 32</span>
-                                        </div>
+                                        <div class="card-h">Welcome!</div>
+                                        <p class="card-p">You haven't posted anything yet. Go to the 'Create' tab to share your first update!</p>
                                     </div>
                                 </div>
                             {% endif %}
