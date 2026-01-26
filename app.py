@@ -216,7 +216,7 @@ class Follow(db.Model):
 @app.route('/')
 def index():
     if 'user_id' in session: return redirect(url_for('home'))
-    return render_template('index.html')
+    return render_template('guest_page.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
