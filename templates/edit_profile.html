@@ -267,25 +267,37 @@
                 
                 <div class="upload-grid">
     
-    <div class="upload-box">
-        <label class="label">Background Banner</label>
-        {% if user.banner_image and user.banner_image != 'default_banner.jpg' %}
-            <img src="{{ user.banner_image }}" id="bannerPreview" class="banner-preview">
-        {% else %}
-            <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&h=200&fit=crop" id="bannerPreview" class="banner-preview">
-        {% endif %}
-        <button type="button" class="btn-upload" onclick="document.getElementById('uploadBanner').click()">Change Banner</button>
-        <input type="file" id="uploadBanner" name="banner_image" hidden onchange="previewImage(this, 'bannerPreview')">
-    </div>
+                    <div class="upload-box">
+                        <label class="label">Background Banner</label>
+                        {% if user.banner_image and user.banner_image != 'default_banner.jpg' %}
+                            <img src="{{ url_for('uploaded_file', filename=user.banner_image) }}" id="bannerPreview" class="banner-preview">
+                        {% else %}
+                            <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&h=200&fit=crop" id="bannerPreview" class="banner-preview">
+                        {% endif %}
+                        
+                        <button type="button" class="btn-upload" onclick="document.getElementById('uploadBanner').click()">Change Banner</button>
+                        <input type="file" id="uploadBanner" name="banner_image" hidden onchange="previewImage(this, 'bannerPreview')">
+                    </div>
 
-    <div class="upload-box profile-row">
-        <div class="img-container">
-            {% if user.profile_picture and user.profile_picture != 'default.jpg' %}
-                <img src="{{ user.profile_picture }}" id="avatarPreview" class="avatar-preview">
-            {% else %}
-                <img src="https://images.unsplash.com/photo-1595152772835-219674b2a8a6?w=200&h=200&fit=crop" id="avatarPreview" class="avatar-preview">
-            {% endif %}
-        </div>
+                    <div class="upload-box profile-row">
+                        <div class="img-container">
+                            {% if user.profile_picture and user.profile_picture != 'default.jpg' %}
+                                <img src="{{ url_for('uploaded_file', filename=user.profile_picture) }}" id="avatarPreview" class="avatar-preview">
+                            {% else %}
+                                <img src="https://images.unsplash.com/photo-1595152772835-219674b2a8a6?w=200&h=200&fit=crop" id="avatarPreview" class="avatar-preview">
+                            {% endif %}
+                        </div>
+
+                        <div class="profile-info">
+                            <h3>Your Photo</h3>
+                            <p>This will be displayed on your profile and community posts.</p>
+                            
+                            <button type="button" class="btn-outline" onclick="document.getElementById('uploadAvatar').click()">Change Photo</button>
+                            <input type="file" id="uploadAvatar" name="profile_picture" hidden onchange="previewImage(this, 'avatarPreview')">
+                        </div>
+                    </div>
+
+                </div>
 
         <div class="profile-info">
             <h3>Your Photo</h3>
