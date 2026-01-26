@@ -24,81 +24,73 @@
     }
 
     .container { display: flex; min-height: 100vh; }
+
     /* --- NEW STYLES FOR PROFILE ROW --- */
-.profile-row {
-    flex-direction: row !important; /* Forces Left-to-Right layout */
-    align-items: center !important;
-    text-align: left !important; /* Aligns text to the left */
-    gap: 30px; /* Space between image and text */
-    padding: 30px;
-}
+    .profile-row {
+        flex-direction: row !important;
+        align-items: center !important;
+        text-align: left !important;
+        gap: 30px;
+        padding: 30px;
+    }
 
-.profile-info h3 {
-    font-size: 22px; font-weight: 800; color: #1e293b; 
-    margin-bottom: 8px;
-}
+    .profile-info h3 { font-size: 22px; font-weight: 800; color: #1e293b; margin-bottom: 8px; }
+    .profile-info p { font-size: 15px; color: #64748b; margin-bottom: 20px; }
 
-.profile-info p {
-    font-size: 15px; color: #64748b; 
-    margin-bottom: 20px;
-}
+    .btn-outline {
+        background: white; border: 1px solid #cbd5e1; color: #334155;
+        padding: 10px 20px; border-radius: 10px; font-weight: 600; 
+        font-size: 14px; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-outline:hover { background: #f8fafc; border-color: #64748b; }
 
-.btn-outline {
-    background: white; border: 1px solid #cbd5e1; color: #334155;
-    padding: 10px 20px; border-radius: 10px; font-weight: 600; 
-    font-size: 14px; cursor: pointer; transition: all 0.2s;
-}
-.btn-outline:hover { background: #f8fafc; border-color: #64748b; }
+    /* --- ROLE GRID (Restored from Signup) --- */
+    .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px; }
+    .role-label { position: relative; cursor: pointer; }
+    .role-label input { position: absolute; opacity: 0; width: 0; height: 0; }
+
+    .role-card {
+        border: 2px solid #e2e8f0; border-radius: 16px; 
+        padding: 20px; text-align: center; transition: all 0.2s; 
+        background: white; height: 100%;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    
+    .role-icon { font-size: 32px; display: block; margin-bottom: 8px; }
+    .role-name { font-weight: 700; font-size: 15px; color: #64748b; }
+
+    /* Active State for Role Cards */
+    .role-label input:checked + .role-card {
+        border-color: #4f46e5; background: #eef2ff;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+    }
+    .role-label input:checked + .role-card .role-name { color: #4338ca; }
+
     /* --- SIDEBAR STYLES --- */
     .sidebar { 
         position: fixed; left: 0; top: 0; width: 250px; height: 100vh; 
-        background-color: white;
-        border-right: 1px solid #e5e7eb; 
-        padding: 20px 0; z-index: 100; 
-        display: flex; flex-direction: column;
+        background-color: white; border-right: 1px solid #e5e7eb; 
+        padding: 20px 0; z-index: 100; display: flex; flex-direction: column;
     }
-
-    .sidebar-logo { 
-        padding: 0 30px 20px; border-bottom: 1px solid #e5e7eb; margin-bottom: 20px; 
-    }
-    
-    .logo { 
-        display: flex; align-items: center; gap: 10px; 
-        font-size: 20px; font-weight: 600; color: #6366f1; text-decoration: none; 
-    }
-
+    .sidebar-logo { padding: 0 30px 20px; border-bottom: 1px solid #e5e7eb; margin-bottom: 20px; }
+    .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 600; color: #6366f1; text-decoration: none; }
     .sidebar-nav { list-style: none; padding: 0; margin: 0; flex: 1; }
     .sidebar-nav li { margin: 5px 0; }
-
     .sidebar-nav a { 
-        display: flex; align-items: center; gap: 15px; 
-        padding: 12px 30px; 
-        text-decoration: none; color: #374151; 
-        transition: all 0.2s; font-size: 15px; 
-        border-radius: 0; 
+        display: flex; align-items: center; gap: 15px; padding: 12px 30px; 
+        text-decoration: none; color: #374151; transition: all 0.2s; font-size: 15px; border-radius: 0; 
     }
-
     .sidebar-nav a:hover { background-color: #f9fafb; }
-
-    .sidebar-nav a.active { 
-        background-color: #eff6ff; 
-        color: #2563eb; 
-        border-right: 3px solid #2563eb; 
-    }
-
+    .sidebar-nav a.active { background-color: #eff6ff; color: #2563eb; border-right: 3px solid #2563eb; }
     .sidebar-nav svg { width: 22px; height: 22px; }
 
     /* --- MAIN CONTENT --- */
     .main-content { margin-left: 250px; flex: 1; padding: 40px; }
     
-    /* --- EDIT FORM CONTAINER --- */
     .edit-container {
         max-width: 850px; margin: 0 auto;
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(20px);
-        border: 1px solid white;
-        border-radius: 24px;
-        padding: 40px;
+        background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px);
+        border: 1px solid white; border-radius: 24px; padding: 40px;
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
         animation: fadeIn 0.6s ease-out;
     }
@@ -106,13 +98,11 @@
 
     .page-header {
         display: flex; justify-content: space-between; align-items: center;
-        margin-bottom: 35px; padding-bottom: 25px;
-        border-bottom: 1px solid rgba(0,0,0,0.08);
+        margin-bottom: 35px; padding-bottom: 25px; border-bottom: 1px solid rgba(0,0,0,0.08);
     }
     .page-title h1 { font-size: 28px; font-weight: 800; color: var(--text-dark); letter-spacing: -0.5px; }
     .page-title p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
 
-    /* --- BUTTONS --- */
     .btn-save {
         background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
         color: white; border: none; padding: 12px 24px;
@@ -122,30 +112,16 @@
     }
     .btn-save:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4); }
 
-    /* --- UPLOAD BOXES --- */
-    .upload-grid {
-    display: grid;
-    grid-template-columns: 1fr; /* CHANGE THIS from '1fr 2fr' to '1fr' */
-    gap: 20px;
-    margin-bottom: 30px;
-    }
-
+    .upload-grid { display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 30px; }
     .upload-box {
         background: white; border-radius: 20px; border: 1px solid #e2e8f0;
-        padding: 11px; display: flex; flex-direction: column; align-items: center; text-align: center;
-        gap: 15px;
+        padding: 11px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 15px;
     }
-
     .avatar-preview { 
         width: 120px; height: 120px; border-radius: 50%; object-fit: cover; 
         border: 4px solid #f1f5f9; box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
-
-    .banner-preview {
-        width: 100%; height: 180px; border-radius: 12px; object-fit: cover;
-        border: 2px solid #f1f5f9;
-    }
-
+    .banner-preview { width: 100%; height: 180px; border-radius: 12px; object-fit: cover; border: 2px solid #f1f5f9; }
     .btn-upload {
         background: #f8fafc; border: 1px solid #cbd5e1; color: #475569;
         padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
@@ -153,7 +129,6 @@
     }
     .btn-upload:hover { background: #e2e8f0; color: var(--text-dark); border-color: #94a3b8; }
 
-    /* --- FORM FIELDS --- */
     .form-section { margin-bottom: 40px; }
     .section-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
     
@@ -163,37 +138,29 @@
     .label { font-size: 13px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; }
     
     .input-field, .textarea-field {
-        width: 100%; padding: 12px 16px;
-        background: white;
+        width: 100%; padding: 12px 16px; background: white;
         border: 2px solid #e2e8f0; border-radius: 12px;
         font-family: 'Outfit', sans-serif; font-size: 15px; color: var(--text-dark);
         transition: all 0.2s;
     }
-    .input-field:focus, .textarea-field:focus { 
-        outline: none; border-color: var(--primary); 
-        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); 
-    }
+    .input-field:focus, .textarea-field:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
     .textarea-field { min-height: 120px; resize: vertical; line-height: 1.6; }
 
-    /* --- INTERESTS PILLS --- */
     .interest-selector {
         background: white; border: 2px solid #e2e8f0; border-radius: 16px; padding: 20px;
         display: flex; flex-wrap: wrap; gap: 10px;
     }
     .interest-checkbox { display: none; }
     .interest-pill {
-        padding: 8px 16px; border-radius: 50px;
-        background: #f8fafc; border: 1px solid #cbd5e1;
-        color: #64748b; font-size: 13px; font-weight: 600;
-        cursor: pointer; transition: all 0.2s; user-select: none;
-        display: flex; align-items: center; gap: 6px;
+        padding: 8px 16px; border-radius: 50px; background: #f8fafc; border: 1px solid #cbd5e1;
+        color: #64748b; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; 
+        user-select: none; display: flex; align-items: center; gap: 6px;
     }
     .interest-checkbox:checked + .interest-pill {
         background: #eef2ff; border-color: var(--primary); color: var(--primary);
         box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
     }
 
-    /* --- DANGER ZONE --- */
     .danger-zone {
         margin-top: 50px; border: 1px solid #fecaca; background: #fff1f2;
         border-radius: 16px; padding: 25px; display: flex; 
@@ -205,7 +172,6 @@
     }
     .btn-delete:hover { background: #dc2626; transform: translateY(-1px); }
 
-    /* MODAL */
     .modal {
         display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999;
         justify-content: center; align-items: center; backdrop-filter: blur(4px);
@@ -286,19 +252,19 @@
                             {% else %}
                                 <img src="https://images.unsplash.com/photo-1595152772835-219674b2a8a6?w=200&h=200&fit=crop" id="avatarPreview" class="avatar-preview">
                             {% endif %}
+                        </div>
+
+                        <div class="profile-info">
+                            <h3>Your Photo</h3>
+                            <p>This will be displayed on your profile and community posts.</p>
+                            
+                            <button type="button" class="btn-outline" onclick="document.getElementById('uploadAvatar').click()">Change Photo</button>
+                            <input type="file" id="uploadAvatar" name="profile_picture" hidden onchange="previewImage(this, 'avatarPreview')">
+                        </div>
+                    </div>
 
                 </div>
-
-        <div class="profile-info">
-            <h3>Your Photo</h3>
-            <p>This will be displayed on your profile and community posts.</p>
-            
-            <button type="button" class="btn-outline" onclick="document.getElementById('uploadAvatar').click()">Change Photo</button>
-            <input type="file" id="uploadAvatar" name="profile_picture" hidden onchange="previewImage(this, 'avatarPreview')">
-        </div>
-    </div>
-
-</div>
+            </div>
 
             <div class="form-section">
                 <div class="section-title">
@@ -314,6 +280,26 @@
                     <div class="form-group">
                         <label class="label">Email Address</label>
                         <input type="email" name="email" class="input-field" value="{{ user.email }}" required>
+                    </div>
+
+                    <div class="form-group form-full">
+                        <label class="label">Member Type</label>
+                        <div class="role-grid">
+                            <label class="role-label">
+                                <input type="radio" name="member_type" value="Youth Member" {% if user.member_type == 'Youth Member' %}checked{% endif %}>
+                                <div class="role-card">
+                                    <span class="role-icon">🎓</span>
+                                    <span class="role-name">Youth</span>
+                                </div>
+                            </label>
+                            <label class="role-label">
+                                <input type="radio" name="member_type" value="Senior Member" {% if user.member_type == 'Senior Member' %}checked{% endif %}>
+                                <div class="role-card">
+                                    <span class="role-icon">👓</span>
+                                    <span class="role-name">Senior</span>
+                                </div>
+                            </label>
+                        </div>
                     </div>
                     
                     <div class="form-group form-full">
