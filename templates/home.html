@@ -26,14 +26,27 @@
         height: 100vh;
         background-color: white;
         border-right: 1px solid #e5e7eb;
-        padding: 20px 0;
+        /* REMOVED padding here so the header touches the top edge */
+        padding: 0; 
         z-index: 100;
+        display: flex;
+        flex-direction: column;
     }
 
     .sidebar-logo {
-        padding: 0 30px 20px;
+        /* FIXED HEIGHT to match top bar */
+        height: 80px; 
+        display: flex;
+        align-items: center;
+        padding: 0 30px;
         border-bottom: 1px solid #e5e7eb;
-        margin-bottom: 20px;
+        
+        /* MAGIC TRICK: Overlap the sidebar border to make it look seamless */
+        margin-right: -1px; 
+        border-right: 1px solid white; 
+        background-color: white;
+        position: relative;
+        z-index: 10;
     }
 
     .logo {
@@ -48,8 +61,10 @@
 
     .sidebar-nav {
         list-style: none;
-        padding: 0;
+        /* Added padding here since we removed it from the parent .sidebar */
+        padding: 20px 0; 
         margin: 0;
+        overflow-y: auto; /* scroll if list is too long */
     }
 
     .sidebar-nav li {
@@ -79,232 +94,94 @@
 
     /* --- Feed Styles --- */
     .main-feed {
-        margin-left: 250px; /* Push right by sidebar width */
+        margin-left: 250px;
         flex: 1;
-        padding: 40px;
-        width: calc(100% - 250px); /* Fill remaining space */
+        padding: 0; /* Remove padding so sticky bar touches top */
+        width: calc(100% - 250px);
     }
 
-    /* Wrapper to control post width and centering */
-    .feed-posts {
-        max-width: 1200px; /* Increased width to fill space */
-        margin: 0 auto;    /* Centers the feed in the middle of the screen */
+    /* --- STICKY TOP BAR --- */
+    .sticky-top-bar {
+        position: sticky;
+        top: 0;
+        z-index: 90;
+        background-color: white;       
+        border-bottom: 1px solid #e5e7eb; 
+        /* FIXED HEIGHT matches sidebar logo */
+        height: 80px; 
+        display: flex;
+        align-items: center;           
+        justify-content: flex-end;     
+        padding: 0 40px;               
+    }
+
+    .search-input-wrapper {
+        position: relative;
+        width: 300px;
+    }
+
+    .search-input-wrapper input {
         width: 100%;
-    }
-
-    /* Post Card Styles */
-    .post {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        margin-bottom: 25px;
+        padding: 8px 15px 8px 40px;
         border: 1px solid #e5e7eb;
-        overflow: visible; 
+        border-radius: 20px;
+        outline: none;
+        font-size: 14px;
+        background-color: #f9fafb;
+        transition: all 0.2s;
     }
 
-    .post-header {
-        padding: 15px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+    .search-input-wrapper input:focus {
+        border-color: #6366f1;
+        background-color: white;
     }
 
-    .post-title {
-        padding: 0 15px 5px 15px;
-        font-size: 18px;
-        font-weight: 700;
-        color: #111827;
-        text-align: left;
-        margin: 0; 
-        display: block; 
-    }
-
-    .post-content {
-        padding: 0 15px 15px 15px;
-        font-size: 15px;
-        line-height: 1.5;
-        color: #1f2937;
-        white-space: pre-wrap;
-        text-align: left; 
-        margin: 0;
-        display: block;
-    }
-
-    .post-media {
-        background-color: #f3f4f6;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    
-    .post-media img, .post-media video {
-        max-height: 600px;
-        width: 100%;
-        object-fit: contain;
-    }
-
-    .post-footer {
-        padding: 10px 15px;
-        border-top: 1px solid #f3f4f6;
-    }
-
-    .btn-light {
-        background: transparent;
-        border: none;
-        color: #6b7280;
-        transition: color 0.2s;
-    }
-
-    .btn-light:hover {
-        color: #2563eb;
-        background: #f9fafb;
-    }
-
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
+    .search-input-wrapper i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
         color: #9ca3af;
     }
 
-    .empty-state svg {
-        width: 60px;
-        height: 60px;
-        margin-bottom: 20px;
-        color: #d1d5db;
-    }
-
-    /* --- Hidden Post UI Styles --- */
-    .post-hidden-state {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 25px 30px;
-        background: #f9fafb;
-        color: #6b7280;
-        font-weight: 500;
-    }
-    .btn-undo {
-        border: none;
-        background: #e5e7eb;
-        color: #374151;
-        padding: 8px 20px;
-        border-radius: 20px;
-        font-weight: 600;
-        font-size: 14px;
-        cursor: pointer;
-        transition: background 0.2s;
-    }
-    .btn-undo:hover { background: #d1d5db; }
-
-    /* --- Modal Styles --- */
-    .custom-modal-content {
-        border-radius: 16px;
-        border: none;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        text-align: center;
-        padding: 20px;
-    }
-    .custom-modal-header {
-        border-bottom: none;
-        justify-content: center;
-        padding-bottom: 0;
-        position: relative;
-    }
-    .custom-modal-title {
-        font-weight: 700;
-        color: #111827;
-        font-size: 20px;
-    }
-    .btn-close-custom {
-        position: absolute;
-        right: 20px;
-        top: 20px;
-        background: transparent;
-        border: none;
-        font-size: 20px;
-        color: #6b7280;
-    }
-    .custom-modal-body {
-        color: #6b7280;
-        font-size: 15px;
-        padding: 15px 30px;
-        text-align: left;
-    }
-    .custom-modal-footer {
-        border-top: none;
-        justify-content: flex-end; 
-        gap: 15px;
-        padding-bottom: 20px;
-        padding-right: 30px;
-    }
-    .btn-modal-cancel {
-        background-color: #f3f4f6;
-        color: #374151;
-        border: none;
-        border-radius: 8px;
-        padding: 10px 24px;
-        font-weight: 600;
-        width: 120px;
-    }
-    .btn-modal-cancel:hover { background-color: #e5e7eb; color: #111827; }
-    
-    .btn-modal-delete {
-        background-color: #dc2626;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        padding: 10px 24px;
-        font-weight: 600;
-        width: 120px;
-    }
-    .btn-modal-delete:hover { background-color: #b91c1c; }
-
-    /* --- Report Modal Specifics --- */
-    .report-reasons-grid {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-bottom: 20px;
-    }
-    .report-chip {
-        padding: 8px 16px;
-        border: 1px solid #e5e7eb;
-        border-radius: 20px;
-        background: white;
-        color: #374151;
-        font-size: 14px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s;
-        user-select: none;
-    }
-    .report-chip:hover {
-        background-color: #f9fafb;
-    }
-    .report-chip.active {
-        background-color: #eff6ff;
-        border-color: #2563eb;
-        color: #2563eb;
-    }
-    .report-textarea {
+    /* Wrapper for posts */
+    .feed-posts {
+        max-width: 1200px;
+        margin: 0 auto;
         width: 100%;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        padding: 12px;
-        font-size: 14px;
-        resize: vertical;
-        min-height: 100px;
+        padding: 40px;
     }
-    .btn-modal-submit {
-        background-color: #2563eb;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        padding: 10px 24px;
-        font-weight: 600;
-    }
-    .btn-modal-submit:hover { background-color: #1d4ed8; }
 
+    /* --- KEEP EXISTING COMPONENT STYLES --- */
+    .post { background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); margin-bottom: 25px; border: 1px solid #e5e7eb; overflow: visible; }
+    .post-header { padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+    .post-title { padding: 0 15px 5px 15px; font-size: 18px; font-weight: 700; color: #111827; text-align: left; margin: 0; display: block; }
+    .post-content { padding: 0 15px 15px 15px; font-size: 15px; line-height: 1.5; color: #1f2937; white-space: pre-wrap; text-align: left; margin: 0; display: block; }
+    .post-media { background-color: #f3f4f6; display: flex; justify-content: center; align-items: center; }
+    .post-media img, .post-media video { max-height: 600px; width: 100%; object-fit: contain; }
+    .post-footer { padding: 10px 15px; border-top: 1px solid #f3f4f6; }
+    .btn-light { background: transparent; border: none; color: #6b7280; transition: color 0.2s; }
+    .btn-light:hover { color: #2563eb; background: #f9fafb; }
+    .empty-state { text-align: center; padding: 60px 20px; color: #9ca3af; }
+    .empty-state svg { width: 60px; height: 60px; margin-bottom: 20px; color: #d1d5db; }
+    .post-hidden-state { display: flex; justify-content: space-between; align-items: center; padding: 25px 30px; background: #f9fafb; color: #6b7280; font-weight: 500; }
+    .btn-undo { border: none; background: #e5e7eb; color: #374151; padding: 8px 20px; border-radius: 20px; font-weight: 600; font-size: 14px; cursor: pointer; transition: background 0.2s; }
+    .btn-undo:hover { background: #d1d5db; }
+    .custom-modal-content { border-radius: 16px; border: none; text-align: center; padding: 20px; }
+    .custom-modal-header { border-bottom: none; justify-content: center; padding-bottom: 0; position: relative; }
+    .custom-modal-title { font-weight: 700; color: #111827; font-size: 20px; }
+    .btn-close-custom { position: absolute; right: 20px; top: 20px; background: transparent; border: none; font-size: 20px; color: #6b7280; }
+    .custom-modal-body { color: #6b7280; font-size: 15px; padding: 15px 30px; text-align: left; }
+    .custom-modal-footer { border-top: none; justify-content: flex-end; gap: 15px; padding-bottom: 20px; padding-right: 30px; }
+    .btn-modal-cancel { background: #f3f4f6; color: #374151; border-radius: 8px; padding: 10px 24px; font-weight: 600; width: 120px; }
+    .btn-modal-delete { background: #dc2626; color: white; border-radius: 8px; padding: 10px 24px; font-weight: 600; width: 120px; }
+    .report-reasons-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+    .report-chip { padding: 8px 16px; border: 1px solid #e5e7eb; border-radius: 20px; background: white; color: #374151; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; user-select: none; }
+    .report-chip:hover { background-color: #f9fafb; }
+    .report-chip.active { background-color: #eff6ff; border-color: #2563eb; color: #2563eb; }
+    .report-textarea { width: 100%; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; font-size: 14px; resize: vertical; min-height: 100px; }
+    .btn-modal-submit { background-color: #2563eb; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 600; }
+    .btn-modal-submit:hover { background-color: #1d4ed8; }
 </style>
 {% endblock %}
 
@@ -402,11 +279,10 @@
     </aside>
 
     <main class="main-feed">
-        <div class="search-section mb-4" style="display: flex; justify-content: flex-end;">
-            <form action="{{ url_for('search') }}" method="GET" style="position: relative; width: 300px;">
-                <input type="text" name="q" placeholder="Search..." 
-                       style="width: 100%; padding: 10px 15px 10px 40px; border: 1px solid #e5e7eb; border-radius: 8px; outline: none;">
-                <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af;"></i>
+        <div class="sticky-top-bar">
+            <form action="{{ url_for('search') }}" method="GET" class="search-input-wrapper">
+                <input type="text" name="q" placeholder="Search...">
+                <i class="fas fa-search"></i>
             </form>
         </div>
 
