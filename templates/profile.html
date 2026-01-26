@@ -350,15 +350,19 @@
         <div class="profile-container">
             <div class="profile-hero">
                 <div class="hero-banner">
-                    <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2070&auto=format&fit=crop" alt="Banner">
+                    {% if user.banner_image and user.banner_image != 'default_banner.jpg' %}
+                        <img src="{{ url_for('uploaded_file', filename=user.banner_image) }}" alt="Banner">
+                    {% else %}
+                        <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2070&auto=format&fit=crop" alt="Default Banner">
+                    {% endif %}
                 </div>
                 <div class="hero-content">
                     <div class="identity-group">
                         <div class="avatar-wrapper">
                             {% if user.profile_picture and user.profile_picture != 'default.jpg' %}
-                                <img src="{{ user.profile_picture }}" alt="User">
+                                <img src="{{ url_for('uploaded_file', filename=user.profile_picture) }}" alt="User">
                             {% else %}
-                                <img src="https://images.unsplash.com/photo-1595152772835-219674b2a8a6?w=400&h=400&fit=crop" alt="IT Student">
+                                <img src="https://images.unsplash.com/photo-1595152772835-219674b2a8a6?w=400&h=400&fit=crop" alt="Default User">
                             {% endif %}
                         </div>
                         <div class="user-text">

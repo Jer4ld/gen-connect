@@ -863,17 +863,23 @@ def edit_profile():
         if 'profile_picture' in request.files:
             file = request.files['profile_picture']
             if file and file.filename != '' and allowed_file(file.filename):
+                # Create unique filename
                 filename = secure_filename(f"pfp_{user.id}_{int(datetime.utcnow().timestamp())}.{file.filename.split('.')[-1]}")
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                user.profile_picture = url_for('uploaded_file', filename=filename)
+                
+                # FIX: Save ONLY the filename to the database
+                user.profile_picture = filename
 
-        # 3. Handle Banner Image Upload (NEW)
+        # 3. Handle Banner Image Upload
         if 'banner_image' in request.files:
             file = request.files['banner_image']
             if file and file.filename != '' and allowed_file(file.filename):
+                # Create unique filename
                 filename = secure_filename(f"banner_{user.id}_{int(datetime.utcnow().timestamp())}.{file.filename.split('.')[-1]}")
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                user.banner_image = url_for('uploaded_file', filename=filename)
+                
+                # FIX: Save ONLY the filename to the database
+                user.banner_image = filename
 
         try:
             db.session.commit()
@@ -881,7 +887,7 @@ def edit_profile():
             return redirect(url_for('profile')) 
         except Exception as e:
             db.session.rollback()
-            print(e)
+            print(f"Error: {e}")
             flash('Error updating profile.', 'error')
 
     return render_template('edit_profile.html', user=user)

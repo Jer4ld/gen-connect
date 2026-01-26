@@ -5,58 +5,89 @@
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-    /* Reuse layout from home */
+    /* --- Reuse layout from home --- */
     body { background-color: #f9fafb; }
     .container { display: flex; min-height: 100vh; max-width: 100%; padding: 0; }
 
-    /* Sidebar */
-    .sidebar { position: fixed; left: 0; top: 0; width: 250px; height: 100vh; background-color: white; border-right: 1px solid #e5e7eb; padding: 20px 0; z-index: 100; }
-    .sidebar-logo { padding: 0 30px 20px; border-bottom: 1px solid #e5e7eb; margin-bottom: 20px; }
+    /* --- Sidebar Styles (Updated for seamless header) --- */
+    .sidebar { 
+        position: fixed; left: 0; top: 0; width: 250px; height: 100vh; 
+        background-color: white; border-right: 1px solid #e5e7eb; 
+        padding: 0; /* Removed padding to align header */
+        z-index: 100; 
+        display: flex; flex-direction: column;
+    }
+    
+    .sidebar-logo { 
+        height: 80px; /* Fixed height matches top bar */
+        display: flex; align-items: center; padding: 0 30px; 
+        border-bottom: 1px solid #e5e7eb; margin-bottom: 0;
+        
+        /* HACK: Seamless border join */
+        margin-right: -1px; border-right: 1px solid white; 
+        background-color: white; position: relative; z-index: 10;
+    }
+    
     .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 600; color: #6366f1; text-decoration: none; }
-    .sidebar-nav { list-style: none; padding: 0; margin: 0; }
+    
+    .sidebar-nav { list-style: none; padding: 20px 0; margin: 0; flex: 1; overflow-y: auto; }
     .sidebar-nav li { margin: 5px 0; }
     .sidebar-nav a { display: flex; align-items: center; gap: 15px; padding: 12px 30px; text-decoration: none; color: #374151; transition: all 0.2s; font-size: 15px; }
     .sidebar-nav a:hover { background-color: #f9fafb; }
     .sidebar-nav a.active { background-color: #eff6ff; color: #2563eb; border-right: 3px solid #2563eb; }
 
-    /* Main Content */
-    .main-feed { margin-left: 250px; flex: 1; padding: 40px; width: calc(100% - 250px); }
-    .feed-posts { max-width: 1200px; margin: 0 auto; width: 100%; }
+    /* --- Main Feed (Padding removed for sticky bar) --- */
+    .main-feed { 
+        margin-left: 250px; 
+        flex: 1; 
+        padding: 0; 
+        width: calc(100% - 250px); 
+    }
 
-    /* Search Bar (Top) */
-    .search-section { display: flex; justify-content: flex-end; margin-bottom: 25px; }
+    /* --- STICKY TOP BAR --- */
+    .sticky-top-bar {
+        position: sticky; top: 0; z-index: 90;
+        background-color: white;       
+        border-bottom: 1px solid #e5e7eb; 
+        height: 80px; /* Matches sidebar logo */
+        display: flex; align-items: center; justify-content: flex-end;     
+        padding: 0 40px;               
+    }
+
+    .search-input-wrapper { position: relative; width: 300px; }
+    .search-input-wrapper input {
+        width: 100%; padding: 8px 15px 8px 40px;
+        border: 1px solid #e5e7eb; border-radius: 20px;
+        outline: none; font-size: 14px;
+        background-color: #f9fafb; transition: all 0.2s;
+    }
+    .search-input-wrapper input:focus { border-color: #6366f1; background-color: white; }
+    .search-input-wrapper i {
+        position: absolute; left: 15px; top: 50%;
+        transform: translateY(-50%); color: #9ca3af;
+    }
+
+    /* --- Content Wrapper (Adds padding back to content) --- */
+    .results-content {
+        padding: 40px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
 
     /* Tabs */
     .tabs-container {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 30px;
-        justify-content: flex-start;
-        border-bottom: 1px solid #e5e7eb;
-        padding-bottom: 15px;
+        display: flex; gap: 10px; margin-bottom: 30px;
+        justify-content: flex-start; border-bottom: 1px solid #e5e7eb; padding-bottom: 15px;
     }
     .tab-btn {
-        padding: 8px 24px;
-        border-radius: 8px;
-        border: 1px solid #e5e7eb;
-        background: white;
-        color: #374151;
-        font-weight: 500;
-        text-decoration: none;
-        font-size: 14px;
-        transition: all 0.2s;
+        padding: 8px 24px; border-radius: 8px; border: 1px solid #e5e7eb;
+        background: white; color: #374151; font-weight: 500;
+        text-decoration: none; font-size: 14px; transition: all 0.2s;
     }
     .tab-btn:hover { background-color: #f9fafb; }
-    .tab-btn.active {
-        background-color: #e5e7eb;
-        color: #111827;
-        font-weight: 600;
-        border-color: #d1d5db;
-    }
+    .tab-btn.active { background-color: #e5e7eb; color: #111827; font-weight: 600; border-color: #d1d5db; }
 
-    /* --- Result Cards Styling --- */
-    
-    /* Post Card */
+    /* Result Cards */
     .post { background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); margin-bottom: 25px; border: 1px solid #e5e7eb; }
     .post-header { padding: 15px; display: flex; justify-content: space-between; align-items: center; }
     .post-content { padding: 0 15px 15px 15px; font-size: 15px; line-height: 1.5; color: #1f2937; }
@@ -64,63 +95,46 @@
     .post-media img, .post-media video { max-height: 500px; width: 100%; object-fit: contain; }
     .post-footer { padding: 10px 15px; border-top: 1px solid #f3f4f6; }
 
-    /* Community Card */
     .community-card {
         background: white; border: 1px solid #e5e7eb; padding: 20px;
-        margin-bottom: 15px; border-radius: 12px;
-        display: flex; align-items: center; gap: 20px;
+        margin-bottom: 15px; border-radius: 12px; display: flex; align-items: center; gap: 20px;
     }
     .comm-img { width: 80px; height: 80px; background: #f3f4f6; border-radius: 8px; object-fit: cover; }
     .comm-info h3 { margin: 0 0 5px 0; font-size: 16px; font-weight: 700; color: #111827; }
     .comm-desc { color: #4b5563; font-size: 14px; margin: 0 0 5px 0; }
     .comm-meta { color: #9ca3af; font-size: 12px; }
 
-    /* Media Grid (Gallery Style) */
-    .media-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 15px;
-    }
+    /* Media Grid */
+    .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
     .media-item {
         background: white; border-radius: 8px; overflow: hidden;
-        border: 1px solid #e5e7eb; position: relative;
-        aspect-ratio: 1 / 1;
+        border: 1px solid #e5e7eb; position: relative; aspect-ratio: 1 / 1;
     }
-    .media-item img, .media-item video {
-        width: 100%; height: 100%; object-fit: cover;
-    }
+    .media-item img, .media-item video { width: 100%; height: 100%; object-fit: cover; }
     .media-overlay {
         position: absolute; bottom: 0; left: 0; right: 0;
         background: linear-gradient(transparent, rgba(0,0,0,0.7));
-        padding: 10px; color: white; font-size: 12px;
-        opacity: 0; transition: opacity 0.2s;
+        padding: 10px; color: white; font-size: 12px; opacity: 0; transition: opacity 0.2s;
     }
     .media-item:hover .media-overlay { opacity: 1; }
 
     /* People Card */
     .people-card {
         background: white; border: 1px solid #e5e7eb; padding: 15px 20px;
-        margin-bottom: 15px; border-radius: 12px;
-        display: flex; align-items: center; gap: 15px;
-        justify-content: space-between;
+        margin-bottom: 15px; border-radius: 12px; display: flex; align-items: center; gap: 15px; justify-content: space-between;
     }
     .people-info { display: flex; align-items: center; gap: 15px; }
     .people-avatar {
-        width: 60px; height: 60px; background: #e5e7eb;
-        border-radius: 50%; object-fit: cover; display: flex;
-        justify-content: center; align-items: center;
-        font-weight: bold; font-size: 20px; color: #6b7280;
+        width: 60px; height: 60px; background: #e5e7eb; border-radius: 50%; object-fit: cover;
+        display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 20px; color: #6b7280;
     }
     .people-details h4 { margin: 0; font-size: 16px; font-weight: 700; color: #111827; }
     .people-username { margin: 0; font-size: 13px; color: #6b7280; }
     .btn-view-profile {
-        padding: 6px 16px; border: 1px solid #d1d5db;
-        border-radius: 20px; background: white;
-        color: #374151; font-size: 13px; font-weight: 600;
-        text-decoration: none; transition: all 0.2s;
+        padding: 6px 16px; border: 1px solid #d1d5db; border-radius: 20px; background: white;
+        color: #374151; font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.2s;
     }
     .btn-view-profile:hover { background: #f3f4f6; color: #111827; }
-
 </style>
 {% endblock %}
 
@@ -146,14 +160,15 @@
     </aside>
 
     <main class="main-feed">
-        <div class="search-section">
-            <form action="{{ url_for('search') }}" method="GET" style="position: relative; width: 300px;">
-                <input type="text" name="q" value="{{ query }}" placeholder="Search..." 
-                       style="width: 100%; padding: 10px 15px 10px 40px; border: 1px solid #e5e7eb; border-radius: 8px; outline: none;">
-                <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af;"></i>
-            </form>
-        </div>
+    <div class="sticky-top-bar">
+        <form action="{{ url_for('search') }}" method="GET" class="search-input-wrapper">
+            <input type="text" name="q" value="{{ query }}" placeholder="Search...">
+            <i class="fas fa-search"></i>
+        </form>
+    </div>
 
+    <div class="results-content">
+        
         <div class="tabs-container">
             <a href="{{ url_for('search', q=query, tab='posts') }}" class="tab-btn {{ 'active' if active_tab == 'posts' else '' }}">Posts</a>
             <a href="{{ url_for('search', q=query, tab='communities') }}" class="tab-btn {{ 'active' if active_tab == 'communities' else '' }}">Communities</a>
@@ -161,7 +176,7 @@
             <a href="{{ url_for('search', q=query, tab='people') }}" class="tab-btn {{ 'active' if active_tab == 'people' else '' }}">People</a>
         </div>
 
-        <div class="feed-posts">
+        <div class="search-results">
             
             {% if active_tab == 'posts' %}
                 {% if posts %}
@@ -207,9 +222,9 @@
                 {% if communities %}
                     {% for comm in communities %}
                     <div class="community-card">
-                        <img src="{{ url_for('static', filename=comm.image_url) if comm.image_url else 'https://via.placeholder.com/80' }}" class="comm-img" alt="">
+                        <img src="{{ url_for('static', filename=comm.image_url) if comm.image_url else 'https://via.placeholder.com/100' }}" class="comm-img" alt="Community">
                         <div class="comm-info">
-                            <h3>c/ {{ comm.name }}</h3>
+                            <h3 class="comm-name">c/ {{ comm.name }}</h3>
                             <p class="comm-desc">{{ comm.description }}</p>
                             <div class="comm-meta">{{ comm.get_member_count() }} members</div>
                         </div>
@@ -263,6 +278,7 @@
 
             {% endif %}
         </div>
-    </main>
+    </div>
+</main>
 </div>
 {% endblock %}
