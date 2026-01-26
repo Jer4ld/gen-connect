@@ -438,7 +438,11 @@
                                     
                                     <li>
                                         <a class="dropdown-item" href="{{ url_for('save_post', post_id=post.id) }}">
-                                            <i class="far fa-bookmark me-2"></i>Save
+                                            {% if post.user_has_saved(current_user.id) %}
+                                                <i class="fas fa-bookmark me-2"></i>Unsave
+                                            {% else %}
+                                                <i class="far fa-bookmark me-2"></i>Save
+                                            {% endif %}
                                         </a>
                                     </li>
                                     <li><a class="dropdown-item" href="javascript:void(0)" onclick="toggleHidePost('{{ post.id }}')"><i class="far fa-eye-slash me-2"></i>Hide</a></li>

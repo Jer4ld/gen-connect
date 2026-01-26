@@ -483,18 +483,20 @@
                                         <p class="card-p">{{ saved.post.content[:100] }}...</p>
                                         <div class="card-ft">
                                             <span>Saved on {{ saved.created_at.strftime('%B %d, %Y') }}</span>
-                                            <a href="{{ url_for('save_post', post_id=saved.post.id) }}" style="color: #ef4444; text-decoration: none; font-weight: bold;">
-                                                Remove
+                                            <a href="{{ url_for('save_post', post_id=saved.post.id) }}" style="color: #ef4444; text-decoration: none; font-weight: 600; display:flex; align-items:center; gap:5px;">
+                                                <i class="far fa-trash-alt"></i> Remove
                                             </a>
                                         </div>
                                     </div>
                                 </div>
                                 {% endfor %}
                             {% else %}
-                                <div class="content-card">
-                                    <div class="card-body">
-                                        <div class="card-h">No Saved Posts</div>
+                                <div class="content-card" style="padding: 40px; text-align: center;">
+                                    <div class="card-body" style="align-items: center;">
+                                        <div style="font-size: 40px; margin-bottom: 10px;">🔖</div>
+                                        <div class="card-h">No Saved Posts Yet</div>
                                         <p class="card-p">Posts you save will appear here for easy access.</p>
+                                        <a href="{{ url_for('home') }}" class="btn-action btn-primary" style="margin-top: 10px;">Explore Posts</a>
                                     </div>
                                 </div>
                             {% endif %}
