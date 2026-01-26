@@ -1,136 +1,311 @@
 {% extends "base.html" %}
 
-{% block title %}GenConnect - Connect Across Generations{% endblock %}
+{% block title %}GenConnect - Bridging the Generation Gap{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
+    /* General Page Styles */
     body {
-        background-color: #f9fafb;
+        background-color: #ffffff;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        color: #1f2937;
     }
 
+    /* Navigation */
     .guest-header {
-        background-color: white;
+        background-color: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
         border-bottom: 1px solid #e5e7eb;
         padding: 15px 30px;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
     }
 
-    .guest-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 50px 30px;
-    }
-
-    .feed-section {
-        background-color: white;
-        border-radius: 12px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
-        margin-bottom: 20px;
-    }
-
-    .post {
-        padding: 20px;
-        border-bottom: 1px solid #f3f4f6;
-    }
-
-    .post:last-child {
-        border-bottom: none;
-    }
-
-    .post-header {
+    .logo {
         display: flex;
         align-items: center;
-        gap: 10px;
-        margin-bottom: 10px;
-        font-size: 14px;
-        color: #6b7280;
+        gap: 8px;
+        font-size: 22px;
+        font-weight: 700;
+        color: #6366f1;
+        text-decoration: none;
     }
 
-    .post-content {
-        font-size: 15px;
-        color: #111827;
+    .header-actions {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+    }
+
+    /* Hero Section */
+    .hero-section {
+        padding: 80px 30px;
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        gap: 50px;
+    }
+
+    .hero-content {
+        flex: 1;
+    }
+
+    .hero-title {
+        font-size: 48px;
+        font-weight: 800;
+        line-height: 1.2;
+        margin-bottom: 20px;
+        background: linear-gradient(135deg, #6366f1 0%, #2563eb 100%);
+        -webkit-background-clip: text;
+        background-clip: text; /* Added standard property to fix warning */
+        -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+        font-size: 18px;
+        color: #6b7280;
+        margin-bottom: 40px;
+        line-height: 1.6;
+    }
+
+    .hero-buttons {
+        display: flex;
+        gap: 15px;
+    }
+
+    .hero-image {
+        flex: 1;
+        position: relative;
+    }
+
+    .hero-img-main {
+        width: 100%;
+        border-radius: 20px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+        transform: rotate(2deg);
+        transition: transform 0.3s;
+    }
+
+    .hero-img-main:hover {
+        transform: rotate(0deg);
+    }
+
+    /* Buttons */
+    .btn {
+        padding: 12px 28px;
+        border-radius: 30px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background: #6366f1;
+        color: white;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-primary:hover {
+        background: #4f46e5;
+        transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+        background: white;
+        color: #374151;
+        border: 1px solid #d1d5db;
+    }
+
+    .btn-secondary:hover {
+        background: #f9fafb;
+        border-color: #9ca3af;
+    }
+
+    /* Features Section */
+    .features-section {
+        background-color: #f9fafb;
+        padding: 80px 30px;
+        text-align: center;
+    }
+
+    .section-title {
+        font-size: 32px;
+        font-weight: 700;
         margin-bottom: 15px;
+        color: #111827;
+    }
+
+    .section-desc {
+        color: #6b7280;
+        max-width: 600px;
+        margin: 0 auto 60px;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .feature-card {
+        background: white;
+        padding: 40px 30px;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        transition: transform 0.3s;
+        border: 1px solid #f3f4f6;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    }
+
+    .feature-icon {
+        width: 60px;
+        height: 60px;
+        background: #eff6ff;
+        color: #2563eb;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin: 0 auto 20px;
+    }
+
+    .feature-title {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .feature-text {
+        color: #6b7280;
+        font-size: 15px;
         line-height: 1.5;
     }
 
-    .post-image {
-        width: 100%;
-        border-radius: 8px;
-        margin-bottom: 15px;
-    }
-
-    .post-actions {
-        display: flex;
-        gap: 20px;
-        align-items: center;
-        font-size: 14px;
-        color: #6b7280;
-    }
-
-    .action-btn {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        cursor: pointer;
-        transition: color 0.2s;
-    }
-
-    .action-btn:hover {
-        color: #2563eb;
-    }
-
-    .cta-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(to bottom, transparent 30%, rgba(255, 255, 255, 0.95) 70%);
-        display: flex;
-        align-items: flex-end;
-        justify-content: center;
-        padding-bottom: 100px;
-        pointer-events: none;
-    }
-
-    .cta-box {
+    /* Mission Section */
+    .mission-section {
+        padding: 80px 30px;
         background: white;
-        padding: 40px 50px;
-        border-radius: 16px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-        text-align: center;
-        pointer-events: all;
-        max-width: 500px;
-    }
-
-    .cta-box h2 {
-        font-size: 28px;
-        margin-bottom: 15px;
-        color: #111827;
-    }
-
-    .cta-box p {
-        font-size: 16px;
-        color: #6b7280;
-        margin-bottom: 30px;
-    }
-
-    .cta-buttons {
+        max-width: 1000px;
+        margin: 0 auto;
         display: flex;
+        align-items: center;
+        gap: 60px;
+    }
+
+    .mission-image img {
+        width: 100%;
+        max-width: 400px;
+        border-radius: 16px;
+        box-shadow: 20px 20px 0px #e0e7ff;
+    }
+
+    .mission-content h2 {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+
+    .mission-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .mission-list li {
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
         gap: 15px;
-        justify-content: center;
+        font-size: 16px;
+        color: #4b5563;
+    }
+
+    .check-icon {
+        color: #10b981;
+        background: #ecfdf5;
+        padding: 5px;
+        border-radius: 50%;
+    }
+
+    /* CTA Bottom */
+    .cta-section {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        padding: 80px 30px;
+        text-align: center;
+        color: white;
+    }
+
+    .cta-section h2 {
+        font-size: 36px;
+        font-weight: 800;
+        margin-bottom: 20px;
+    }
+
+    .cta-section p {
+        font-size: 18px;
+        opacity: 0.9;
+        margin-bottom: 40px;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .btn-light {
+        background: white;
+        color: #4f46e5;
+        padding: 15px 40px;
+        font-size: 18px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+
+    .btn-light:hover {
+        background: #f3f4f6;
+        transform: scale(1.05);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .hero-section, .mission-section {
+            flex-direction: column;
+            text-align: center;
+            padding: 50px 20px;
+        }
+        
+        .hero-buttons {
+            justify-content: center;
+        }
+
+        .mission-image img {
+            box-shadow: none;
+            margin-bottom: 30px;
+        }
+        
+        .mission-list li {
+            justify-content: center;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Guest Header -->
-<div class="guest-header">
+<header class="guest-header">
     <a href="/" class="logo">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:28px; height:28px;">
             <path d="M12 2L2 7l10 5 10-5-10-5z"/>
             <path d="M2 17l10 5 10-5"/>
             <path d="M2 12l10 5 10-5"/>
@@ -138,100 +313,98 @@
         <span>GenConnect</span>
     </a>
     <div class="header-actions">
-        <div class="search-box">
-            <input type="text" placeholder="Search for..." readonly>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="11" cy="11" r="8"/>
-                <path d="m21 21-4.35-4.35"/>
-            </svg>
-        </div>
-        <a href="{{ url_for('login') }}" class="btn btn-secondary">Login</a>
-        <a href="{{ url_for('signup') }}" class="btn btn-primary">Sign up</a>
+        <a href="{{ url_for('login') }}" class="btn btn-secondary">Log in</a>
+        <a href="{{ url_for('signup') }}" class="btn btn-primary">Sign up free</a>
     </div>
-</div>
+</header>
 
-<!-- Main Content -->
-<div class="guest-container">
-    <!-- Sample Post 1 -->
-    <div class="feed-section">
-        <div class="post">
-            <div class="post-header">
-                c: sgukaces
-            </div>
-            <div class="post-content">
-                A picture I took at my local waterpark.
-            </div>
-            <img src="https://images.unsplash.com/photo-1533661851591-0b26c9b60cd7?w=800&auto=format&fit=crop" alt="Waterpark" class="post-image">
-            <div class="post-actions">
-                <div class="action-btn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
-                    </svg>
-                    <span>50</span>
-                </div>
-                <div class="action-btn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                    </svg>
-                    <span>20</span>
-                </div>
-                <div class="action-btn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="18" cy="5" r="3"/>
-                        <circle cx="6" cy="12" r="3"/>
-                        <circle cx="18" cy="19" r="3"/>
-                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-                    </svg>
-                </div>
-            </div>
-        </div>
-
-        <!-- Sample Post 2 -->
-        <div class="post">
-            <div class="post-header">
-                c: NFL
-            </div>
-            <div class="post-content">
-                Kansas City Chiefs have been eliminated.
-            </div>
-            <img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&auto=format&fit=crop" alt="Football" class="post-image">
-            <div class="post-actions">
-                <div class="action-btn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
-                    </svg>
-                    <span>342</span>
-                </div>
-                <div class="action-btn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                    </svg>
-                    <span>156</span>
-                </div>
-                <div class="action-btn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="18" cy="5" r="3"/>
-                        <circle cx="6" cy="12" r="3"/>
-                        <circle cx="18" cy="19" r="3"/>
-                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-                    </svg>
-                </div>
-            </div>
+<section class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title">Connect Across Generations. Share Wisdom.</h1>
+        <p class="hero-subtitle">
+            Bridge the gap between youth and experience. Join GenConnect to share stories, chat with new friends, and participate in real-world activities that bring us closer together.
+        </p>
+        <div class="hero-buttons">
+            <a href="{{ url_for('signup') }}" class="btn btn-primary">Start Connecting <i class="fas fa-arrow-right"></i></a>
+            <a href="#features" class="btn btn-secondary">Learn More</a>
         </div>
     </div>
-</div>
+    <div class="hero-image">
+        <img src="https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800&auto=format&fit=crop&q=60" alt="Generations Connecting" class="hero-img-main">
+    </div>
+</section>
 
-<!-- CTA Overlay -->
-<div class="cta-overlay">
-    <div class="cta-box">
-        <h2>Join GenConnect Today</h2>
-        <p>Connect with people across generations, share experiences, and build meaningful relationships.</p>
-        <div class="cta-buttons">
-            <a href="{{ url_for('login') }}" class="btn btn-secondary">Login</a>
-            <a href="{{ url_for('signup') }}" class="btn btn-primary">Sign up</a>
+<section id="features" class="features-section">
+    <h2 class="section-title">Why Join GenConnect?</h2>
+    <p class="section-desc">We provide the tools to build meaningful relationships, regardless of age.</p>
+    
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-comments"></i>
+            </div>
+            <h3 class="feature-title">Intergenerational Chat</h3>
+            <p class="feature-text">
+                Break the ice with our messaging platform. Ask questions, seek advice, or just have a friendly chat with someone from a different generation.
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-book-open"></i>
+            </div>
+            <h3 class="feature-title">Share Your Story</h3>
+            <p class="feature-text">
+                Everyone has a story to tell. Post your memories, life lessons, or daily moments. Preserve wisdom and inspire the youth.
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <h3 class="feature-title">Join Real Activities</h3>
+            <p class="feature-text">
+                Take the connection offline! Find and join local activities, workshops, and meetups designed for all ages to enjoy together.
+            </p>
         </div>
     </div>
-</div>
+</section>
+
+<section class="mission-section">
+    <div class="mission-image">
+        <img src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=800&auto=format&fit=crop" alt="Activity">
+    </div>
+    <div class="mission-content">
+        <h2>More Than Just Social Media</h2>
+        <p style="color: #6b7280; margin-bottom: 20px; line-height: 1.6;">
+            In a fast-paced world, wisdom often gets lost and energy often lacks direction. GenConnect creates a symbiotic space where:
+        </p>
+        <ul class="mission-list">
+            <li>
+                <i class="fas fa-check check-icon"></i> 
+                <span>Elderly members find companionship and purpose.</span>
+            </li>
+            <li>
+                <i class="fas fa-check check-icon"></i> 
+                <span>Youth gain mentorship and unique perspectives.</span>
+            </li>
+            <li>
+                <i class="fas fa-check check-icon"></i> 
+                <span>Communities become stronger and more inclusive.</span>
+            </li>
+            <li>
+                <i class="fas fa-check check-icon"></i> 
+                <span>Safe, moderated, and positive environment.</span>
+            </li>
+        </ul>
+    </div>
+</section>
+
+<section class="cta-section">
+    <h2>Ready to bridge the gap?</h2>
+    <p>Join thousands of members creating new stories today. It's free and easy to get started.</p>
+    <a href="{{ url_for('signup') }}" class="btn btn-light">Join GenConnect Now</a>
+</section>
+
 {% endblock %}
