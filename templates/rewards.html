@@ -267,8 +267,8 @@
         </div>
     </main>
 </div>
-
 <script>
+    // 1. Get the real point value from the database
     let currentPoints = parseInt("{{ user.points }}") || 0;
     
     // Check Daily Status on Load
@@ -276,36 +276,73 @@
     const today = new Date().toDateString();
     
     if(lastClaimDate === today) {
-        const btn = document.getElementById('dailyBtn');
-        btn.disabled = true;
-        btn.innerText = "Come back tomorrow";
-        btn.style.opacity = "0.7";
+        disableDailyBtn("Come back tomorrow");
     }
 
+    // --- 2. FIXED: Claim Points (Connects to Python) ---
     function claimDailyPoints() {
-        currentPoints += 50;
-        updateUI();
-        localStorage.setItem('lastClaimDate', new Date().toDateString());
-        const btn = document.getElementById('dailyBtn');
-        btn.disabled = true;
-        btn.innerText = "Claimed!";
-        alert("Success! You've earned 50 points.");
+        fetch('/api/claim_daily', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update with REAL database points
+                currentPoints = data.new_points; 
+                updateUI();
+                
+                // Lock the button
+                localStorage.setItem('lastClaimDate', new Date().toDateString());
+                disableDailyBtn("Claimed!");
+                alert("Success! You've earned 50 points.");
+            } else {
+                alert(data.message); 
+                if(data.message.includes("Already")) disableDailyBtn("Come back tomorrow");
+            }
+        })
+        .catch(error => console.error('Error:', error));
     }
 
+    // --- 3. FIXED: Redeem Item (Connects to Python) ---
     function redeemItem(cost, name) {
         if(currentPoints >= cost) {
             if(confirm(`Spend ${cost} points for ${name}?`)) {
-                currentPoints -= cost;
-                updateUI();
-                alert(`Successfully redeemed: ${name}!`);
+                
+                fetch('/api/redeem_item', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cost: cost, itemName: name })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        currentPoints = data.new_points;
+                        updateUI();
+                        alert(data.message);
+                    } else {
+                        alert(data.message); // Not enough points
+                    }
+                })
+                .catch(error => console.error('Error:', error));
             }
         } else {
             alert("Not enough points! Participate in the community to earn more.");
         }
     }
 
+    // Helper Functions
     function updateUI() {
         document.getElementById('displayPoints').innerText = currentPoints;
+    }
+
+    function disableDailyBtn(text) {
+        const btn = document.getElementById('dailyBtn');
+        if(btn) {
+            btn.disabled = true;
+            btn.innerText = text;
+            btn.style.opacity = "0.7";
+        }
     }
 
     function toggleSeniorMode() {

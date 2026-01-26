@@ -857,6 +857,7 @@ def edit_profile():
         user.username = request.form.get('username')
         user.email = request.form.get('email')
         user.bio = request.form.get('bio')
+        user.member_type = request.form.get('member_type')
         user.interests = ",".join(request.form.getlist('interests'))
 
         # 2. Handle Profile Picture Upload
