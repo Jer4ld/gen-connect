@@ -165,7 +165,8 @@ class Post(db.Model):
     content = db.Column(db.Text, nullable=False)
     media_file = db.Column(db.String(255), nullable=True) # Replaces image_url
     media_type = db.Column(db.String(10), nullable=True)  # 'image' or 'video'
-    
+    def user_has_saved(self, user_id):
+        return SavedPost.query.filter_by(user_id=user_id, post_id=self.id).first() is not None
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
