@@ -26,11 +26,65 @@
         .header-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.2s; color: #6b7280; }
         .header-icon:hover { background-color: #f3f4f6; }
         .conversations-list { flex: 1; overflow-y: auto; }
-        .conversation-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid #f3f4f6; text-decoration: none; color: inherit; cursor: pointer; }
+        
+        /* --- UPDATED: Conversation Item Styles for WhatsApp look --- */
+        .conversation-item { 
+            display: grid; 
+            grid-template-columns: auto 1fr auto; /* Avatar | Content | Meta */
+            grid-template-rows: auto auto;
+            gap: 0 12px;
+            padding: 12px 20px; 
+            border-bottom: 1px solid #f3f4f6; 
+            text-decoration: none; 
+            color: inherit; 
+            cursor: pointer; 
+            align-items: center;
+        }
         .conversation-item:hover { background-color: #f9fafb; }
         .conversation-item.active { background-color: #eff6ff; }
-        .conversation-avatar { width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 16px; flex-shrink: 0; overflow: hidden;}
-        .conversation-name { font-weight: 600; color: #111827; font-size: 15px; }
+        
+        .conversation-avatar { 
+            grid-row: 1 / span 2; /* Avatar spans 2 rows */
+            width: 45px; height: 45px; border-radius: 50%; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            display: flex; align-items: center; justify-content: center; 
+            color: white; font-weight: 600; font-size: 16px; 
+            flex-shrink: 0; overflow: hidden;
+        }
+        
+        .conversation-name { 
+            font-weight: 600; color: #111827; font-size: 15px; 
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        
+        .last-message {
+            font-size: 13px; color: #6b7280; 
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            margin-top: 2px;
+        }
+        
+        .conversation-meta {
+            display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+        }
+        
+        .timestamp { font-size: 11px; color: #9ca3af; }
+        .conversation-item.active .timestamp { color: #2563eb; }
+        
+        .unread-badge {
+            background-color: #10b981; 
+            color: white; 
+            font-size: 11px; 
+            font-weight: bold; 
+            min-width: 18px; 
+            height: 18px; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            padding: 0 5px;
+        }
+        /* ------------------------------------------------------------- */
+
         .chat-area { flex: 1; display: flex; flex-direction: column; background: white; position: relative; }
         .chat-header { display: flex; align-items: center; justify-content: space-between; padding: 15px 30px; border-bottom: 1px solid #e5e7eb; background: white; z-index: 10; }
         .chat-header-info { display: flex; align-items: center; gap: 15px; }
@@ -191,7 +245,16 @@
                     {% for conv in conversations %}
                     <a href="/messages/{{ conv.id }}?is_group={{ 'true' if conv.is_group else 'false' }}" class="conversation-item {% if (is_group and conv.is_group and conv.id == contact.id) or (not is_group and not conv.is_group and conv.id == contact.id) %}active{% endif %}">
                         <div class="conversation-avatar">{{ conv.name[0].upper() }}</div>
-                        <div class="conversation-name">{{ conv.name }}</div>
+                        <div style="min-width: 0;">
+                            <div class="conversation-name">{{ conv.name }}</div>
+                            <div class="last-message">{{ conv.last_msg }}</div>
+                        </div>
+                        <div class="conversation-meta">
+                            <span class="timestamp">{{ conv.time }}</span>
+                            {% if conv.unread > 0 %}
+                                <div class="unread-badge">{{ conv.unread }}</div>
+                            {% endif %}
+                        </div>
                     </a>
                     {% endfor %}
                 {% else %}
@@ -232,7 +295,11 @@
                     
                     <div class="menu-item danger" onclick="openGroupReportModal()">Report Member</div>
                     
-                    <div class="menu-item danger" onclick="confirmDeleteGroup()" style="color:#ef4444;">Delete & Exit Group</div>
+                    {% if user_is_admin %}
+                        <div class="menu-item danger" onclick="triggerDeleteGroup()" style="color:#ef4444;">Delete Group</div>
+                    {% else %}
+                        <div class="menu-item danger" onclick="confirmLeaveGroup()" style="color:#ef4444;">Exit Group</div>
+                    {% endif %}
                 {% else %}
                     <div class="menu-item" onclick="openWallpaperModal()">Change Wallpaper</div>
                     <div class="menu-item" id="btn-remove-contact" data-id="{{ contact.id }}">Remove Contact</div>
@@ -259,7 +326,10 @@
                                         </div>
                                     {% endif %}
                                     <div class="message-reactions" id="reactions-{{ message.id }}" style="display: none;"></div>
-                                    <div class="message-meta"><span>{{ message.created_at.strftime('%H:%M') }}</span><span class="message-options-btn" onclick="toggleMessageMenu(event, '{{ message.id }}')">...</span></div>
+                                    <div class="message-meta">
+                                        <span class="msg-time" data-utc="{{ message.created_at.isoformat() }}">{{ message.created_at.strftime('%H:%M') }}</span>
+                                        <span class="message-options-btn" onclick="toggleMessageMenu(event, '{{ message.id }}')">...</span>
+                                    </div>
                                 </div>
                                 <div class="message-dropdown" id="menu-{{ message.id }}">
                                     <div class="msg-option-item" onclick="showMessageInfo('{{ message.id }}')">Message Info</div>
@@ -353,7 +423,6 @@
         </div>
         <form id="groupReportForm">
             <input type="hidden" name="group_id" value="{{ contact.id }}">
-            
             <div class="form-group">
                 <label>Select Member to Report:</label>
                 <div class="contact-list" style="max-height: 150px; border: 1px solid #e5e7eb; border-radius: 8px;">
@@ -376,7 +445,6 @@
                     {% endif %}
                 </div>
             </div>
-
             <div class="form-group">
                 <div class="report-grid">
                     <div class="report-chip" onclick="selectGroupReportReason(this)">Spam</div>
@@ -387,11 +455,9 @@
                 </div>
                 <input type="hidden" name="reason" id="selectedGroupReason">
             </div>
-            
             <div class="form-group">
                 <textarea name="details" rows="3" placeholder="Additional details..." style="resize: none;"></textarea>
             </div>
-            
             <div class="modal-actions">
                 <button type="button" class="btn btn-submit" onclick="submitGroupReport()">Send Report to Admin</button>
             </div>
@@ -464,14 +530,32 @@
     let pendingUserId = null;
     let pendingUsername = null;
     let pendingMessageId = null; 
-    let pendingInviteeNames = []; // Added to store names for invitation message
+    let pendingInviteeNames = [];
+
+    // --- TIMEZONE FIX START (Auto GMT+8) ---
+    document.addEventListener("DOMContentLoaded", function() {
+        const timeElements = document.querySelectorAll('.msg-time');
+        timeElements.forEach(el => {
+            const utcStr = el.getAttribute('data-utc');
+            if(utcStr) {
+                const date = new Date(utcStr.endsWith('Z') ? utcStr : utcStr + 'Z');
+                const sgTime = date.toLocaleTimeString('en-SG', {
+                    timeZone: 'Asia/Singapore',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                });
+                el.innerText = sgTime;
+            }
+        });
+    });
+    // --- TIMEZONE FIX END ---
 
     function toggleDropdown(id) {
         document.querySelectorAll('.dropdown-menu').forEach(m => { if(m.id !== id) m.classList.remove('active'); });
         document.getElementById(id).classList.toggle('active');
     }
     
-    // ⬇️ Report Modal Functions
     function openReportModal() {
         document.getElementById('reportForm').reset();
         document.querySelectorAll('.report-chip').forEach(c => c.classList.remove('selected'));
@@ -500,7 +584,6 @@
         } catch (e) { showNotification('error', 'Error', 'Something went wrong'); }
     }
 
-    // ⬇️ NEW: Group Report Functions
     function openGroupReportModal() {
         toggleDropdown('optionsMenu');
         document.getElementById('groupReportModal').classList.add('active');
@@ -515,24 +598,15 @@
     async function submitGroupReport() {
         const form = document.getElementById('groupReportForm');
         const formData = new FormData(form);
-        
         if (!formData.get('reported_user_id')) { alert("Please select a user."); return; }
         if (!formData.get('reason')) { alert("Please select a reason."); return; }
-
         try {
             const res = await fetch('/report_group_member', { method: 'POST', body: formData });
             const data = await res.json();
-            
             closeModal('groupReportModal');
-            
-            if (data.success) {
-                showNotification('success', 'Report Sent', 'The group admin has been notified.');
-            } else {
-                showNotification('error', 'Error', data.message);
-            }
-        } catch (e) {
-            showNotification('error', 'Error', 'Something went wrong');
-        }
+            if (data.success) { showNotification('success', 'Report Sent', 'The group admin has been notified.'); } 
+            else { showNotification('error', 'Error', data.message); }
+        } catch (e) { showNotification('error', 'Error', 'Something went wrong'); }
     }
 
     const btnRemove = document.getElementById('btn-remove-contact');
@@ -560,24 +634,14 @@
     
     function triggerAddMembers() { 
         const checkboxes = document.querySelectorAll('.add-checkbox:checked'); 
-        if (checkboxes.length === 0) { 
-            showNotification('error', 'Selection', 'Select a user.'); 
-            return; 
-        }
-        
-        // Capture names for the pending invitation message
+        if (checkboxes.length === 0) { showNotification('error', 'Selection', 'Select a user.'); return; }
         pendingInviteeNames = [];
-        checkboxes.forEach(cb => {
-            const name = cb.closest('.contact-item').querySelector('span').innerText;
-            pendingInviteeNames.push(name);
-        });
-
+        checkboxes.forEach(cb => { const name = cb.closest('.contact-item').querySelector('span').innerText; pendingInviteeNames.push(name); });
         pendingAction = 'add_members'; 
         document.getElementById('confirmTitle').innerText = "Add Users"; 
         document.getElementById('confirmMessage').innerText = "Add selected users?"; 
         const btn = document.getElementById('confirmActionBtn'); 
-        btn.className = 'btn btn-submit'; 
-        btn.innerText = "Add"; 
+        btn.className = 'btn btn-submit'; btn.innerText = "Add"; 
         closeModal('addMembersModal'); 
         document.getElementById('confirmationModal').classList.add('active'); 
     }
@@ -587,8 +651,29 @@
     function triggerAddContactFromSearch(userId, username) { pendingAction = 'add_contact_search'; pendingUserId = userId; pendingUsername = username; document.getElementById('confirmTitle').innerText = "Add Contact"; document.getElementById('confirmMessage').innerText = `Add ${username}?`; const btn = document.getElementById('confirmActionBtn'); btn.className = 'btn btn-submit'; btn.innerText = "Send"; document.getElementById('confirmationModal').classList.add('active'); document.getElementById('searchResults').style.display = 'none'; }
     function removeContact(id) { pendingAction = 'remove_individual_contact'; pendingUserId = id; document.getElementById('confirmTitle').innerText = "Remove Contact"; document.getElementById('confirmMessage').innerText = "Remove contact? History will be deleted."; const btn = document.getElementById('confirmActionBtn'); btn.className = 'btn btn-danger'; btn.innerText = "Remove"; const menu = document.getElementById('optionsMenu'); if(menu) menu.classList.remove('active'); document.getElementById('confirmationModal').classList.add('active'); }
 
+    function triggerDeleteGroup() {
+        pendingAction = 'delete_group_admin';
+        document.getElementById('confirmTitle').innerText = "Delete Group";
+        document.getElementById('confirmMessage').innerHTML = "<b>Warning:</b> This will permanently delete all data in the group chat and all members will be kicked out.<br><br>Are you sure?";
+        const btn = document.getElementById('confirmActionBtn');
+        btn.className = 'btn btn-danger';
+        btn.innerText = "Delete Forever";
+        document.getElementById('confirmationModal').classList.add('active');
+        toggleDropdown('optionsMenu'); 
+    }
+
+    function confirmLeaveGroup() {
+        pendingAction = 'leave_group';
+        document.getElementById('confirmTitle').innerText = "Exit Group";
+        document.getElementById('confirmMessage').innerText = "Are you sure you want to exit this group?";
+        const btn = document.getElementById('confirmActionBtn');
+        btn.className = 'btn btn-danger';
+        btn.innerText = "Exit Group";
+        document.getElementById('confirmationModal').classList.add('active');
+        toggleDropdown('optionsMenu');
+    }
+
     document.getElementById('confirmActionBtn').addEventListener('click', async function() {
-        // --- Message deletion logic ---
         if (pendingAction === 'delete_message') {
             closeModal('confirmationModal');
             try {
@@ -599,15 +684,9 @@
                     if (msgEl) msgEl.remove();
                     if(pinnedMessageId === pendingMessageId) unpinMessage();
                     showNotification("success", "Success", "Message deleted");
-                } else {
-                    showNotification("error", "Error", data.message || "Could not delete message");
-                }
-            } catch (e) {
-                showNotification("error", "Error", "Failed to delete message");
-            }
-            pendingAction = null;
-            pendingMessageId = null;
-            return;
+                } else { showNotification("error", "Error", data.message || "Could not delete message"); }
+            } catch (e) { showNotification("error", "Error", "Failed to delete message"); }
+            pendingAction = null; pendingMessageId = null; return;
         }
 
         let url = ''; let body = null; let isFormData = false;
@@ -617,6 +696,8 @@
         else if (pendingAction === 'add_members') { url = '/add_group_members'; body = new FormData(document.getElementById('addMembersForm')); isFormData = true; } 
         else if (pendingAction === 'add_contact_search') { url = '/add_contact'; body = new FormData(); body.append('username', pendingUsername); isFormData = true; } 
         else if (pendingAction === 'remove_individual_contact') { url = '/remove_contact/' + pendingUserId; }
+        else if (pendingAction === 'delete_group_admin') { url = '/delete_group/{{ contact.id }}'; }
+        else if (pendingAction === 'leave_group') { url = '/leave_group/{{ contact.id }}'; }
 
         if (!url) return;
         try {
@@ -624,32 +705,28 @@
             const res = await fetch(url, options); const data = await res.json();
             closeModal('confirmationModal');
             if (data.success) {
-                // --- Logic to send Pending Invitation message ---
                 if (pendingAction === 'add_members' && pendingInviteeNames.length > 0) {
                     try {
                         const inviteList = pendingInviteeNames.join(', ');
                         const msgContent = `🕒 **Pending Invitation**\nWaiting for: ${inviteList} to accept and enter the group.`;
-                        
                         const msgData = new FormData();
                         msgData.append('content', msgContent);
                         msgData.append('receiver_id', '{{ contact.id }}');
                         msgData.append('is_group', 'true');
-                        
                         await fetch('/send_message', { method: 'POST', body: msgData });
-                    } catch (err) {
-                        console.error("Failed to send pending message", err);
-                    }
+                    } catch (err) { console.error("Failed to send pending message", err); }
                 }
-                // ------------------------------------------------
-
                 showNotification('success', 'Success', data.message || 'Done');
-                if (pendingAction === 'remove_individual_contact') setTimeout(() => window.location.href = '/messages', 1000);
-                else if (pendingAction !== 'add_contact_search') setTimeout(() => window.location.reload(), 1000);
+                if (pendingAction === 'remove_individual_contact' || pendingAction === 'delete_group_admin' || pendingAction === 'leave_group') {
+                    setTimeout(() => window.location.href = '/messages', 1000);
+                }
+                else if (pendingAction !== 'add_contact_search') {
+                    setTimeout(() => window.location.reload(), 1000);
+                }
             } else { showNotification('error', 'Error', data.message); }
         } catch (e) { showNotification('error', 'Error', 'Failed'); }
     });
 
-    // Wallpaper
     const chatArea = document.getElementById('messagesArea');
     const currentChatId = "{{ contact.id }}";
     const wpKey = `wallpaper_${currentChatId}`;
@@ -659,28 +736,51 @@
     function resetWallpaper() { localStorage.removeItem(wpKey); chatArea.style.backgroundImage = 'none'; chatArea.style.backgroundColor = '#f9fafb'; closeModal('wallpaperModal'); showNotification('success', 'Reset', 'Restored.'); }
     loadWallpaper();
 
-    // Icebreakers
-    const icebreakers = [
-        "What was your favorite toy growing up?", "What was the first music concert you ever went to?", "How much did a movie ticket cost when you were a teenager?", "What was your first job, and did you like it?", "Did you have a nickname growing up?", "What is the biggest change in the world you've witnessed?", "Tell me about your best friend from primary school.", "What was your favorite subject in school?", "Did you ever get into trouble as a kid?", "What was your favorite home-cooked meal?",
-        "What app do you use the most on your phone?", "What is one piece of technology you can't live without?", "Do you prefer texting or calling?", "What do you think about social media?", "Is there a slang word today you don't understand?", "What was the first computer you ever saw?", "Do you prefer reading physical books or e-books?", "What is the funniest thing you've seen on the internet recently?",
-        "What is the best piece of advice you've ever received?", "What is one thing you wish you knew when you were 20?", "What are you most proud of in your life?", "What does a 'perfect day' look like to you?", "Who is your role model?", "What is a skill you think everyone should have?", "How do you handle stress?", "What makes a good friend?",
-        "If you could have dinner with anyone (dead or alive), who would it be?", "If you could travel anywhere right now, where would you go?", "What is your favorite movie of all time?", "Do you have a hidden talent?", "Are you a morning person or a night owl?", "What is your favorite ice cream flavor?", "If you won the lottery, what is the first thing you'd buy?", "Do you collect anything?", "What is the best gift you've ever given?"
-    ];
+    const icebreakers = ["What was your favorite toy growing up?", "What was the first music concert you ever went to?", "How much did a movie ticket cost when you were a teenager?", "What was your first job, and did you like it?", "Did you have a nickname growing up?", "What is the biggest change in the world you've witnessed?", "Tell me about your best friend from primary school.", "What was your favorite subject in school?", "Did you ever get into trouble as a kid?", "What was your favorite home-cooked meal?"];
     function toggleIcebreakers() { const container = document.getElementById('icebreakerContainer'); if (container.innerHTML !== '') { container.innerHTML = ''; return; } const shuffled = icebreakers.sort(() => 0.5 - Math.random()); const selected = shuffled.slice(0, 3); selected.forEach(text => { const chip = document.createElement('div'); chip.innerText = text; chip.style.cssText = "background: #eff6ff; color: #2563eb; padding: 6px 12px; border-radius: 20px; font-size: 13px; cursor: pointer; white-space: nowrap; border: 1px solid #dbeafe; transition: background 0.2s;"; chip.onmouseover = () => chip.style.background = "#dbeafe"; chip.onmouseout = () => chip.style.background = "#eff6ff"; chip.onclick = () => { document.getElementById('messageInput').value = text; container.innerHTML = ''; document.getElementById('messageInput').focus(); }; container.appendChild(chip); }); }
 
-    // Text Resizer
     const fontSizes = ['', 'text-large', 'text-xl']; let currentFontIndex = 0;
     function cycleTextSize() { const body = document.body; if (fontSizes[currentFontIndex]) { body.classList.remove(fontSizes[currentFontIndex]); } currentFontIndex = (currentFontIndex + 1) % fontSizes.length; if (fontSizes[currentFontIndex]) { body.classList.add(fontSizes[currentFontIndex]); } }
 
-    // Voice Input
     function toggleVoiceInput() { if (!('webkitSpeechRecognition' in window)) { alert("Voice input is not supported in this browser. Try Chrome."); return; } const recognition = new webkitSpeechRecognition(); recognition.lang = 'en-US'; recognition.start(); const icon = document.getElementById('voiceInputBtn'); icon.style.color = '#ef4444'; recognition.onresult = function(event) { const transcript = event.results[0][0].transcript; const input = document.getElementById('messageInput'); input.value += (input.value ? ' ' : '') + transcript; icon.style.color = '#6b7280'; }; recognition.onerror = function(event) { icon.style.color = '#6b7280'; }; }
 
-    // Search
     const searchInput = document.getElementById('userSearchInput'); const searchResults = document.getElementById('searchResults'); let searchTimeout = null;
     if(searchInput) { searchInput.addEventListener('input', function(e) { const query = e.target.value.trim(); if (searchTimeout) clearTimeout(searchTimeout); if (query.length === 0) { searchResults.style.display = 'none'; searchResults.innerHTML = ''; return; } searchTimeout = setTimeout(async () => { try { const res = await fetch(`/search_users?q=${encodeURIComponent(query)}`); const data = await res.json(); searchResults.innerHTML = ''; if (data.results.length > 0) { searchResults.style.display = 'block'; data.results.forEach(user => { const div = document.createElement('div'); div.style.cssText = 'padding:10px; display:flex; align-items:center; gap:10px; cursor:pointer; border-bottom:1px solid #f3f4f6;'; div.onmouseover = () => div.style.backgroundColor = '#f9fafb'; div.onmouseout = () => div.style.backgroundColor = 'white'; div.onclick = () => window.location.href = `/profile/${user.username}`; div.innerHTML = `<div style="width:30px; height:30px; border-radius:50%; background:#e5e7eb; display:flex; align-items:center; justify-content:center; overflow:hidden;"><img src="/static/uploads/${user.profile_picture}" onerror="this.style.display='none'" style="width:100%; height:100%; object-fit:cover;"><span style="font-size:12px; font-weight:bold; color:#6b7280; display:${user.profile_picture !== 'default.jpg' ? 'none' : 'block'}">${user.username[0].toUpperCase()}</span></div><div style="flex:1;"><div style="font-size:13px; font-weight:600; color:#1f2937;">${user.username}</div><div style="font-size:11px; color:#6b7280;">${user.fullname}</div></div><div class="add-user-btn" style="padding: 8px; cursor:pointer; color:#6366f1; border-radius:50%; display:flex; align-items:center; justify-content:center; transition:background 0.2s;" onclick="event.stopPropagation(); triggerAddContactFromSearch('${user.id}', '${user.username}')" onmouseover="this.style.backgroundColor='#e0e7ff'" onmouseout="this.style.backgroundColor='transparent'"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>`; searchResults.appendChild(div); }); } else { searchResults.style.display = 'block'; searchResults.innerHTML = '<div style="padding:15px; text-align:center; color:#9ca3af; font-size:13px;">No users found</div>'; } } catch (err) { console.error("Search failed", err); } }, 300); }); document.addEventListener('click', function(e) { if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) { searchResults.style.display = 'none'; } }); }
 
     async function confirmDeleteGroup() { if(confirm("Are you sure you want to delete and exit this group?")) { const res = await fetch('/leave_group/{{ contact.id }}', { method: 'POST' }); const data = await res.json(); if(data.success) { showNotification('success', 'Exited', data.message); setTimeout(() => window.location.href = '/messages', 1500); } } }
+    
     document.getElementById('editGroupNameForm').onsubmit = async function(e) { e.preventDefault(); const res = await fetch('/edit_group_name/{{ contact.id }}', { method: 'POST', body: new FormData(this) }); const data = await res.json(); if(data.success) { showNotification('success', 'Updated', data.message); setTimeout(() => window.location.reload(), 1500); } };
+
+    // New Group Creation Logic
+    document.getElementById('newGroupForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('createGroupBtn');
+        const originalText = btn.innerText;
+        btn.innerText = "Creating...";
+        btn.disabled = true;
+
+        try {
+            const res = await fetch('/create_group', { method: 'POST', body: new FormData(this) });
+            const data = await res.json();
+            
+            if (data.success && data.group_id) {
+                showNotification('success', 'Group Created', 'Redirecting...');
+                window.location.href = `/messages/${data.group_id}?is_group=true`;
+            } else if (data.success) {
+                showNotification('success', 'Group Created', data.message);
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                showNotification('error', 'Error', data.message);
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        } catch(err) {
+            showNotification('error', 'Error', 'Failed to create group');
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    });
+
     function showMessageInfo(id) { const timeEl = document.querySelector(`#msg-${id} .message-meta span`); document.getElementById('infoTime').innerText = timeEl ? timeEl.innerText : "Unknown"; document.getElementById('messageInfoModal').classList.add('active'); }
     function closeMessageInfo() { document.getElementById('messageInfoModal').classList.remove('active'); }
     function startReply(id) { isReplying = true; isEditing = false; const msgEl = document.querySelector(`[data-content-id="${id}"]`); let text = msgEl ? msgEl.innerText : ""; let cleanText = text.replace(/Replying to message[\s\S]*?\n/, '').trim(); cleanText = cleanText.replace('📎 View Attachment', '').trim(); cleanText = cleanText.replace(/\(edited\)$/, '').trim(); replyText = cleanText; document.getElementById('replyTargetUser').innerText = "Replying to message"; document.getElementById('replyTargetText').innerText = cleanText; document.getElementById('replyPreview').style.display = 'flex'; document.getElementById('messageInput').focus(); }

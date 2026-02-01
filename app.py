@@ -8,7 +8,7 @@ from flask_mail import Mail, Message as MailMessage
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from flask import send_from_directory
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy import or_, and_
 from sqlalchemy.exc import IntegrityError
 import os
@@ -50,6 +50,26 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 db = SQLAlchemy(app)
 
+# ==================== HELPER FUNCTIONS ====================
+
+def format_chat_time(dt):
+    """Formats timestamp to SG Time (GMT+8): HH:MM, 'Yesterday', or DD/MM/YYYY"""
+    if not dt: return ""
+    
+    # Convert DB UTC time to Singapore Time (UTC+8)
+    sg_now = datetime.utcnow() + timedelta(hours=8)
+    msg_time_sg = dt + timedelta(hours=8)
+    
+    # If today
+    if msg_time_sg.date() == sg_now.date():
+        return msg_time_sg.strftime('%H:%M')
+    # If yesterday
+    elif (sg_now.date() - msg_time_sg.date()).days == 1:
+        return "Yesterday"
+    # Older
+    else:
+        return msg_time_sg.strftime('%d/%m/%Y')
+
 # ==================== MODELS ====================
 
 class User(db.Model):
@@ -67,17 +87,26 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     points = db.Column(db.Integer, default=10000)
     last_daily_claim = db.Column(db.DateTime, nullable=True)
+    
+    # Simple Relationships
     posts = db.relationship('Post', backref='author', lazy=True, cascade='all, delete-orphan')
     comments = db.relationship('Comment', backref='author', lazy=True, cascade='all, delete-orphan')
     likes = db.relationship('Like', backref='user', lazy=True, cascade='all, delete-orphan')
     community_memberships = db.relationship('CommunityMember', backref='user', lazy=True, cascade='all, delete-orphan')
     saved_posts = db.relationship('SavedPost', backref='user', lazy=True, cascade='all, delete-orphan')
-    sent_messages = db.relationship('Message', foreign_keys='Message.sender_id', backref='sender', lazy='dynamic', cascade='all, delete-orphan')
-    received_messages = db.relationship('Message', foreign_keys='Message.receiver_id', backref='receiver', lazy='dynamic', cascade='all, delete-orphan')
-    contacts_initiated = db.relationship('Contact', foreign_keys='Contact.user_id', backref='user', lazy='dynamic', cascade='all, delete-orphan')
-    contacts_received = db.relationship('Contact', foreign_keys='Contact.contact_user_id', backref='contact_user', lazy='dynamic', cascade='all, delete-orphan')
-    followers = db.relationship('Follow', foreign_keys='Follow.followed_id', backref='followed_user', lazy='dynamic', cascade='all, delete-orphan')
-    following = db.relationship('Follow', foreign_keys='Follow.follower_id', backref='follower_user', lazy='dynamic', cascade='all, delete-orphan')
+    
+    # FIXED: Relationships causing ArgumentError
+    # Changed 'backref' to 'back_populates' to match the explicit definitions in Message, Contact, and Follow models
+    sent_messages = db.relationship('Message', foreign_keys='Message.sender_id', back_populates='sender', lazy='dynamic', cascade='all, delete-orphan')
+    received_messages = db.relationship('Message', foreign_keys='Message.receiver_id', back_populates='receiver', lazy='dynamic', cascade='all, delete-orphan')
+    
+    contacts_initiated = db.relationship('Contact', foreign_keys='Contact.user_id', back_populates='user', lazy='dynamic', cascade='all, delete-orphan')
+    contacts_received = db.relationship('Contact', foreign_keys='Contact.contact_user_id', back_populates='contact_user', lazy='dynamic', cascade='all, delete-orphan')
+    
+    followers = db.relationship('Follow', foreign_keys='Follow.followed_id', back_populates='followed_user', lazy='dynamic', cascade='all, delete-orphan')
+    following = db.relationship('Follow', foreign_keys='Follow.follower_id', back_populates='follower_user', lazy='dynamic', cascade='all, delete-orphan')
+    
+    # Settings
     font_size = db.Column(db.String(20), default='Normal')
     high_contrast = db.Column(db.Boolean, default=False)
     screen_reader = db.Column(db.Boolean, default=False)
@@ -132,6 +161,11 @@ class Message(db.Model):
     is_read = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # FIXED: Changed backref to back_populates to link with User model
+    sender = db.relationship('User', foreign_keys=[sender_id], back_populates='sent_messages')
+    receiver = db.relationship('User', foreign_keys=[receiver_id], back_populates='received_messages')
+
     def mark_as_read(self):
         self.is_read = True
         db.session.commit()
@@ -156,6 +190,11 @@ class Contact(db.Model):
     status = db.Column(db.String(20), default='accepted')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # FIXED: Changed backref to back_populates to link with User model
+    user = db.relationship('User', foreign_keys=[user_id], back_populates='contacts_initiated')
+    contact_user = db.relationship('User', foreign_keys=[contact_user_id], back_populates='contacts_received')
+    
     __table_args__ = (db.UniqueConstraint('user_id', 'contact_user_id', name='unique_contact'),)
 
 class Post(db.Model):
@@ -163,13 +202,10 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=True)
     content = db.Column(db.Text, nullable=False)
-    media_file = db.Column(db.String(255), nullable=True) # Replaces image_url
-    media_type = db.Column(db.String(10), nullable=True)  # 'image' or 'video'
-    def user_has_saved(self, user_id):
-        return SavedPost.query.filter_by(user_id=user_id, post_id=self.id).first() is not None
+    media_file = db.Column(db.String(255), nullable=True) 
+    media_type = db.Column(db.String(10), nullable=True) 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
     comments = db.relationship('Comment', backref='post', lazy=True, cascade='all, delete-orphan')
     likes = db.relationship('Like', backref='post', lazy=True, cascade='all, delete-orphan')
 
@@ -178,14 +214,14 @@ class Post(db.Model):
     
     def user_has_liked(self, user_id):
         return Like.query.filter_by(user_id=user_id, post_id=self.id).first() is not None
+    def user_has_saved(self, user_id):
+        return SavedPost.query.filter_by(user_id=user_id, post_id=self.id).first() is not None
 
 class Comment(db.Model):
     __tablename__ = 'comments'
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
-    
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
 
@@ -210,6 +246,10 @@ class Follow(db.Model):
     follower_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     followed_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # FIXED: Changed backref to back_populates
+    follower_user = db.relationship('User', foreign_keys=[follower_id], back_populates='following')
+    followed_user = db.relationship('User', foreign_keys=[followed_id], back_populates='followers')
 
 # ==================== ROUTES ====================
 
@@ -283,11 +323,57 @@ def messages():
     if 'user_id' not in session: return redirect(url_for('login'))
     current_user = User.query.get(session['user_id'])
     if not current_user: return redirect(url_for('login'))
+    
     contacts = current_user.get_contacts()
     groups = Community.query.join(CommunityMember).filter(CommunityMember.user_id == current_user.id).all()
+    
     conversations = []
-    for c in contacts: conversations.append({'id': c.id, 'name': c.username, 'is_group': False})
-    for g in groups: conversations.append({'id': g.id, 'name': g.name, 'is_group': True})
+    
+    # 1. Process Contacts (Direct Messages)
+    for c in contacts:
+        # Get last message
+        last_msg = Message.query.filter(
+            or_(
+                and_(Message.sender_id == current_user.id, Message.receiver_id == c.id), 
+                and_(Message.sender_id == c.id, Message.receiver_id == current_user.id)
+            )
+        ).order_by(Message.created_at.desc()).first()
+        
+        # Get unread count
+        unread = Message.query.filter_by(sender_id=c.id, receiver_id=current_user.id, is_read=False).count()
+        
+        conversations.append({
+            'id': c.id, 
+            'name': c.username, 
+            'is_group': False,
+            'last_msg': last_msg.content if last_msg else "No messages yet",
+            'time': format_chat_time(last_msg.created_at) if last_msg else "",
+            'unread': unread,
+            'timestamp': last_msg.created_at if last_msg else datetime.min
+        })
+
+    # 2. Process Groups
+    for g in groups:
+        last_msg = Message.query.filter_by(community_id=g.id).order_by(Message.created_at.desc()).first()
+        unread = 0 
+        if last_msg:
+             # Simple logic: if the last message wasn't sent by me and is unread, mark group as updated
+             if last_msg.sender_id != current_user.id and not last_msg.is_read:
+                 unread = 1 # Just show a dot or 1 for simplicity in groups without per-user read tracking
+
+        conversations.append({
+            'id': g.id, 
+            'name': g.name, 
+            'is_group': True,
+            'last_msg': f"{last_msg.sender.username}: {last_msg.content}" if last_msg else "No messages yet",
+            'time': format_chat_time(last_msg.created_at) if last_msg else "",
+            'unread': unread,
+            'timestamp': last_msg.created_at if last_msg else datetime.min
+        })
+
+    # Sort conversations by latest message first
+    conversations.sort(key=lambda x: x['timestamp'], reverse=True)
+
     return render_template('messages.html', conversations=conversations, current_user=current_user, contacts=contacts)
 
 @app.route('/messages/<int:target_id>')
@@ -300,48 +386,67 @@ def message_thread(target_id):
     groups = Community.query.join(CommunityMember).filter(CommunityMember.user_id == current_user.id).all()
     
     conversations = []
-    for c in contacts: conversations.append({'id': c.id, 'name': c.username, 'contact': c, 'is_group': False})
-    for g in groups: conversations.append({'id': g.id, 'name': g.name, 'group': g, 'is_group': True})
     
+    # 1. Process Contacts
+    for c in contacts:
+        last_msg = Message.query.filter(or_(and_(Message.sender_id==current_user.id, Message.receiver_id==c.id), and_(Message.sender_id==c.id, Message.receiver_id==current_user.id))).order_by(Message.created_at.desc()).first()
+        unread = Message.query.filter_by(sender_id=c.id, receiver_id=current_user.id, is_read=False).count()
+        conversations.append({
+            'id': c.id, 'name': c.username, 'is_group': False,
+            'last_msg': last_msg.content if last_msg else "No messages yet", 'time': format_chat_time(last_msg.created_at) if last_msg else "",
+            'unread': unread, 'timestamp': last_msg.created_at if last_msg else datetime.min
+        })
+
+    # 2. Process Groups
+    for g in groups:
+        last_msg = Message.query.filter_by(community_id=g.id).order_by(Message.created_at.desc()).first()
+        unread = 0
+        if last_msg and last_msg.sender_id != current_user.id and not last_msg.is_read: unread = 1
+        conversations.append({
+            'id': g.id, 'name': g.name, 'is_group': True,
+            'last_msg': f"{last_msg.sender.username}: {last_msg.content}" if last_msg else "No messages yet", 'time': format_chat_time(last_msg.created_at) if last_msg else "",
+            'unread': unread, 'timestamp': last_msg.created_at if last_msg else datetime.min
+        })
+    
+    conversations.sort(key=lambda x: x['timestamp'], reverse=True)
+
     is_group = request.args.get('is_group') == 'true'
     member_count = 0
-    group_members_data = [] # New list to hold user + admin status
-    current_user_is_admin = False # Flag to pass to template
+    group_members_data = []
+    current_user_is_admin = False
     
     if is_group:
         contact = Community.query.get_or_404(target_id)
         member_count = contact.get_member_count()
         messages = Message.query.filter_by(community_id=target_id).order_by(Message.created_at.asc()).all()
         
-        # ⬇️ FIX: Get membership details to check admin status accurately
+        # Mark messages as read when opening group
+        for msg in messages:
+            if not msg.is_read and msg.sender_id != current_user.id:
+                msg.is_read = True
+        db.session.commit()
+
         memberships = CommunityMember.query.filter_by(community_id=target_id).all()
         for m in memberships:
             user = User.query.get(m.user_id)
             if user:
                 is_admin = m.is_admin
-                if user.id == current_user.id and is_admin:
-                    current_user_is_admin = True
-                
-                group_members_data.append({
-                    'user': user,
-                    'is_admin': is_admin,
-                    'id': user.id,
-                    'username': user.username
-                })
+                if user.id == current_user.id and is_admin: current_user_is_admin = True
+                group_members_data.append({'user': user, 'is_admin': is_admin, 'id': user.id, 'username': user.username})
     else:
         contact = User.query.get_or_404(target_id)
         messages = Message.query.filter(or_(and_(Message.sender_id == current_user.id, Message.receiver_id == contact.id), and_(Message.sender_id == contact.id, Message.receiver_id == current_user.id))).order_by(Message.created_at.asc()).all()
+        
+        # Mark direct messages as read
+        for msg in messages:
+            if not msg.is_read and msg.sender_id == contact.id:
+                msg.is_read = True
+        db.session.commit()
 
     return render_template('message_thread.html', 
-                           contact=contact, 
-                           messages=messages, 
-                           conversations=conversations, 
-                           contacts=contacts, 
-                           current_user=current_user, 
-                           is_group=is_group, 
-                           member_count=member_count, 
-                           group_members=group_members_data, # Passing the detailed list
-                           user_is_admin=current_user_is_admin) # Explicitly passing admin status
+                           contact=contact, messages=messages, conversations=conversations, contacts=contacts, 
+                           current_user=current_user, is_group=is_group, member_count=member_count, 
+                           group_members=group_members_data, user_is_admin=current_user_is_admin)
 
 @app.route('/send_message', methods=['POST'])
 def send_message():
@@ -379,7 +484,7 @@ def create_group():
             new_notif = Notification(recipient_id=int(m_id), sender_id=session['user_id'], type='group_invite', target_id=new_g.id, message=f"{session['username']} invited you to join the group: {name}")
             db.session.add(new_notif)
         db.session.commit()
-        return jsonify({'success': True, 'message': 'Group created! Invitations sent and awaiting member approval.'})
+        return jsonify({'success': True, 'message': 'Group created! Invitations sent and awaiting member approval.', 'group_id': new_g.id})
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
@@ -578,14 +683,67 @@ def add_group_members():
         return jsonify({'success': True, 'message': f'Invitations sent to {invited_count} users.'})
     else:
         return jsonify({'success': False, 'message': 'No new invitations sent (users may already be members or pending).'})
+
+@app.route('/delete_group/<int:group_id>', methods=['POST'])
+def delete_group(group_id):
+    if 'user_id' not in session: return jsonify({'success': False}), 401
     
+    # 1. Verify Admin Status
+    member = CommunityMember.query.filter_by(user_id=session['user_id'], community_id=group_id).first()
+    if not member or not member.is_admin:
+        return jsonify({'success': False, 'message': 'Unauthorized: Only admins can delete the group.'})
+    
+    try:
+        group = Community.query.get_or_404(group_id)
+        group_name = group.name
+        
+        # 2. Notify all members (System Notification)
+        # We notify everyone EXCEPT the admin who is performing the delete action
+        members = CommunityMember.query.filter_by(community_id=group_id).all()
+        for m in members:
+            if m.user_id != session['user_id']:
+                db.session.add(Notification(
+                    recipient_id=m.user_id,
+                    sender_id=session['user_id'],
+                    type='system_alert',  # 'system_alert' usually hides action buttons (Accept/Reject)
+                    message=f"The group '{group_name}' was deleted by the admin."
+                ))
+        
+        # 3. Delete All Data Associated with Group
+        Message.query.filter_by(community_id=group_id).delete()       # Delete messages
+        CommunityMember.query.filter_by(community_id=group_id).delete() # Delete members
+        db.session.delete(group)                                      # Delete group record
+        
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Group permanently deleted.'})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+  
 @app.route('/leave_group/<int:group_id>', methods=['POST'])
 def leave_group(group_id):
     if 'user_id' not in session: return jsonify({'success': False}), 401
-    CommunityMember.query.filter_by(user_id=session['user_id'], community_id=group_id).delete()
-    db.session.commit()
-    return jsonify({'success': True, 'message': 'You have exited the group.'})
-
+    
+    # 1. Send the "User Left" message BEFORE deleting the member
+    try:
+        sys_msg = Message(
+            sender_id=session['user_id'], 
+            community_id=group_id, 
+            content=f"🔔 <b>{session['username']}</b> left the group.", 
+            is_read=True
+        )
+        db.session.add(sys_msg)
+        
+        # 2. Remove the member
+        CommunityMember.query.filter_by(user_id=session['user_id'], community_id=group_id).delete()
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'You have exited the group.'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+    
 @app.route('/notifications')
 def notifications_page():
     if 'user_id' not in session: return redirect(url_for('login'))
