@@ -335,11 +335,14 @@ def messages():
     contacts = current_user.get_contacts()
     groups = Community.query.join(CommunityMember).filter(CommunityMember.user_id == current_user.id).all()
     
+    # FETCH PINS for current user
+    pinned_entries = PinnedConversation.query.filter_by(user_id=current_user.id).all()
+    pinned_targets = {(p.target_type, p.target_id) for p in pinned_entries}
+    
     conversations = []
     
     # 1. Process Contacts (Direct Messages)
     for c in contacts:
-        # Get last message
         last_msg = Message.query.filter(
             or_(
                 and_(Message.sender_id == current_user.id, Message.receiver_id == c.id), 
@@ -347,13 +350,15 @@ def messages():
             )
         ).order_by(Message.created_at.desc()).first()
         
-        # Get unread count
         unread = Message.query.filter_by(sender_id=c.id, receiver_id=current_user.id, is_read=False).count()
+        is_pinned = ('user', c.id) in pinned_targets
         
         conversations.append({
             'id': c.id, 
             'name': c.username, 
             'is_group': False,
+            'type_key': f"user_{c.id}",
+            'is_pinned': is_pinned,
             'last_msg': last_msg.content if last_msg else "No messages yet",
             'time': format_chat_time(last_msg.created_at) if last_msg else "",
             'unread': unread,
@@ -365,22 +370,24 @@ def messages():
         last_msg = Message.query.filter_by(community_id=g.id).order_by(Message.created_at.desc()).first()
         unread = 0 
         if last_msg:
-             # Simple logic: if the last message wasn't sent by me and is unread, mark group as updated
              if last_msg.sender_id != current_user.id and not last_msg.is_read:
-                 unread = 1 # Just show a dot or 1 for simplicity in groups without per-user read tracking
+                 unread = 1 
 
+        is_pinned = ('group', g.id) in pinned_targets
         conversations.append({
             'id': g.id, 
             'name': g.name, 
             'is_group': True,
+            'type_key': f"group_{g.id}",
+            'is_pinned': is_pinned,
             'last_msg': f"{last_msg.sender.username}: {last_msg.content}" if last_msg else "No messages yet",
             'time': format_chat_time(last_msg.created_at) if last_msg else "",
             'unread': unread,
             'timestamp': last_msg.created_at if last_msg else datetime.min
         })
 
-    # Sort conversations by latest message first
-    conversations.sort(key=lambda x: x['timestamp'], reverse=True)
+    # Sort conversations: Pinned first, then by timestamp
+    conversations.sort(key=lambda x: (not x['is_pinned'], x['timestamp']), reverse=False)
 
     return render_template('messages.html', conversations=conversations, current_user=current_user, contacts=contacts)
 
@@ -393,14 +400,21 @@ def message_thread(target_id):
     contacts = current_user.get_contacts()
     groups = Community.query.join(CommunityMember).filter(CommunityMember.user_id == current_user.id).all()
     
+    # FETCH PINS for current user
+    pinned_entries = PinnedConversation.query.filter_by(user_id=current_user.id).all()
+    pinned_targets = {(p.target_type, p.target_id) for p in pinned_entries}
+    
     conversations = []
     
     # 1. Process Contacts
     for c in contacts:
         last_msg = Message.query.filter(or_(and_(Message.sender_id==current_user.id, Message.receiver_id==c.id), and_(Message.sender_id==c.id, Message.receiver_id==current_user.id))).order_by(Message.created_at.desc()).first()
         unread = Message.query.filter_by(sender_id=c.id, receiver_id=current_user.id, is_read=False).count()
+        is_pinned = ('user', c.id) in pinned_targets
+        
         conversations.append({
             'id': c.id, 'name': c.username, 'is_group': False,
+            'type_key': f"user_{c.id}", 'is_pinned': is_pinned,
             'last_msg': last_msg.content if last_msg else "No messages yet", 'time': format_chat_time(last_msg.created_at) if last_msg else "",
             'unread': unread, 'timestamp': last_msg.created_at if last_msg else datetime.min
         })
@@ -410,13 +424,17 @@ def message_thread(target_id):
         last_msg = Message.query.filter_by(community_id=g.id).order_by(Message.created_at.desc()).first()
         unread = 0
         if last_msg and last_msg.sender_id != current_user.id and not last_msg.is_read: unread = 1
+        is_pinned = ('group', g.id) in pinned_targets
+        
         conversations.append({
             'id': g.id, 'name': g.name, 'is_group': True,
+            'type_key': f"group_{g.id}", 'is_pinned': is_pinned,
             'last_msg': f"{last_msg.sender.username}: {last_msg.content}" if last_msg else "No messages yet", 'time': format_chat_time(last_msg.created_at) if last_msg else "",
             'unread': unread, 'timestamp': last_msg.created_at if last_msg else datetime.min
         })
     
-    conversations.sort(key=lambda x: x['timestamp'], reverse=True)
+    # Sort conversations: Pinned first, then by timestamp
+    conversations.sort(key=lambda x: (not x['is_pinned'], x['timestamp']), reverse=False)
 
     is_group = request.args.get('is_group') == 'true'
     member_count = 0
@@ -428,7 +446,6 @@ def message_thread(target_id):
         member_count = contact.get_member_count()
         messages = Message.query.filter_by(community_id=target_id).order_by(Message.created_at.asc()).all()
         
-        # Mark messages as read when opening group
         for msg in messages:
             if not msg.is_read and msg.sender_id != current_user.id:
                 msg.is_read = True
@@ -445,7 +462,6 @@ def message_thread(target_id):
         contact = User.query.get_or_404(target_id)
         messages = Message.query.filter(or_(and_(Message.sender_id == current_user.id, Message.receiver_id == contact.id), and_(Message.sender_id == contact.id, Message.receiver_id == current_user.id))).order_by(Message.created_at.asc()).all()
         
-        # Mark direct messages as read
         for msg in messages:
             if not msg.is_read and msg.sender_id == contact.id:
                 msg.is_read = True
@@ -455,7 +471,6 @@ def message_thread(target_id):
                            contact=contact, messages=messages, conversations=conversations, contacts=contacts, 
                            current_user=current_user, is_group=is_group, member_count=member_count, 
                            group_members=group_members_data, user_is_admin=current_user_is_admin)
-
 @app.route('/send_message', methods=['POST'])
 def send_message():
     if 'user_id' not in session: return jsonify({'success': False}), 401

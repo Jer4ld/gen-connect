@@ -26,9 +26,7 @@
         /* Conversations List (Left Side) */
         .conversations-sidebar { width: 280px; background: white; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column; position: relative; }
         
-        /* Padding adjusted, border removed (moved to search bar) */
         .conversations-header { padding: 20px 20px 10px 20px; display: flex; justify-content: space-between; align-items: center; }
-        
         .conversations-header h2 { font-size: 20px; font-weight: 700; color: #111827; }
         .header-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.2s; color: #6b7280; }
         .header-icon:hover { background-color: #f3f4f6; }
@@ -54,7 +52,7 @@
         .conversation-item.pinned { background-color: #f8fafc; border-left: 3px solid #6366f1; } 
         
         .conversation-avatar { 
-            grid-row: 1 / span 2; /* Avatar spans 2 rows */
+            grid-row: 1 / span 2; 
             width: 45px; height: 45px; border-radius: 50%; 
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
             display: flex; align-items: center; justify-content: center; 
@@ -94,7 +92,6 @@
             justify-content: center;
             padding: 0 5px;
         }
-        /* ------------------------------------------------------------- */
 
         /* Empty State (Right Side) */
         .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #6b7280; background: white; }
@@ -178,18 +175,18 @@
                     <a href="/messages/{{ conv.id }}?is_group={{ 'true' if conv.is_group else 'false' }}" class="conversation-item {% if conv.is_pinned %}pinned{% endif %}">
                         <div class="conversation-avatar">{{ conv.name[0].upper() }}</div>
                         <div style="min-width: 0;">
-                            <div class="conversation-name">
-                                {{ conv.name }}
-                                {% if conv.is_pinned %}
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="color: #6b7280; margin-left: 4px; transform: rotate(45deg);">
-                                        <path d="M19.82 2H4.18C2.97 2 2 2.97 2 4.18v15.64C2 21.03 2.97 22 4.18 22h15.64c1.21 0 2.18-.97 2.18-2.18V4.18C22 2.97 21.03 2 19.82 2zM12 16l-4-4h3V9h2v3h3l-4 4z"/> 
-                                    </svg>
-                                {% endif %}
-                            </div>
+                            <div class="conversation-name">{{ conv.name }}</div>
                             <div class="last-message">{{ conv.last_msg }}</div>
                         </div>
                         <div class="conversation-meta">
                             <span class="timestamp">{{ conv.time }}</span>
+                            {% if conv.is_pinned %}
+                                <div style="margin-top: 5px; color: #9ca3af;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 17v5M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V17Z"/>
+                                    </svg>
+                                </div>
+                            {% endif %}
                             {% if conv.unread > 0 %}
                                 <div class="unread-badge">{{ conv.unread }}</div>
                             {% endif %}
