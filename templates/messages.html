@@ -50,6 +50,8 @@
         }
         .conversation-item:hover { background-color: #f9fafb; }
         .conversation-item.active { background-color: #eff6ff; }
+        /* Style for Pinned Items */
+        .conversation-item.pinned { background-color: #f8fafc; border-left: 3px solid #6366f1; } 
         
         .conversation-avatar { 
             grid-row: 1 / span 2; /* Avatar spans 2 rows */
@@ -63,6 +65,7 @@
         .conversation-name { 
             font-weight: 600; color: #111827; font-size: 15px; 
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            display: flex; align-items: center; gap: 5px;
         }
         
         .last-message {
@@ -166,15 +169,23 @@
             <div class="dropdown-menu" id="conversationMenu">
                 <div class="menu-item" onclick="openModal('addContactModal')">Add Contact</div>
                 <div class="menu-item" onclick="openModal('newGroupModal')">New Group</div>
+                <div class="menu-item" onclick="openModal('pinChatModal')">Pin Chat</div>
             </div>
 
             <div class="conversations-list">
                 {% if conversations %}
                     {% for conv in conversations %}
-                    <a href="/messages/{{ conv.id }}?is_group={{ 'true' if conv.is_group else 'false' }}" class="conversation-item">
+                    <a href="/messages/{{ conv.id }}?is_group={{ 'true' if conv.is_group else 'false' }}" class="conversation-item {% if conv.is_pinned %}pinned{% endif %}">
                         <div class="conversation-avatar">{{ conv.name[0].upper() }}</div>
                         <div style="min-width: 0;">
-                            <div class="conversation-name">{{ conv.name }}</div>
+                            <div class="conversation-name">
+                                {{ conv.name }}
+                                {% if conv.is_pinned %}
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="color: #6b7280; margin-left: 4px; transform: rotate(45deg);">
+                                        <path d="M19.82 2H4.18C2.97 2 2 2.97 2 4.18v15.64C2 21.03 2.97 22 4.18 22h15.64c1.21 0 2.18-.97 2.18-2.18V4.18C22 2.97 21.03 2 19.82 2zM12 16l-4-4h3V9h2v3h3l-4 4z"/> 
+                                    </svg>
+                                {% endif %}
+                            </div>
                             <div class="last-message">{{ conv.last_msg }}</div>
                         </div>
                         <div class="conversation-meta">
@@ -234,6 +245,48 @@
                 {% endfor %}
             </div></div>
             <div class="modal-actions"><button type="button" class="btn btn-cancel" onclick="closeModal('newGroupModal')">Cancel</button><button type="submit" class="btn btn-submit">Create</button></div>
+        </form>
+    </div>
+</div>
+
+<div class="modal" id="pinChatModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Pin Chats</h3>
+            <span class="modal-close" onclick="closeModal('pinChatModal')">×</span>
+        </div>
+        <form id="pinChatForm">
+            <div class="form-group">
+                <label>Select chats to pin to top:</label>
+                <div class="contact-list">
+                    {% for conv in conversations %}
+                    <label class="contact-item" style="display: flex; align-items: center; gap: 12px; padding: 10px; cursor: pointer; border-bottom: 1px solid #f9fafb;">
+                        <input type="checkbox" name="pinned_items" value="{{ conv.type_key }}" 
+                               {% if conv.is_pinned %}checked{% endif %} 
+                               style="width: 16px; height: 16px; cursor: pointer;">
+                        
+                        <div class="conversation-avatar" style="width: 36px; height: 36px; font-size: 14px;">
+                            {{ conv.name[0].upper() }}
+                        </div>
+                        
+                        <div style="flex:1;">
+                            <span style="font-size: 14px; font-weight: 500; color: #374151;">{{ conv.name }}</span>
+                            {% if conv.is_group %}<span style="font-size:10px; color:#9ca3af; margin-left:5px;">(Group)</span>{% endif %}
+                        </div>
+                        
+                        {% if conv.is_pinned %}
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="color: #2563eb;">
+                                <path d="M16 12V4H8v8l-2 2v2h5v6l1 1 1-1v-6h5v-2l-2-2z"/> 
+                            </svg>
+                        {% endif %}
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-cancel" onclick="closeModal('pinChatModal')">Cancel</button>
+                <button type="submit" class="btn btn-submit">Save Pins</button>
+            </div>
         </form>
     </div>
 </div>
@@ -412,6 +465,33 @@
             if (data.success) { showNotification('success', 'Status', data.message); setTimeout(() => window.location.reload(), 2500); }
             else { showNotification('error', 'Error', data.message); }
         } catch(err) { showNotification('error', 'Error', 'Failed to send request'); }
+    });
+
+    // ADDED: PIN CHAT FORM LISTENER
+    document.getElementById('pinChatForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const btn = this.querySelector('button[type="submit"]');
+        const originalText = btn.innerText;
+        btn.innerText = "Saving...";
+        
+        try {
+            const res = await fetch('/update_pinned_chats', { 
+                method: 'POST', 
+                body: new FormData(this) 
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                showNotification('success', 'Updated', 'Pinned chats updated.');
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                showNotification('error', 'Error', data.message);
+                btn.innerText = originalText;
+            }
+        } catch(err) {
+            showNotification('error', 'Error', 'Failed to update pins');
+            btn.innerText = originalText;
+        }
     });
 </script>
 </body>

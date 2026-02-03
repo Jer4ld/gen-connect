@@ -170,6 +170,14 @@ class Message(db.Model):
         self.is_read = True
         db.session.commit()
 
+class PinnedConversation(db.Model):
+    __tablename__ = 'pinned_conversations'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    target_type = db.Column(db.String(10), nullable=False) # 'user' or 'group'
+    target_id = db.Column(db.Integer, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 class Notification(db.Model):
     __tablename__ = 'notifications'
     id = db.Column(db.Integer, primary_key=True)
@@ -720,7 +728,36 @@ def delete_group(group_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
-  
+
+@app.route('/update_pinned_chats', methods=['POST'])
+def update_pinned_chats():
+    if 'user_id' not in session: return jsonify({'success': False}), 401
+    
+    # Get list of items to pin (e.g., ['user_1', 'group_5'])
+    selected_items = request.form.getlist('pinned_items')
+    
+    try:
+        # 1. Clear existing pins for this user to reset state
+        PinnedConversation.query.filter_by(user_id=session['user_id']).delete()
+        
+        # 2. Add new pins
+        for item in selected_items:
+            # item format is expected to be "type_id" (e.g. "user_2" or "group_5")
+            if '_' in item:
+                ctype, cid = item.split('_')
+                new_pin = PinnedConversation(
+                    user_id=session['user_id'],
+                    target_type=ctype,
+                    target_id=int(cid)
+                )
+                db.session.add(new_pin)
+        
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Pinned chats updated!'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 @app.route('/leave_group/<int:group_id>', methods=['POST'])
 def leave_group(group_id):
     if 'user_id' not in session: return jsonify({'success': False}), 401

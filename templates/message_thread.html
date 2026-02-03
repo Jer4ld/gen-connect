@@ -42,6 +42,8 @@
         }
         .conversation-item:hover { background-color: #f9fafb; }
         .conversation-item.active { background-color: #eff6ff; }
+        /* Style for Pinned Items */
+        .conversation-item.pinned { background-color: #f8fafc; border-left: 3px solid #6366f1; } 
         
         .conversation-avatar { 
             grid-row: 1 / span 2; /* Avatar spans 2 rows */
@@ -55,6 +57,7 @@
         .conversation-name { 
             font-weight: 600; color: #111827; font-size: 15px; 
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            display: flex; align-items: center; gap: 5px;
         }
         
         .last-message {
@@ -239,14 +242,22 @@
             <div class="dropdown-menu" id="conversationMenu">
                 <div class="menu-item" onclick="openAddContactModal()"><span>Add Contact</span></div>
                 <div class="menu-item" onclick="openNewGroupModal()"><span>New Group</span></div>
+                <div class="menu-item" onclick="openPinChatModal()">Pin Chat</div>
             </div>
             <div class="conversations-list">
                 {% if conversations %}
                     {% for conv in conversations %}
-                    <a href="/messages/{{ conv.id }}?is_group={{ 'true' if conv.is_group else 'false' }}" class="conversation-item {% if (is_group and conv.is_group and conv.id == contact.id) or (not is_group and not conv.is_group and conv.id == contact.id) %}active{% endif %}">
+                    <a href="/messages/{{ conv.id }}?is_group={{ 'true' if conv.is_group else 'false' }}" class="conversation-item {% if (is_group and conv.is_group and conv.id == contact.id) or (not is_group and not conv.is_group and conv.id == contact.id) %}active{% endif %} {% if conv.is_pinned %}pinned{% endif %}">
                         <div class="conversation-avatar">{{ conv.name[0].upper() }}</div>
                         <div style="min-width: 0;">
-                            <div class="conversation-name">{{ conv.name }}</div>
+                            <div class="conversation-name">
+                                {{ conv.name }}
+                                {% if conv.is_pinned %}
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="color: #6b7280; margin-left: 4px; transform: rotate(45deg);">
+                                        <path d="M19.82 2H4.18C2.97 2 2 2.97 2 4.18v15.64C2 21.03 2.97 22 4.18 22h15.64c1.21 0 2.18-.97 2.18-2.18V4.18C22 2.97 21.03 2 19.82 2zM12 16l-4-4h3V9h2v3h3l-4 4z"/> 
+                                    </svg>
+                                {% endif %}
+                            </div>
                             <div class="last-message">{{ conv.last_msg }}</div>
                         </div>
                         <div class="conversation-meta">
@@ -295,11 +306,7 @@
                     
                     <div class="menu-item danger" onclick="openGroupReportModal()">Report Member</div>
                     
-                    {% if user_is_admin %}
-                        <div class="menu-item danger" onclick="triggerDeleteGroup()" style="color:#ef4444;">Delete Group</div>
-                    {% else %}
-                        <div class="menu-item danger" onclick="confirmLeaveGroup()" style="color:#ef4444;">Exit Group</div>
-                    {% endif %}
+                    <div class="menu-item danger" onclick="confirmDeleteGroup()" style="color:#ef4444;">Delete & Exit Group</div>
                 {% else %}
                     <div class="menu-item" onclick="openWallpaperModal()">Change Wallpaper</div>
                     <div class="menu-item" id="btn-remove-contact" data-id="{{ contact.id }}">Remove Contact</div>
@@ -423,6 +430,7 @@
         </div>
         <form id="groupReportForm">
             <input type="hidden" name="group_id" value="{{ contact.id }}">
+            
             <div class="form-group">
                 <label>Select Member to Report:</label>
                 <div class="contact-list" style="max-height: 150px; border: 1px solid #e5e7eb; border-radius: 8px;">
@@ -445,6 +453,7 @@
                     {% endif %}
                 </div>
             </div>
+
             <div class="form-group">
                 <div class="report-grid">
                     <div class="report-chip" onclick="selectGroupReportReason(this)">Spam</div>
@@ -455,9 +464,11 @@
                 </div>
                 <input type="hidden" name="reason" id="selectedGroupReason">
             </div>
+            
             <div class="form-group">
                 <textarea name="details" rows="3" placeholder="Additional details..." style="resize: none;"></textarea>
             </div>
+            
             <div class="modal-actions">
                 <button type="button" class="btn btn-submit" onclick="submitGroupReport()">Send Report to Admin</button>
             </div>
@@ -519,6 +530,48 @@
 <div class="modal" id="removeMembersModal"><div class="modal-content"><div class="modal-header"><h3>Remove Users</h3><span class="modal-close" onclick="closeModal('removeMembersModal')">×</span></div><form id="removeMembersForm"><input type="hidden" name="group_id" value="{{ contact.id }}"><div class="form-group"><label>Select members to remove:</label><div class="contact-list" style="max-height: 250px;">{% for member in group_members %}{% if member.id != current_user.id %}<label class="contact-item" style="display: flex; align-items: center; gap: 12px; padding: 10px; cursor: pointer; border-bottom: 1px solid #f9fafb;"><input type="checkbox" name="member_ids" value="{{ member.id }}" class="remove-checkbox" style="width: 16px; height: 16px; cursor: pointer;"><div class="conversation-avatar" style="width: 36px; height: 36px; font-size: 14px;">{% if member.user.profile_picture and member.user.profile_picture != 'default.jpg' %}<img src="{{ url_for('static', filename='uploads/' + member.user.profile_picture) }}" alt="{{ member.username }}" style="width: 100%; height: 100%; object-fit: cover;">{% else %}{{ member.username[0].upper() }}{% endif %}</div><span style="font-size: 14px; font-weight: 500; color: #374151;">{{ member.username }}</span></label>{% endif %}{% endfor %}</div></div><div class="modal-actions"><button type="button" class="btn btn-cancel" onclick="closeModal('removeMembersModal')">Cancel</button><button type="button" class="btn btn-danger" onclick="triggerBulkRemove()">Remove Selected</button></div></form></div></div>
 <div class="modal" id="addMembersModal"><div class="modal-content"><div class="modal-header"><h3>Add Users</h3><span class="modal-close" onclick="closeModal('addMembersModal')">×</span></div><form id="addMembersForm"><input type="hidden" name="group_id" value="{{ contact.id }}"><div class="form-group"><label>Select contacts to add:</label><div class="contact-list" style="max-height: 250px;">{% set existing_ids = group_members|map(attribute='id')|list %}{% set has_candidates = false %}{% for c in contacts %}{% if c.id not in existing_ids %}{% set has_candidates = true %}<label class="contact-item" style="display: flex; align-items: center; gap: 12px; padding: 10px; cursor: pointer; border-bottom: 1px solid #f9fafb;"><input type="checkbox" name="member_ids" value="{{ c.id }}" class="add-checkbox" style="width: 16px; height: 16px; cursor: pointer;"><div class="conversation-avatar" style="width: 36px; height: 36px; font-size: 14px;">{% if c.profile_picture and c.profile_picture != 'default.jpg' %}<img src="{{ url_for('static', filename='uploads/' + c.profile_picture) }}" alt="{{ c.username }}" style="width: 100%; height: 100%; object-fit: cover;">{% else %}{{ c.username[0].upper() }}{% endif %}</div><span style="font-size: 14px; font-weight: 500; color: #374151;">{{ c.username }}</span></label>{% endif %}{% endfor %}{% if not has_candidates %}<div style="color:#9ca3af; text-align:center; padding:20px; font-size: 14px;">All your contacts are already in this group.</div>{% endif %}</div></div><div class="modal-actions"><button type="button" class="btn btn-cancel" onclick="closeModal('addMembersModal')">Cancel</button><button type="button" class="btn btn-submit" onclick="triggerAddMembers()">Add Selected</button></div></form></div></div>
 
+<div class="modal" id="pinChatModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Pin Chats</h3>
+            <span class="modal-close" onclick="closeModal('pinChatModal')">×</span>
+        </div>
+        <form id="pinChatForm">
+            <div class="form-group">
+                <label>Select chats to pin to top:</label>
+                <div class="contact-list">
+                    {% for conv in conversations %}
+                    <label class="contact-item" style="display: flex; align-items: center; gap: 12px; padding: 10px; cursor: pointer; border-bottom: 1px solid #f9fafb;">
+                        <input type="checkbox" name="pinned_items" value="{{ conv.type_key }}" 
+                               {% if conv.is_pinned %}checked{% endif %} 
+                               style="width: 16px; height: 16px; cursor: pointer;">
+                        
+                        <div class="conversation-avatar" style="width: 36px; height: 36px; font-size: 14px;">
+                            {{ conv.name[0].upper() }}
+                        </div>
+                        
+                        <div style="flex:1;">
+                            <span style="font-size: 14px; font-weight: 500; color: #374151;">{{ conv.name }}</span>
+                            {% if conv.is_group %}<span style="font-size:10px; color:#9ca3af; margin-left:5px;">(Group)</span>{% endif %}
+                        </div>
+                        
+                        {% if conv.is_pinned %}
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="color: #2563eb;">
+                                <path d="M16 12V4H8v8l-2 2v2h5v6l1 1 1-1v-6h5v-2l-2-2z"/> 
+                            </svg>
+                        {% endif %}
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-cancel" onclick="closeModal('pinChatModal')">Cancel</button>
+                <button type="submit" class="btn btn-submit">Save Pins</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
     let isEditing = false;
     let editingId = null;
@@ -532,19 +585,23 @@
     let pendingMessageId = null; 
     let pendingInviteeNames = [];
 
-    // --- TIMEZONE FIX START (Auto GMT+8) ---
+    // --- TIMEZONE FIX START ---
     document.addEventListener("DOMContentLoaded", function() {
         const timeElements = document.querySelectorAll('.msg-time');
         timeElements.forEach(el => {
             const utcStr = el.getAttribute('data-utc');
             if(utcStr) {
+                // Force interpretation as UTC by adding 'Z' if missing
                 const date = new Date(utcStr.endsWith('Z') ? utcStr : utcStr + 'Z');
+                
+                // Convert to Singapore Time
                 const sgTime = date.toLocaleTimeString('en-SG', {
                     timeZone: 'Asia/Singapore',
                     hour: '2-digit',
                     minute: '2-digit',
                     hour12: false
                 });
+                
                 el.innerText = sgTime;
             }
         });
@@ -556,6 +613,7 @@
         document.getElementById(id).classList.toggle('active');
     }
     
+    // ... (Report Modal Functions) ...
     function openReportModal() {
         document.getElementById('reportForm').reset();
         document.querySelectorAll('.report-chip').forEach(c => c.classList.remove('selected'));
@@ -629,6 +687,12 @@
     function closeAddContactModal() { document.getElementById('addContactModal').classList.remove('active'); }
     function openNewGroupModal() { document.getElementById('newGroupModal').classList.add('active'); document.getElementById('conversationMenu').classList.remove('active'); }
     function closeNewGroupModal() { document.getElementById('newGroupModal').classList.remove('active'); }
+    
+    // ADDED: Open Pin Chat Modal
+    function openPinChatModal() { 
+        document.getElementById('pinChatModal').classList.add('active'); 
+        document.getElementById('conversationMenu').classList.remove('active');
+    }
 
     function triggerBulkRemove() { const checkboxes = document.querySelectorAll('.remove-checkbox:checked'); if (checkboxes.length === 0) { showNotification('error', 'Selection', 'Select a user.'); return; } pendingAction = 'bulk_remove'; document.getElementById('confirmTitle').innerText = "Remove Users"; document.getElementById('confirmMessage').innerText = "Remove selected users?"; const btn = document.getElementById('confirmActionBtn'); btn.className = 'btn btn-danger'; btn.innerText = "Remove"; closeModal('removeMembersModal'); document.getElementById('confirmationModal').classList.add('active'); }
     
@@ -809,6 +873,33 @@
     function showNotification(type, title, message) { const toast = document.getElementById('notificationToast'); document.getElementById('notificationTitle').textContent = title; document.getElementById('notificationMessage').textContent = message; toast.classList.remove('success', 'error'); toast.classList.add(type, 'active'); setTimeout(() => toast.classList.remove('active'), 3000); }
     const fileInput = document.getElementById('fileInput'); fileInput.addEventListener('change', (e) => { if (e.target.files[0]) { document.getElementById('fileName').textContent = e.target.files[0].name; document.getElementById('filePreview').style.display = 'flex'; } }); function removeFile() { fileInput.value = ''; document.getElementById('filePreview').style.display = 'none'; }
     const area = document.getElementById('messagesArea'); if(area) area.scrollTop = area.scrollHeight;
+
+    // ADDED: PIN CHAT FORM LISTENER
+    document.getElementById('pinChatForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const btn = this.querySelector('button[type="submit"]');
+        const originalText = btn.innerText;
+        btn.innerText = "Saving...";
+        
+        try {
+            const res = await fetch('/update_pinned_chats', { 
+                method: 'POST', 
+                body: new FormData(this) 
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                showNotification('success', 'Updated', 'Pinned chats updated.');
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                showNotification('error', 'Error', data.message);
+                btn.innerText = originalText;
+            }
+        } catch(err) {
+            showNotification('error', 'Error', 'Failed to update pins');
+            btn.innerText = originalText;
+        }
+    });
 </script>
 </body>
 </html>
