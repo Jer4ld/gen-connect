@@ -87,7 +87,7 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     points = db.Column(db.Integer, default=10000)
     last_daily_claim = db.Column(db.DateTime, nullable=True)
-    
+
     # Relationships (Simple)
     posts = db.relationship('Post', backref='author', lazy=True, cascade='all, delete-orphan')
     comments = db.relationship('Comment', backref='author', lazy=True, cascade='all, delete-orphan')
@@ -258,6 +258,17 @@ class Follow(db.Model):
     follower_user = db.relationship('User', foreign_keys=[follower_id], back_populates='following')
     followed_user = db.relationship('User', foreign_keys=[followed_id], back_populates='followers')
 
+class Activity(db.Model):
+    __tablename__ = 'activities'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    category = db.Column(db.String(50), nullable=False)
+    location = db.Column(db.String(200), nullable=False)
+    date = db.Column(db.String(50), nullable=False)
+    time = db.Column(db.String(50), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
 # ==================== ROUTES ====================
 
 @app.route('/')
@@ -1559,11 +1570,67 @@ def update_settings():
         flash('Error saving settings.', 'error')
         
     return redirect(url_for('profile') + '#settings')
+
+# ================= ACTIVITIES ROUTES =================
+
+@app.route('/activities')
+def activities_home():
+    # This grabs every activity stored in the 'activities' table
+    all_activities = Activity.query.all() 
+    return render_template('activities-home.html', activities=all_activities)
+
+@app.route("/activities/<int:activity_id>")
+def activity_details(activity_id):
+    if 'user_id' not in session: return redirect(url_for('login'))
+    return render_template("activity-details.html", activity_id=activity_id)
+
+@app.route("/activities/create", methods=["GET", "POST"])
+def create_activity():
+    if 'user_id' not in session: return redirect(url_for('login'))
+    return render_template("create-activity.html")
+
+@app.route("/activities/create/confirmation")
+def create_confirmation():
+    return render_template("create-confirmation.html")
+
+@app.route("/activities/created")
+def activity_created():
+    return render_template("activity-created.html")
+
+@app.route("/activities/<int:activity_id>/edit", methods=["GET", "POST"])
+def edit_activity(activity_id):
+    if 'user_id' not in session: return redirect(url_for('login'))
+    return render_template("edit-activity.html", activity_id=activity_id)
+
+@app.route("/activities/<int:activity_id>/update/confirmation")
+def update_confirmation(activity_id):
+    return render_template("update-confirmation.html", activity_id=activity_id)
+
+@app.route("/activities/<int:activity_id>/delete/confirmation")
+def delete_confirmation(activity_id):
+    return render_template("delete-confirmation.html", activity_id=activity_id)
+
+@app.route("/activities/<int:activity_id>/deleted")
+def delete_success(activity_id):
+    return render_template("delete-success.html", activity_id=activity_id)
+
+@app.route("/activities/<int:activity_id>/join/confirmation")
+def join_confirmation(activity_id):
+    return render_template("join-confirmation.html", activity_id=activity_id)
+
+@app.route("/activities/my")
+def my_activities():
+    if 'user_id' not in session: return redirect(url_for('login'))
+    return render_template("myactivities.html")
+
 @app.errorhandler(404)
-def not_found(error): return '<h1>404 - Page Not Found</h1>', 404
+def not_found(error): 
+    return '<h1>404 - Page Not Found</h1>', 404
 
 @app.errorhandler(500)
-def internal_error(error): db.session.rollback(); return '<h1>500 - Internal Server Error</h1>', 500
+def internal_error(error): 
+    db.session.rollback()
+    return '<h1>500 - Internal Server Error</h1>', 500
 
 if __name__ == '__main__':
     with app.app_context():

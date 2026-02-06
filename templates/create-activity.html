@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}Create Activity | GenConnect{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<style>
+    /* Preserving your original form and layout styles */
+    .main-content {
+        margin-left: 250px;
+        padding: 30px;
+        min-height: calc(100vh - 60px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* Back Button Header */
+    .app-header { 
+        display: flex; 
+        align-items: center; 
+        gap: 12px; 
+        background: #2563eb; 
+        color: white; 
+        border-radius: 10px; 
+        padding: 10px 22px; 
+        margin-bottom: 25px; 
+        width: fit-content; 
+        align-self: flex-start; 
+        cursor: pointer; 
+        text-decoration: none; 
+    }
+    .app-header:hover { background: #1d4ed8; color: white; }
+
+    h2 { font-size: 28px; margin-bottom: 25px; color: #1f2937; text-align: center; font-weight: bold; }
+
+    /* Form Styling */
+    form { max-width: 700px; width: 100%; background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    label { font-weight: bold; font-size: 16px; color: #374151; display: block; margin-top: 15px; }
+    input, textarea, select { width: 100%; padding: 12px; margin: 8px 0 15px 0; border-radius: 8px; border: 1.5px solid #d1d5db; font-size: 16px; }
+
+    .submit-btn { background: #10b981; color: white; border: none; padding: 14px 40px; border-radius: 10px; cursor: pointer; font-size: 18px; font-weight: bold; width: 100%; margin-top: 20px; }
+    .submit-btn:hover { background: #059669; }
+
+    .time-row { display: flex; align-items: center; gap: 15px; background: #f9fafb; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+    .time-group { display: flex; align-items: center; gap: 5px; }
+    .time-group select { margin: 0; width: 70px; }
+    .time-separator { font-weight: bold; color: #6b7280; }
+
+    .char-count { font-size: 14px; color: #6b7280; text-align: right; margin-top: -10px; margin-bottom: 15px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <aside class="sidebar">
+    <div class="sidebar-logo">
+        <a href="{{ url_for('home') }}" class="logo" style="text-decoration: none; color: #6366f1; display: flex; align-items: center; gap: 10px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            <span>GenConnect</span>
+        </a>
+    </div>
+    <ul class="sidebar-nav">
+        <li><a href="{{ url_for('home') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a></li>
+        <li><a href="{{ url_for('activities_home') }}" class="active"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg><span>Explore Activities</span></a></li>
+        <li><a href="{{ url_for('create_activity') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>Create</span></a></li>
+        <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Notification</span></a></li>
+        <li><a href="{{ url_for('messages') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Messages</span></a></li>
+        <li><a href="{{ url_for('profile') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a></li>
+        <li style="margin-top: 20px; border-top: 1px solid #e5e7eb; list-style: none;"></li>
+        <li><a href="{{ url_for('logout') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></a></li>
+    </ul>
+</aside>
+
+    <main class="main-content">
+        <a href="{{ url_for('activities_home') }}" class="app-header">
+            <span>&larr; Back to Activities</span>
+        </a>
+
+        <h2>Create Activity</h2>
+
+        <form id="activityForm">
+            <label>Activity Title:</label>
+            <input type="text" id="title" placeholder="Enter activity title" required>
+
+            <label>Category:</label>
+            <select id="categorySelect" required>
+                <option value="">Select a category</option>
+                <option value="Hobbies">🎨 Hobbies</option>
+                <option value="Tech Help">💻 Tech Help</option>
+                <option value="Outdoor">🏞️ Outdoor</option>
+                <option value="Volunteer">🤝 Volunteer</option>
+            </select>
+
+            <label>Date:</label>
+            <input type="date" id="date" required>
+
+            <label>Timing (Start to End):</label>
+            <div class="time-row">
+                <div class="time-group">
+                    <select id="startHour" required>
+                        <option value="">HH</option>
+                        <script>for(let i=1;i<=12;i++)document.write(`<option>${i}</option>`)</script>
+                    </select>
+                    <select id="startMinute" required>
+                        <option value="">MM</option>
+                        <option>00</option><option>15</option><option>30</option><option>45</option>
+                    </select>
+                    <select id="startAmpm" required><option>AM</option><option>PM</option></select>
+                </div>
+                
+                <div class="time-separator">to</div>
+
+                <div class="time-group">
+                    <select id="endHour" required>
+                        <option value="">HH</option>
+                        <script>for(let i=1;i<=12;i++)document.write(`<option>${i}</option>`)</script>
+                    </select>
+                    <select id="endMinute" required>
+                        <option value="">MM</option>
+                        <option>00</option><option>15</option><option>30</option><option>45</option>
+                    </select>
+                    <select id="endAmpm" required><option>AM</option><option>PM</option></select>
+                </div>
+            </div>
+
+            <label>Location:</label>
+            <input type="text" id="location" placeholder="Enter location" required>
+
+            <label>Description (Optional):</label>
+            <textarea rows="4" id="description" placeholder="Briefly describe the activity" maxlength="250"></textarea>
+            <div class="char-count" id="char-count">0 / 250 characters</div>
+
+            <button type="submit" class="submit-btn">Create Activity</button>
+        </form>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const description = document.getElementById('description');
+    description.addEventListener('input', () => {
+        document.getElementById('char-count').textContent = `${description.value.length} / 250 characters`;
+    });
+
+    document.getElementById('activityForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const title = document.getElementById('title').value.trim();
+        const categorySelect = document.getElementById('categorySelect');
+        const selectedCategory = categorySelect.value;
+        const date = document.getElementById('date').value;
+        const startHour = document.getElementById('startHour').value;
+        const startMinute = document.getElementById('startMinute').value;
+        const startAmpm = document.getElementById('startAmpm').value;
+        const endHour = document.getElementById('endHour').value;
+        const endMinute = document.getElementById('endMinute').value;
+        const endAmpm = document.getElementById('endAmpm').value;
+        const location = document.getElementById('location').value.trim();
+        const desc = document.getElementById('description').value.trim();
+
+        if (!title || !selectedCategory || !date || !startHour || !startMinute || !startAmpm || !endHour || !endMinute || !endAmpm || !location) {
+            alert("Please fill in all required fields.");
+            return;
+        }
+
+        const emojiMap = { "Hobbies": "🎨", "Tech Help": "💻", "Outdoor": "🏞️", "Volunteer": "🤝" };
+        const categoryWithEmoji = `${emojiMap[selectedCategory]} ${selectedCategory}`;
+        const startTime = `${startHour}:${startMinute} ${startAmpm}`;
+        const endTime = `${endHour}:${endMinute} ${endAmpm}`;
+        const displayTime = `${startTime} – ${endTime}`;
+
+        const activityData = { title, cat: categoryWithEmoji, date, time: displayTime, loc: location, desc };
+
+        let myActivities = JSON.parse(localStorage.getItem('myCreatedActivities')) || [];
+        myActivities.push(activityData);
+        localStorage.setItem('myCreatedActivities', JSON.stringify(myActivities));
+
+        // Use standard redirection for Flask
+        const query = new URLSearchParams(activityData).toString();
+        window.location.href = `{{ url_for('create_confirmation') }}?${query}`;
+    });
+</script>
+{% endblock %}
