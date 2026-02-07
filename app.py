@@ -268,7 +268,18 @@ class Activity(db.Model):
     time = db.Column(db.String(50), nullable=False)
     description = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+
+# --- NEW: Reported/Blocked Users Table ---
+class ReportedUsers(db.Model):
+    __tablename__ = 'reported_users'
+    id = db.Column(db.Integer, primary_key=True)
+    reporter_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    reported_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    reason = db.Column(db.String(255), nullable=True) # General reason (e.g., 'Blocked')
+    details = db.Column(db.Text, nullable=True)       # The specific reason typed in the textbox
+    status = db.Column(db.String(50), default='blocked')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 # ==================== ROUTES ====================
 
 @app.route('/')
@@ -817,16 +828,34 @@ def notifications_page():
     user_notifications = Notification.query.filter_by(recipient_id=session['user_id']).order_by(Notification.created_at.desc()).all()
     return render_template('notifications.html', notifications=user_notifications)
 
+# --- UPDATED: Add Contact with specific Block Validation message ---
+# In app.py
+
 @app.route('/add_contact', methods=['POST'])
 def add_contact():
     if 'user_id' not in session: return jsonify({'success': False}), 401
     username = request.form.get('username').strip()
     target = User.query.filter_by(username=username).first()
+    
     if not target: return jsonify({'success': False, 'message': 'User not found'})
     if target.id == session['user_id']: return jsonify({'success': False, 'message': 'Cannot add yourself'})
+    
+    # --- BLOCK CHECK START ---
+    is_blocked = ReportedUsers.query.filter_by(
+        reporter_id=target.id, 
+        reported_id=session['user_id'], 
+        status='blocked'
+    ).first()
+    
+    if is_blocked:
+        # Returns generic error message to the frontend
+        return jsonify({'success': False, 'message': 'This user has blocked you.'})
+    # --- BLOCK CHECK END ---
+
     exists = Notification.query.filter_by(sender_id=session['user_id'], recipient_id=target.id, type='contact_request', status='pending').first()
     if exists: 
         return jsonify({'success': True, 'message': 'Request already sent! Awaiting approval.'})
+        
     new_notif = Notification(recipient_id=target.id, sender_id=session['user_id'], type='contact_request', message=f"{session['username']} wants to add you as a contact.")
     db.session.add(new_notif)
     db.session.commit()
@@ -881,6 +910,7 @@ def respond_notification(notif_id, action):
 
     db.session.commit()
     return jsonify({'success': True})
+
 @app.route('/report_group_member', methods=['POST'])
 def report_group_member():
     if 'user_id' not in session: return jsonify({'success': False}), 401
@@ -927,7 +957,6 @@ def report_group_member():
         print(e)
         return jsonify({'success': False, 'message': 'Error sending report'}), 500
 
-# ⬇️ ROUTE FOR REMOVING CONTACT (Updated to work with the frontend logic)
 @app.route('/remove_contact/<int:contact_id>', methods=['POST'])
 def remove_contact(contact_id):
     # Ensure user is logged in
@@ -967,19 +996,26 @@ def remove_contact(contact_id):
         print(f"Error removing contact: {e}")
         return jsonify({'success': False, 'message': 'Database error occurred'}), 500
 
-@app.route('/report_and_remove_user/<int:contact_id>', methods=['POST'])
-def report_and_remove_user(contact_id):
+# --- UPDATED: Block User Functionality (Replaces Report User) ---
+@app.route('/block_user/<int:contact_id>', methods=['POST'])
+def block_user(contact_id):
     if 'user_id' not in session: return jsonify({'success': False}), 401
     current_user_id = session['user_id']
     
-    # Get details from the request
-    reason = request.form.get('reason')
+    # Get ONLY the details from the textarea
     details = request.form.get('details')
     
     try:
-        # 1. (Optional) Save Report to Database 
-        # In a real app, you would save 'reason' and 'details' to a Reports table here.
-        print(f"REPORT FILED: User {current_user_id} reported {contact_id} for {reason}. Details: {details}")
+        # 1. Save Block Entry to Database
+        # 'reason' is hardcoded as 'User Blocked' or similar, 'details' contains the user input
+        block_entry = ReportedUsers(
+            reporter_id=current_user_id,
+            reported_id=contact_id,
+            reason="User Blocked",
+            details=details,
+            status='blocked'
+        )
+        db.session.add(block_entry)
 
         # 2. Perform the Removal (Delete Messages & Contact)
         Message.query.filter(or_(
@@ -992,19 +1028,53 @@ def report_and_remove_user(contact_id):
             and_(Contact.user_id == contact_id, Contact.contact_user_id == current_user_id)
         )).delete(synchronize_session=False)
         
-        # 3. Create Notification for the Reported User
-        # We use 'system_alert' so they don't see buttons, just the message.
-        current_user = User.query.get(current_user_id)
-        db.session.add(Notification(
-            recipient_id=contact_id,
-            sender_id=current_user_id,
-            type='system_alert', 
-            message=f"You have been removed from {current_user.username}'s contacts due to a report."
-        ))
+        # 3. Remove pending notifications (friend requests) between these users
+        Notification.query.filter(or_(
+            and_(Notification.sender_id == current_user_id, Notification.recipient_id == contact_id),
+            and_(Notification.sender_id == contact_id, Notification.recipient_id == current_user_id)
+        )).delete(synchronize_session=False)
         
         db.session.commit()
-        return jsonify({'success': True, 'message': 'User reported and removed successfully.'})
+        return jsonify({'success': True, 'message': 'User blocked successfully.'})
         
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+# --- NEW: Get Block List ---
+@app.route('/get_block_list', methods=['GET'])
+def get_block_list():
+    if 'user_id' not in session: return jsonify({'success': False}), 401
+    
+    # Query reported users where reporter is current user
+    blocks = ReportedUsers.query.filter_by(reporter_id=session['user_id']).all()
+    
+    blocked_list = []
+    for block in blocks:
+        user = User.query.get(block.reported_id)
+        if user:
+            blocked_list.append({
+                'user_id': user.id,
+                'username': user.username,
+                'profile_picture': user.profile_picture,
+                'reason': block.details if block.details else "No reason provided"
+            })
+            
+    return jsonify({'success': True, 'blocked_users': blocked_list})
+
+# --- NEW: Unblock User ---
+@app.route('/unblock_user/<int:user_id>', methods=['POST'])
+def unblock_user(user_id):
+    if 'user_id' not in session: return jsonify({'success': False}), 401
+    
+    try:
+        block_entry = ReportedUsers.query.filter_by(reporter_id=session['user_id'], reported_id=user_id).first()
+        if block_entry:
+            db.session.delete(block_entry)
+            db.session.commit()
+            return jsonify({'success': True, 'message': 'User unblocked.'})
+        else:
+            return jsonify({'success': False, 'message': 'User not found in block list.'})
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
