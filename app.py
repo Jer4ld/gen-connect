@@ -204,6 +204,15 @@ class SavedPost(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     post = db.relationship('Post', lazy=True)
 
+class Report(db.Model):
+    __tablename__ = 'reports'
+    id = db.Column(db.Integer, primary_key=True)
+    reporter_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
+    category = db.Column(db.String(50), nullable=True)
+    reason = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 class Follow(db.Model):
     __tablename__ = 'follows'
     id = db.Column(db.Integer, primary_key=True)
@@ -1069,8 +1078,27 @@ def edit_comment(comment_id):
 @app.route('/report_post/<int:post_id>', methods=['POST'])
 def report_post(post_id):
     if 'user_id' not in session: return redirect(url_for('login'))
-    # No storage needed as per instructions
-    flash('Report submitted successfully. Thank you for helping keep our community safe.', 'success')
+    
+    # Get form data
+    category = request.form.get('category')
+    reason = request.form.get('reason')
+    
+    # Create new Report record
+    new_report = Report(
+        reporter_id=session['user_id'],
+        post_id=post_id,
+        category=category,
+        reason=reason
+    )
+    
+    try:
+        db.session.add(new_report)
+        db.session.commit()
+        flash('Report submitted successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error submitting report.', 'error')
+        
     return redirect(request.referrer or url_for('home'))
 
 # Like Functionality
