@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}My Activities | GenConnect{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<style>
+    :root { 
+      --sidebar-width: 250px; 
+    }
+    
+    body { font-family: Arial, sans-serif; background-color: #f7f9fc; margin: 0; }
+    
+    /* Content Area Adjustment for Group Sidebar */
+    .main-content { 
+        flex: 1; 
+        margin-left: var(--sidebar-width); 
+        padding: 40px; 
+        min-height: calc(100vh - 60px);
+    }
+
+    .back-btn { display: inline-flex; align-items: center; gap: 10px; background: #2563eb; color: #ffffff; border: none; border-radius: 12px; padding: 10px 20px; font-weight: bold; text-decoration: none; box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2); }
+    .back-btn:hover { color: white; opacity: 0.9; }
+    
+    .header-area { text-align: center; margin-bottom: 20px; }
+    h1 { font-size: 32px; font-weight: bold; color: #1f2937; }
+    
+    .search-container { max-width: 600px; margin: 0 auto 20px auto; display: flex; gap: 10px; }
+    .search-container input { border-radius: 25px; padding: 10px 20px; border: 1px solid #d1d5db; flex: 1; outline: none; }
+    .search-btn { background-color: #2563eb; color: white; border: none; border-radius: 25px; padding: 0 25px; font-weight: bold; cursor: pointer; }
+    
+    .toggle-buttons { text-align: center; margin-bottom: 30px; }
+    .toggle-buttons button { margin: 0 10px; padding: 10px 20px; font-weight: bold; border-radius: 12px; border: none; cursor: pointer; transition: 0.2s; }
+    .toggle-active { background-color: #2563eb; color: white; }
+    .toggle-inactive { background-color: #e5e7eb; color: #4b5563; }
+    
+    .activity-card { background: white; border-radius: 15px; margin-bottom: 30px; display: flex; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e5e7eb; min-height: 250px; }
+    .card-main-info { flex: 2; padding: 25px; }
+    .card-actions { flex: 0.8; background: #f8fafc; border-left: 1px solid #e5e7eb; display: flex; flex-direction: column; justify-content: center; padding: 20px; gap: 10px; }
+    
+    .category { color: #2563eb; font-weight: bold; font-size: 14px; text-transform: uppercase; margin-bottom: 5px; display: block; }
+    .card-main-info h2 { font-weight: bold; font-size: 24px; margin-bottom: 10px; color: #1f2937; }
+    .card-main-info p { margin: 4px 0; color: #4b5563; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+    .card-desc { margin-top: 15px; font-style: italic; color: #6b7280; font-size: 15px; }
+    
+    .btn-action { border: none; padding: 10px; font-weight: bold; border-radius: 8px; text-align: center; text-decoration: none; display: block; width: 100%; transition: 0.2s; cursor:pointer; }
+    .btn-edit { background-color: #0ea5e9; color: white; }
+    .btn-delete { background-color: #ef4444; color: white; }
+    .empty-state { text-align: center; padding: 50px; background: white; border-radius: 15px; border: 2px dashed #ccc; }
+
+    /* Custom Withdraw Modal */
+    #confirmModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:999; }
+    #confirmModalContent { background:white; padding:25px; border-radius:12px; min-width:300px; text-align:center; box-shadow:0 5px 15px rgba(0,0,0,0.3); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <aside class="sidebar">
+    <div class="sidebar-logo">
+        <a href="{{ url_for('home') }}" class="logo" style="text-decoration: none; color: #6366f1; display: flex; align-items: center; gap: 10px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            <span>GenConnect</span>
+        </a>
+    </div>
+    <ul class="sidebar-nav">
+        <li><a href="{{ url_for('home') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a></li>
+        <li><a href="{{ url_for('activities_home') }}" class="active"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg><span>Explore Activities</span></a></li>
+        <li><a href="{{ url_for('create_post') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>Create</span></a></li>
+        <li><a href="{{ url_for('notifications_page') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Notification</span></a></li>
+        <li><a href="{{ url_for('messages') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Messages</span></a></li>
+        <li><a href="{{ url_for('profile') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a></li>
+        <li style="margin-top: 20px; border-top: 1px solid #e5e7eb; list-style: none;"></li>
+        <li><a href="{{ url_for('logout') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></a></li>
+    </ul>
+</aside>
+
+    <main class="main-content">
+        <a href="{{ url_for('activities_home') }}" class="back-btn"><i class="bi bi-arrow-left"></i> Back to Activities</a>
+        <div class="header-area"><h1>My Activities</h1></div>
+        
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search your activities...">
+            <button class="search-btn" onclick="searchActivities()">Search</button>
+        </div>
+        
+        <div class="toggle-buttons">
+            <button id="createdBtn" class="toggle-active" onclick="toggleActivities('created')">My Created Activities</button>
+            <button id="joinedBtn" class="toggle-inactive" onclick="toggleActivities('joined')">Joined Activities</button>
+        </div>
+        
+        <div id="activities-list"></div>
+    </main>
+</div>
+
+<div id="confirmModal">
+    <div id="confirmModalContent">
+        <p>Are you sure you want to withdraw from this activity?</p>
+        <div style="display:flex; justify-content:center; gap:20px;">
+            <button id="confirmYes" style="background:#ef4444; color:white; padding:10px 20px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Yes</button>
+            <button id="confirmNo" style="background:#e5e7eb; color:#4b5563; padding:10px 20px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">No</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentView = 'created';
+let withdrawIndex = null;
+let lastSearch = '';
+
+// URLs for navigation - generated by Flask
+const editUrlBase = "{{ url_for('edit_activity') }}";
+const deleteUrlBase = "{{ url_for('delete_confirmation') }}";
+
+function getActivities() {
+    const created = JSON.parse(localStorage.getItem('myCreatedActivities')) || [];
+    const joined = JSON.parse(localStorage.getItem('joinedActivities')) || [];
+    return currentView === 'created' ? created : joined;
+}
+
+function renderActivities() {
+    const list = document.getElementById('activities-list');
+    const filter = lastSearch.toLowerCase();
+    const data = getActivities();
+
+    const filteredData = data.filter(act => (act.title || '').toLowerCase().includes(filter));
+
+    if (!filteredData.length) {
+        list.innerHTML = `<div class="empty-state">No activities found.</div>`;
+        return;
+    }
+
+    list.innerHTML = filteredData.map((act, i) => {
+        const title = act.title || "Untitled Activity";
+        const cat = act.cat || "General";
+        const date = act.date || "Date TBD";
+        const time = act.time || "Time TBD";
+        const loc = act.loc || "Location TBD";
+        const desc = act.desc || "No description provided.";
+        
+        return `
+            <div class="activity-card">
+                <div class="card-main-info">
+                    <span class="category">${cat}</span>
+                    <h2>${title}</h2>
+                    <p><i class="bi bi-calendar3"></i> ${date}</p>
+                    <p><i class="bi bi-clock"></i> ${time}</p>
+                    <p><i class="bi bi-geo-alt"></i> ${loc}</p>
+                    <div class="card-desc">${desc}</div>
+                </div>
+                <div class="card-actions">
+                    ${currentView === 'created' 
+                        ? `<a href="${editUrlBase}?index=${i}" class="btn-action btn-edit">Edit</a>
+                           <a href="${deleteUrlBase}?index=${i}" class="btn-action btn-delete">Delete</a>`
+                        : `<button class="btn-action btn-delete" onclick="withdrawActivity(${i})">Withdraw</button>`}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function toggleActivities(view) {
+    currentView = view;
+    document.getElementById('createdBtn').className = view === 'created' ? 'toggle-active' : 'toggle-inactive';
+    document.getElementById('joinedBtn').className = view === 'joined' ? 'toggle-active' : 'toggle-inactive';
+    lastSearch = ''; 
+    document.getElementById('searchInput').value = '';
+    renderActivities();
+}
+
+function searchActivities() {
+    lastSearch = document.getElementById('searchInput').value.trim();
+    renderActivities();
+}
+
+function withdrawActivity(index) {
+    withdrawIndex = index;
+    document.getElementById('confirmModal').style.display = 'flex';
+}
+
+document.getElementById('confirmYes').addEventListener('click', () => {
+    const joined = JSON.parse(localStorage.getItem('joinedActivities')) || [];
+    if (withdrawIndex !== null) {
+        joined.splice(withdrawIndex, 1);
+        localStorage.setItem('joinedActivities', JSON.stringify(joined));
+        renderActivities();
+        withdrawIndex = null;
+    }
+    document.getElementById('confirmModal').style.display = 'none';
+});
+
+document.getElementById('confirmNo').addEventListener('click', () => {
+    withdrawIndex = null;
+    document.getElementById('confirmModal').style.display = 'none';
+});
+
+window.onload = renderActivities;
+</script>
+{% endblock %}

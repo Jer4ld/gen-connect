@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Activity | GenConnect{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    :root { --primary: #2563eb; --bg-gray: #f8fafc; --sidebar-width: 250px; }
+    body { font-family: 'Inter', sans-serif; background-color: var(--bg-gray); margin: 0; }
+    
+    /* Content Adjustment for Group Sidebar */
+    .main-content { 
+        margin-left: var(--sidebar-width); 
+        padding: 30px 50px; 
+        width: calc(100% - var(--sidebar-width)); 
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; 
+        min-height: calc(100vh - 60px);
+    }
+
+    .btn-back { 
+        align-self: flex-start; 
+        background: var(--primary); 
+        color: white; 
+        border: none; 
+        padding: 8px 20px; 
+        border-radius: 12px; 
+        font-weight: 600; 
+        text-decoration: none; 
+        margin-bottom: 20px; 
+        display: flex; 
+        align-items: center; 
+        gap: 8px; 
+    }
+    .btn-back:hover { color: white; opacity: 0.9; }
+
+    .card-box { background: white; padding: 40px; border-radius: 15px; width: 100%; max-width: 800px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    .form-group { margin-bottom: 20px; }
+    label { font-weight: 700; font-size: 14px; margin-bottom: 8px; display: block; }
+    input, select, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #d1d5db; }
+    .action-btns { display: flex; gap: 15px; margin-top: 30px; }
+    .btn-custom { flex: 1; padding: 14px; border-radius: 10px; font-weight: 700; border: none; color: white; cursor: pointer; }
+    .btn-update { background: #10b981; }
+    .btn-delete { background: #ef4444; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <aside class="sidebar">
+    <div class="sidebar-logo">
+        <a href="{{ url_for('home') }}" class="logo" style="text-decoration: none; color: #6366f1; display: flex; align-items: center; gap: 10px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            <span>GenConnect</span>
+        </a>
+    </div>
+    <ul class="sidebar-nav">
+        <li><a href="{{ url_for('home') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a></li>
+        <li><a href="{{ url_for('activities_home') }}" class="active"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg><span>Explore Activities</span></a></li>
+        <li><a href="{{ url_for('create_activity') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>Create</span></a></li>
+        <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Notification</span></a></li>
+        <li><a href="{{ url_for('messages') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Messages</span></a></li>
+        <li><a href="{{ url_for('profile') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a></li>
+        <li style="margin-top: 20px; border-top: 1px solid #e5e7eb; list-style: none;"></li>
+        <li><a href="{{ url_for('logout') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></a></li>
+    </ul>
+</aside>
+
+    <main class="main-content">
+        <a href="{{ url_for('my_activities') }}" class="btn-back"><i class="bi bi-arrow-left"></i> Back to My Activities</a>
+        <div class="card-box">
+            <h2 class="fw-bold mb-4">Edit Activity</h2>
+            <div class="row">
+                <div class="col-12 form-group">
+                    <label>Activity Title</label>
+                    <input type="text" id="editTitle">
+                </div>
+                <div class="col-md-6 form-group">
+                    <label>Category</label>
+                    <select id="editCat">
+                        <option value="">-- Select Category --</option>
+                        <option value="Hobbies">🎨 Hobbies</option>
+                        <option value="Tech Help">💻 Tech Help</option>
+                        <option value="Outdoor">🏞️ Outdoor</option>
+                        <option value="Volunteer">🤝 Volunteer</option>
+                    </select>
+                </div>
+                <div class="col-md-6 form-group"><label>Location</label><input type="text" id="editLoc"></div>
+                <div class="col-md-6 form-group"><label>Date</label><input type="date" id="editDate"></div>
+                <div class="col-md-6 form-group"><label>Time</label><input type="text" id="editTime"></div>
+                <div class="col-12 form-group"><label>Description</label><textarea id="editDesc" rows="4"></textarea></div>
+            </div>
+            <div class="action-btns">
+                <button class="btn-custom btn-delete" onclick="goToDelete()">Delete Activity</button>
+                <button class="btn-custom btn-update" onclick="saveChanges()">Update Activity</button>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const index = params.get('index');
+    let activities = JSON.parse(localStorage.getItem('myCreatedActivities')) || [];
+
+    window.onload = function() {
+        if (index !== null && activities[index]) {
+            const a = activities[index];
+            document.getElementById('editTitle').value = a.title;
+            document.getElementById('editCat').value = a.cat;
+            document.getElementById('editLoc').value = a.loc;
+            document.getElementById('editDate').value = a.date;
+            document.getElementById('editTime').value = a.time;
+            document.getElementById('editDesc').value = a.desc || "";
+        } else {
+            alert("No activity selected!");
+            window.location.href = "{{ url_for('my_activities') }}";
+        }
+    };
+
+    function saveChanges() {
+        const selectedCat = document.getElementById('editCat').value;
+        if (!selectedCat) { alert("Please select a category"); return; }
+
+        activities[index] = {
+            title: document.getElementById('editTitle').value,
+            cat: selectedCat,
+            loc: document.getElementById('editLoc').value,
+            date: document.getElementById('editDate').value,
+            time: document.getElementById('editTime').value,
+            desc: document.getElementById('editDesc').value
+        };
+        localStorage.setItem('myCreatedActivities', JSON.stringify(activities));
+        // Redirecting to your group's confirmation route
+        window.location.href = "{{ url_for('activities_home') }}?updated=true";
+    }
+
+    function goToDelete() {
+        // Redirecting to your delete confirmation page
+        window.location.href = "{{ url_for('delete_confirmation') }}?index=" + index;
+    }
+</script>
+{% endblock %}
