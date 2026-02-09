@@ -6,7 +6,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-    /* --- RESET & BACKGROUND (MATCHING PROFILE.HTML) --- */
+    /* --- RESET & BACKGROUND --- */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
     body { 
@@ -17,7 +17,7 @@
         font-family: 'Outfit', -apple-system, sans-serif; color: #1e293b;
     }
 
-    /* --- SIDEBAR STYLES (MATCHING MESSAGES/PROFILE) --- */
+    /* --- SIDEBAR STYLES --- */
     .container { display: flex; min-height: 100vh; }
     
     .sidebar { 
@@ -48,6 +48,14 @@
     .page-header { margin-bottom: 30px; }
     .page-header h1 { font-size: 32px; font-weight: 800; color: #1e293b; margin-bottom: 5px; }
     .page-header p { color: #64748b; font-size: 16px; }
+    
+    /* Top Right Button */
+    .btn-back-profile {
+        display: flex; align-items: center; gap: 8px; padding: 12px 24px;
+        background: white; border: 1px solid #e2e8f0; border-radius: 12px;
+        color: #4f46e5; font-weight: 700; font-size: 14px; text-decoration: none;
+        transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
 
     /* --- LEVEL CARD (HERO) --- */
     .level-hero {
@@ -58,7 +66,6 @@
         position: relative; overflow: hidden;
     }
     
-    /* Decorative Background Shape */
     .level-hero::after {
         content: ''; position: absolute; right: -50px; bottom: -50px;
         width: 300px; height: 300px; border-radius: 50%;
@@ -70,7 +77,7 @@
     .current-label { font-size: 13px; font-weight: 700; color: #6366f1; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
     .level-title { font-size: 48px; font-weight: 800; color: #1e293b; line-height: 1; margin-bottom: 10px; }
     .xp-bar-container { width: 300px; height: 10px; background: #f1f5f9; border-radius: 10px; overflow: hidden; margin-top: 15px; }
-    .xp-bar-fill { height: 100%; background: #4f46e5; border-radius: 10px; width: 75%; /* Dynamic width */ }
+    .xp-bar-fill { height: 100%; background: #4f46e5; border-radius: 10px; width: 75%; }
     .xp-text { font-size: 14px; color: #64748b; margin-top: 8px; font-weight: 500; }
 
     .level-badge-large {
@@ -126,10 +133,125 @@
         .main-content { margin-left: 0; padding: 20px; }
         .sidebar { display: none; }
     }
+
+    /* --- ACCESSIBILITY: FONT SIZES (Ranking Specific) --- */
+    body.fs-Large .level-title { font-size: 56px !important; }
+    body.fs-Large .rank-name { font-size: 18px !important; }
+    body.fs-Large .rank-pts { font-size: 18px !important; }
+    body.fs-Large .badge-title { font-size: 14px !important; }
+
+    body.fs-X-Large .level-title { font-size: 64px !important; }
+    body.fs-X-Large .rank-name { font-size: 20px !important; }
+    body.fs-X-Large .rank-pts { font-size: 20px !important; }
+    body.fs-X-Large .badge-title { font-size: 16px !important; }
+
+    /* --- ULTIMATE HIGH CONTRAST (Rankings Black & Gold) --- */
+    body.high-contrast {
+        background-color: #000000 !important;
+        background-image: none !important;
+        color: #ffffff !important;
+    }
+
+    /* 1. CONTAINERS: Pitch Black with Gold Border */
+    body.high-contrast .level-hero,
+    body.high-contrast .card-panel,
+    body.high-contrast .sidebar,
+    body.high-contrast .btn-back-profile {
+        background: #000000 !important;
+        background-color: #000000 !important;
+        border: 1px solid #FFD700 !important;
+        box-shadow: none !important;
+        color: #ffffff !important;
+    }
+    
+    /* 2. LEVEL CARD SPECIFICS */
+    /* Remove the decorative circle background */
+    body.high-contrast .level-hero::after { display: none; }
+    
+    /* The big circle with the number */
+    body.high-contrast .level-badge-large {
+        background: #000000 !important;
+        border: 4px solid #FFD700 !important;
+        box-shadow: none !important;
+    }
+    
+    /* XP Bar - Turn Gold */
+    body.high-contrast .xp-bar-container { background: #333333 !important; }
+    body.high-contrast .xp-bar-fill { background: #FFD700 !important; }
+
+    /* 3. LEADERBOARD ROWS */
+    body.high-contrast .rank-row {
+        background: #000000 !important;
+        border-bottom: 1px solid #333333 !important;
+    }
+    body.high-contrast .rank-row:hover { background: #111111 !important; }
+    
+    /* 4. BADGES GRID */
+    body.high-contrast .badge-card {
+        background: #000000 !important;
+        border: 1px solid #FFD700 !important;
+    }
+    body.high-contrast .badge-locked {
+        background: #111111 !important;
+        border: 1px dashed #555 !important;
+        opacity: 0.5;
+    }
+
+    /* 5. TEXT COLORS */
+    /* Gold Text */
+    body.high-contrast h1, 
+    body.high-contrast .level-title,
+    body.high-contrast .current-label,
+    body.high-contrast .lvl-digit,
+    body.high-contrast .panel-header,
+    body.high-contrast .badge-title,
+    body.high-contrast .rank-pts,
+    body.high-contrast .rank-1,
+    body.high-contrast .rank-2,
+    body.high-contrast .rank-3 {
+        color: #FFD700 !important;
+    }
+    
+    /* White Text */
+    body.high-contrast p, 
+    body.high-contrast .xp-text,
+    body.high-contrast .lvl-txt,
+    body.high-contrast .rank-name,
+    body.high-contrast .rank-num {
+        color: #ffffff !important;
+    }
+    
+    /* 6. LINKS & SIDEBAR */
+    body.high-contrast a, 
+    body.high-contrast .sidebar-nav a {
+        color: #FFD700 !important;
+        text-decoration: none !important;
+    }
+    body.high-contrast a:hover {
+        text-decoration: underline !important;
+        color: #ffffff !important;
+    }
+    body.high-contrast .sidebar-nav a.active {
+        background-color: #FFD700 !important;
+        color: #000000 !important;
+    }
+    
+    /* 7. SVGs/Icons */
+    body.high-contrast svg {
+        stroke: #FFD700 !important;
+    }
+    body.high-contrast .panel-header svg {
+        stroke: #FFD700 !important;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
+<div id="user-settings" 
+     data-contrast="{{ 'true' if user.high_contrast else 'false' }}" 
+     data-fontsize="{{ user.font_size or 'Normal' }}"
+     style="display: none;"></div>
+
 <div class="container">
     <aside class="sidebar">
     <div class="sidebar-logo">
@@ -141,7 +263,7 @@
     <ul class="sidebar-nav">
         <li><a href="{{ url_for('home') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a></li>
         
-        <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg><span>Explore Activities</span></a></li>
+        <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg><span>Activities</span></a></li>
         
         <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Community</span></a></li>
         
@@ -165,17 +287,17 @@
         <div class="ranking-container">
             
             <div class="page-header">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <h1>Leaderboard & Badges</h1>
-                    <p>See where you stand in the community and track your achievements.</p>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1>Leaderboard & Badges</h1>
+                        <p>See where you stand in the community and track your achievements.</p>
+                    </div>
+                    <a href="{{ url_for('profile') }}" class="btn-back-profile">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        Back to Profile
+                    </a>
                 </div>
-                <a href="{{ url_for('profile') }}" class="btn-action btn-glass" style="text-decoration: none; display: flex; align-items: center; gap: 8px; padding: 20px 25px; border: 1px solid #e2e8f0; border-radius: 12px; font-weight: 600; color: #475569; background: white;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                    Back to Profile
-                </a>
             </div>
-        </div>
 
             <div class="level-hero">
                 <div class="level-info">
@@ -235,7 +357,7 @@
                             <div class="badge-title">Code Wizard</div>
                         </div>
                         <div class="badge-card badge-locked">
-                            <div class="badge-img">👑</div>
+                            <div class="badge-img">🦁</div>
                             <div class="badge-title">Legend</div>
                         </div>
                         <div class="badge-card badge-locked">
@@ -243,25 +365,42 @@
                             <div class="badge-title">100 Days</div>
                         </div>
                         <div class="badge-card badge-locked">
-                            <div class="badge-img">🗣️</div>
+                            <div class="badge-img">📢</div>
                             <div class="badge-title">Top Speaker</div>
                         </div>
                     </div>
                 </div>
-
             </div>
+
         </div>
-    </main>
+    </div>
+</main>
 </div>
 
 <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // 1. Get Settings from the hidden data div (No direct Jinja in JS)
+        const settingsDiv = document.getElementById('user-settings');
+        if (settingsDiv) {
+            const highContrast = settingsDiv.getAttribute('data-contrast');
+            const fontSize = settingsDiv.getAttribute('data-fontsize');
+
+            // Apply High Contrast
+            if (highContrast === 'true') {
+                document.body.classList.add('high-contrast');
+            }
+
+            // Apply Font Size
+            if (fontSize) {
+                document.body.classList.remove('fs-Normal', 'fs-Large', 'fs-X-Large');
+                document.body.classList.add('fs-' + fontSize);
+            }
+        }
+    });
+
+    // Toggle function for the sidebar button (Optional)
     function toggleSeniorMode() {
-        document.body.classList.toggle('senior-mode');
-        const isSenior = document.body.classList.contains('senior-mode');
-        localStorage.setItem('seniorMode', isSenior);
-    }
-    if(localStorage.getItem('seniorMode') === 'true') {
-        document.body.classList.add('senior-mode');
+        document.body.classList.toggle('high-contrast');
     }
 </script>
 {% endblock %}
