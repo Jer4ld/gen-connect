@@ -3,44 +3,142 @@
 {% block title %}Activity Deleted | GenConnect{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-    :root { 
-        --primary-blue: #2563eb; 
-        --bg-gray: #f8fafc; 
-        --sidebar-width: 250px; 
-        --success-green: #28a745; 
+    :root {
+        --primary-blue: #2563eb;
+        --bg-gray: #f8fafc;
+        --sidebar-width: 250px;
+        --success-green: #28a745;
     }
-    
-    body { font-family: 'Inter', sans-serif; background-color: var(--bg-gray); margin: 0; }
-    
+
+    body {
+        font-family: 'Outfit', -apple-system, sans-serif;
+        background-color: #f7f9fc;
+        margin: 0;
+        color: #1e293b;
+    }
+
+    /* --- Sidebar Styles (Seamless Match) --- */
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 250px;
+        height: 100vh;
+        background-color: white;
+        border-right: 1px solid #e5e7eb;
+        padding: 0;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sidebar-logo {
+        height: 72px;
+        display: flex;
+        align-items: center;
+        padding: 0 30px;
+        border-bottom: 1px solid #e5e7eb;
+        margin-right: -1px;
+        border-right: 1px solid white;
+        background-color: white;
+        position: relative;
+        z-index: 10;
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 20px;
+        font-weight: 600;
+        color: #6366f1;
+        text-decoration: none;
+    }
+
+    .sidebar-nav {
+        list-style: none;
+        padding: 20px 0;
+        overflow-y: auto;
+        flex: 1;
+        margin: 0;
+    }
+
+    .sidebar-nav li {
+        margin: 5px 0;
+        list-style: none;
+    }
+
+    .sidebar-nav a {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 12px 30px;
+        text-decoration: none;
+        color: #374151;
+        transition: all 0.2s;
+        font-size: 15px;
+        font-weight: 500;
+    }
+
+    .sidebar-nav a:hover {
+        background-color: #f9fafb;
+    }
+
+    .sidebar-nav a.active {
+        background-color: #eff6ff;
+        color: #2563eb;
+        border-right: 3px solid #2563eb;
+    }
+
+    .sidebar-nav svg {
+        width: 22px;
+        height: 22px;
+    }
+
     /* Content Adjustment for Group Sidebar */
-    .main-content { 
-        margin-left: var(--sidebar-width); 
-        padding: 40px 60px; 
-        text-align: center; 
+    .main-content {
+        margin-left: var(--sidebar-width);
+        padding: 40px 60px;
+        text-align: center;
         min-height: calc(100vh - 60px);
     }
 
-    /* Blue Pill Back Button */
-    .back-pill {
+    /* Senior-Friendly Back Button */
+    .back-btn {
         display: inline-flex;
         align-items: center;
-        gap: 12px;
-        background-color: var(--primary-blue);
-        color: white;
-        padding: 12px 30px;
-        border-radius: 15px; 
+        gap: 8px;
+        background-color: #eff6ff;
+        color: #2563eb;
+        border: 1px solid #bfdbfe;
+        border-radius: 10px;
+        padding: 8px 16px;
+        font-weight: 700;
+        font-size: 15px;
         text-decoration: none;
-        font-weight: 600;
-        font-size: 20px;
-        box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
-        transition: all 0.2s ease;
-        margin-bottom: 50px;
+        transition: all 0.2s;
+        margin-bottom: 30px;
     }
-    .back-pill:hover { background-color: #1d4ed8; color: white; transform: translateY(-1px); }
 
-    .page-header { font-size: 48px; font-weight: 800; color: #111827; margin-bottom: 40px; }
+    .back-btn:hover {
+        background-color: #dbeafe;
+        color: #1d4ed8;
+        transform: translateX(-3px);
+    }
+
+    .back-btn i {
+        font-size: 14px;
+    }
+
+    .page-header {
+        font-size: 48px;
+        font-weight: 800;
+        color: #111827;
+        margin-bottom: 40px;
+    }
 
     /* Green Success Banner - Preserving your design */
     .success-banner {
@@ -56,8 +154,13 @@
     }
 
     /* Action Buttons Styling */
-    .action-container { display: flex; flex-direction: column; align-items: center; gap: 20px; }
-    
+    .action-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+
     .btn-action {
         width: 320px;
         padding: 18px;
@@ -69,40 +172,87 @@
         transition: background 0.2s;
         text-align: center;
     }
-    
-    .btn-my-activities { background-color: #9ca3af; color: white; }
-    .btn-my-activities:hover { background-color: #838a95; }
-    
-    .btn-create { background-color: #f3f4f6; color: #1f2937; border: 1px solid #e5e7eb !important; }
-    .btn-create:hover { background-color: #e5e7eb; }
+
+    .btn-my-activities {
+        background-color: #9ca3af;
+        color: white;
+    }
+
+    .btn-my-activities:hover {
+        background-color: #838a95;
+    }
+
+    .btn-create {
+        background-color: #f3f4f6;
+        color: #1f2937;
+        border: 1px solid #e5e7eb !important;
+    }
+
+    .btn-create:hover {
+        background-color: #e5e7eb;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid p-0">
-   <aside class="sidebar">
-    <div class="sidebar-logo">
-        <a href="{{ url_for('home') }}" class="logo" style="text-decoration: none; color: #6366f1; display: flex; align-items: center; gap: 10px;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-            <span>GenConnect</span>
-        </a>
-    </div>
-    <ul class="sidebar-nav">
-        <li><a href="{{ url_for('home') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a></li>
-        <li><a href="{{ url_for('activities_home') }}" class="active"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg><span>Explore Activities</span></a></li>
-        <li><a href="{{ url_for('create_activity') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>Create</span></a></li>
-        <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Notification</span></a></li>
-        <li><a href="{{ url_for('messages') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Messages</span></a></li>
-        <li><a href="{{ url_for('profile') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a></li>
-        <li style="margin-top: 20px; border-top: 1px solid #e5e7eb; list-style: none;"></li>
-        <li><a href="{{ url_for('logout') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></a></li>
-    </ul>
-</aside>
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <a href="{{ url_for('home') }}" class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                    <path d="M2 17l10 5 10-5" />
+                    <path d="M2 12l10 5 10-5" />
+                </svg>
+                <span>GenConnect</span>
+            </a>
+        </div>
+        <ul class="sidebar-nav">
+            <li><a href="{{ url_for('home') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                        <polyline points="9 22 9 12 15 12 15 22" />
+                    </svg><span>Home</span></a></li>
+            <li><a href="{{ url_for('activities_home') }}" class="active"><svg width="22" height="22"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <circle cx="12" cy="10" r="3" />
+                        <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662" />
+                    </svg><span>Explore Activities</span></a></li>
+            <li><a href="{{ url_for('create_post') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="16" x2="12" y2="12" />
+                        <line x1="12" y1="8" x2="12.01" y2="8" />
+                    </svg><span>Create</span></a></li>
+            <li><a href="{{ url_for('notifications_page') }}"><svg width="22" height="22" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                    </svg><span>Notification</span></a></li>
+            <li><a href="{{ url_for('messages') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg><span>Messages</span></a></li>
+            <li><a href="{{ url_for('profile') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg><span>Profile</span></a></li>
+            <li style="margin-top: 20px; border-top: 1px solid #e5e7eb; list-style: none;"></li>
+            <li><a href="{{ url_for('logout') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg><span>Logout</span></a></li>
+        </ul>
+    </aside>
 
     <main class="main-content">
         <div style="text-align: left;">
-            <a href="{{ url_for('my_activities') }}" class="back-pill">
-                <i class="bi bi-arrow-left"></i> Back to My Activities
+            <a href="{{ url_for('my_activities') }}" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back to My Activities
             </a>
         </div>
 

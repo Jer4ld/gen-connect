@@ -3,73 +3,251 @@
 {% block title %}Edit Activity | GenConnect{% endblock %}
 
 {% block extra_css %}
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-    :root { --primary: #2563eb; --bg-gray: #f8fafc; --sidebar-width: 250px; }
-    body { font-family: 'Inter', sans-serif; background-color: var(--bg-gray); margin: 0; }
-    
+    :root {
+        --primary: #2563eb;
+        --bg-gray: #f8fafc;
+        --sidebar-width: 250px;
+    }
+
+    /* --- Sidebar Styles (Seamless Match) --- */
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 250px;
+        height: 100vh;
+        background-color: white;
+        border-right: 1px solid #e5e7eb;
+        padding: 0;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sidebar-logo {
+        height: 72px;
+        display: flex;
+        align-items: center;
+        padding: 0 30px;
+        border-bottom: 1px solid #e5e7eb;
+        margin-right: -1px;
+        border-right: 1px solid white;
+        background-color: white;
+        position: relative;
+        z-index: 10;
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 20px;
+        font-weight: 600;
+        color: #6366f1;
+        text-decoration: none;
+    }
+
+    .sidebar-nav {
+        list-style: none;
+        padding: 20px 0;
+        overflow-y: auto;
+        flex: 1;
+        margin: 0;
+    }
+
+    .sidebar-nav li {
+        margin: 5px 0;
+        list-style: none;
+    }
+
+    .sidebar-nav a {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 12px 30px;
+        text-decoration: none;
+        color: #374151;
+        transition: all 0.2s;
+        font-size: 15px;
+        font-weight: 500;
+    }
+
+    .sidebar-nav a:hover {
+        background-color: #f9fafb;
+    }
+
+    .sidebar-nav a.active {
+        background-color: #eff6ff;
+        color: #2563eb;
+        border-right: 3px solid #2563eb;
+    }
+
+    .sidebar-nav svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    body {
+        margin: 0;
+        font-family: 'Outfit', -apple-system, sans-serif;
+        background-color: #f7f9fc;
+        color: #1e293b;
+    }
+
     /* Content Adjustment for Group Sidebar */
-    .main-content { 
-        margin-left: var(--sidebar-width); 
-        padding: 30px 50px; 
-        width: calc(100% - var(--sidebar-width)); 
-        display: flex; 
-        flex-direction: column; 
-        align-items: center; 
+    .main-content {
+        margin-left: var(--sidebar-width);
+        padding: 30px 50px;
+        width: calc(100% - var(--sidebar-width));
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         min-height: calc(100vh - 60px);
     }
 
-    .btn-back { 
-        align-self: flex-start; 
-        background: var(--primary); 
-        color: white; 
-        border: none; 
-        padding: 8px 20px; 
-        border-radius: 12px; 
-        font-weight: 600; 
-        text-decoration: none; 
-        margin-bottom: 20px; 
-        display: flex; 
-        align-items: center; 
-        gap: 8px; 
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background-color: #eff6ff;
+        color: #2563eb;
+        border: 1px solid #bfdbfe;
+        border-radius: 10px;
+        padding: 8px 16px;
+        font-weight: 700;
+        font-size: 15px;
+        text-decoration: none;
+        transition: all 0.2s;
+        margin-bottom: 25px;
+        align-self: flex-start;
     }
-    .btn-back:hover { color: white; opacity: 0.9; }
 
-    .card-box { background: white; padding: 40px; border-radius: 15px; width: 100%; max-width: 800px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-    .form-group { margin-bottom: 20px; }
-    label { font-weight: 700; font-size: 14px; margin-bottom: 8px; display: block; }
-    input, select, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #d1d5db; }
-    .action-btns { display: flex; gap: 15px; margin-top: 30px; }
-    .btn-custom { flex: 1; padding: 14px; border-radius: 10px; font-weight: 700; border: none; color: white; cursor: pointer; }
-    .btn-update { background: #10b981; }
-    .btn-delete { background: #ef4444; }
+    .btn-back:hover {
+        background-color: #dbeafe;
+        color: #1d4ed8;
+        transform: translateX(-3px);
+    }
+
+    .btn-back i {
+        font-size: 14px;
+    }
+
+    .card-box {
+        background: white;
+        padding: 40px;
+        border-radius: 15px;
+        width: 100%;
+        max-width: 800px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    label {
+        font-weight: 700;
+        font-size: 14px;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    input,
+    select,
+    textarea {
+        width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        border: 1px solid #d1d5db;
+    }
+
+    .action-btns {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    .btn-custom {
+        flex: 1;
+        padding: 14px;
+        border-radius: 10px;
+        font-weight: 700;
+        border: none;
+        color: white;
+        cursor: pointer;
+    }
+
+    .btn-update {
+        background: #10b981;
+    }
+
+    .btn-delete {
+        background: #ef4444;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid p-0">
     <aside class="sidebar">
-    <div class="sidebar-logo">
-        <a href="{{ url_for('home') }}" class="logo" style="text-decoration: none; color: #6366f1; display: flex; align-items: center; gap: 10px;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-            <span>GenConnect</span>
-        </a>
-    </div>
-    <ul class="sidebar-nav">
-        <li><a href="{{ url_for('home') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a></li>
-        <li><a href="{{ url_for('activities_home') }}" class="active"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg><span>Explore Activities</span></a></li>
-        <li><a href="{{ url_for('create_activity') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>Create</span></a></li>
-        <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Notification</span></a></li>
-        <li><a href="{{ url_for('messages') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Messages</span></a></li>
-        <li><a href="{{ url_for('profile') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a></li>
-        <li style="margin-top: 20px; border-top: 1px solid #e5e7eb; list-style: none;"></li>
-        <li><a href="{{ url_for('logout') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></a></li>
-    </ul>
-</aside>
+        <div class="sidebar-logo">
+            <a href="{{ url_for('home') }}" class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                    <path d="M2 17l10 5 10-5" />
+                    <path d="M2 12l10 5 10-5" />
+                </svg>
+                <span>GenConnect</span>
+            </a>
+        </div>
+        <ul class="sidebar-nav">
+            <li><a href="{{ url_for('home') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                        <polyline points="9 22 9 12 15 12 15 22" />
+                    </svg><span>Home</span></a></li>
+            <li><a href="{{ url_for('activities_home') }}" class="active"><svg width="22" height="22"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <circle cx="12" cy="10" r="3" />
+                        <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662" />
+                    </svg><span>Explore Activities</span></a></li>
+            <li><a href="{{ url_for('create_post') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="16" x2="12" y2="12" />
+                        <line x1="12" y1="8" x2="12.01" y2="8" />
+                    </svg><span>Create</span></a></li>
+            <li><a href="{{ url_for('notifications_page') }}"><svg width="22" height="22" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                    </svg><span>Notification</span></a></li>
+            <li><a href="{{ url_for('messages') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg><span>Messages</span></a></li>
+            <li><a href="{{ url_for('profile') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg><span>Profile</span></a></li>
+            <li style="margin-top: 20px; border-top: 1px solid #e5e7eb; list-style: none;"></li>
+            <li><a href="{{ url_for('logout') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg><span>Logout</span></a></li>
+        </ul>
+    </aside>
 
     <main class="main-content">
-        <a href="{{ url_for('my_activities') }}" class="btn-back"><i class="bi bi-arrow-left"></i> Back to My Activities</a>
+        <a href="{{ url_for('my_activities') }}" class="btn-back"><i class="fas fa-arrow-left"></i> Back to My
+            Activities</a>
         <div class="card-box">
             <h2 class="fw-bold mb-4">Edit Activity</h2>
             <div class="row">
@@ -90,7 +268,15 @@
                 <div class="col-md-6 form-group"><label>Location</label><input type="text" id="editLoc"></div>
                 <div class="col-md-6 form-group"><label>Date</label><input type="date" id="editDate"></div>
                 <div class="col-md-6 form-group"><label>Time</label><input type="text" id="editTime"></div>
-                <div class="col-12 form-group"><label>Description</label><textarea id="editDesc" rows="4"></textarea></div>
+                <div class="col-md-6 form-group"><label>Quota Limit (Max Participants)</label><input type="number"
+                        id="editQuota" min="1"></div>
+                <div class="col-12 form-group"><label>Description</label><textarea id="editDesc" rows="4"></textarea>
+                </div>
+                <div class="col-12 form-group">
+                    <label>Special Instructions / Things to Note</label>
+                    <textarea id="editInstructions" rows="3"
+                        placeholder="E.g., Bring your own mat, heavy rain cancels, etc."></textarea>
+                </div>
             </div>
             <div class="action-btns">
                 <button class="btn-custom btn-delete" onclick="goToDelete()">Delete Activity</button>
@@ -107,15 +293,19 @@
     const index = params.get('index');
     let activities = JSON.parse(localStorage.getItem('myCreatedActivities')) || [];
 
-    window.onload = function() {
+    window.onload = function () {
         if (index !== null && activities[index]) {
             const a = activities[index];
             document.getElementById('editTitle').value = a.title;
-            document.getElementById('editCat').value = a.cat;
+            // Extract just the name if it has an emoji (e.g., "🎨 Hobbies" -> "Hobbies")
+            const catName = a.cat.includes(' ') ? a.cat.split(' ').slice(1).join(' ') : a.cat;
+            document.getElementById('editCat').value = catName;
             document.getElementById('editLoc').value = a.loc;
             document.getElementById('editDate').value = a.date;
             document.getElementById('editTime').value = a.time;
+            document.getElementById('editQuota').value = a.quota || 20;
             document.getElementById('editDesc').value = a.desc || "";
+            document.getElementById('editInstructions').value = a.instructions || "";
         } else {
             alert("No activity selected!");
             window.location.href = "{{ url_for('my_activities') }}";
@@ -123,25 +313,51 @@
     };
 
     function saveChanges() {
-        const selectedCat = document.getElementById('editCat').value;
-        if (!selectedCat) { alert("Please select a category"); return; }
+        const selectedCategory = document.getElementById('editCat').value;
+        if (!selectedCategory) { alert("Please select a category"); return; }
+
+        const title = document.getElementById('editTitle').value;
+        const date = document.getElementById('editDate').value;
+        const quota = parseInt(document.getElementById('editQuota').value) || 20;
+
+        const emojiMap = { "Hobbies": "🎨", "Tech Help": "💻", "Outdoor": "🏞️", "Volunteer": "🤝" };
+        const categoryWithEmoji = `${emojiMap[selectedCategory]} ${selectedCategory}`;
+
+        // Sync with activityStatus if title/date stays the same
+        const oldTitle = activities[index].title;
+        const oldDate = activities[index].date;
+        const activityStatus = JSON.parse(localStorage.getItem('activityStatus')) || {};
+        const oldKey = `${oldTitle}-${oldDate}`;
+        const newKey = `${title}-${date}`;
+
+        if (activityStatus[oldKey]) {
+            const status = activityStatus[oldKey];
+            status.quota = quota;
+            if (oldKey !== newKey) {
+                activityStatus[newKey] = status;
+                delete activityStatus[oldKey];
+            }
+            localStorage.setItem('activityStatus', JSON.stringify(activityStatus));
+        }
 
         activities[index] = {
-            title: document.getElementById('editTitle').value,
-            cat: selectedCat,
+            title: title,
+            cat: categoryWithEmoji,
             loc: document.getElementById('editLoc').value,
-            date: document.getElementById('editDate').value,
+            date: date,
             time: document.getElementById('editTime').value,
-            desc: document.getElementById('editDesc').value
+            quota: quota,
+            desc: document.getElementById('editDesc').value,
+            instructions: document.getElementById('editInstructions').value
         };
         localStorage.setItem('myCreatedActivities', JSON.stringify(activities));
         // Redirecting to your group's confirmation route
-        window.location.href = "{{ url_for('activities_home') }}?updated=true";
+        window.location.href = "{{ url_for('update_confirmation_page') }}?index=" + index;
     }
 
     function goToDelete() {
         // Redirecting to your delete confirmation page
-        window.location.href = "{{ url_for('delete_confirmation') }}?index=" + index;
+        window.location.href = "{{ url_for('delete_confirmation_page') }}?index=" + index;
     }
 </script>
 {% endblock %}
