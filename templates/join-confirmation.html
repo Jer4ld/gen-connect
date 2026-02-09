@@ -3,61 +3,243 @@
 {% block title %}Join Confirmation | GenConnect{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-    :root { 
-      --sidebar-width: 250px; 
-    }
-    
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background:#ffffff; margin:0; }
-    
-    /* Content Area Adjustment for Group Sidebar */
-    .main-content { 
-        flex:1; 
-        margin-left: var(--sidebar-width); 
-        padding: 60px; 
-        display: flex; 
-        flex-direction: column; 
-        align-items: center; 
-        justify-content: center; 
-        min-height: calc(100vh - 60px); 
-        background-color: #f8fafc; 
+    body {
+        margin: 0;
+        font-family: 'Outfit', -apple-system, sans-serif;
+        background-color: #f7f9fc;
+        color: #1e293b;
     }
 
-    .confirm-card { background: white; padding: 60px; border-radius: 25px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.05); max-width: 650px; width: 100%; border: 1px solid #e5e7eb; }
-    .success-icon { font-size: 90px; color: #10b981; margin-bottom: 25px; }
-    h2 { font-size: 42px; font-weight: 800; color: #1e293b; margin-bottom: 15px; }
-    .activity-name { font-weight: 700; color: #2563eb; font-size: 30px; display: block; margin: 20px 0; }
-    
-    .details-box { background: #f1f5f9; padding: 30px; border-radius: 20px; margin: 30px 0; text-align: left; }
-    .details-box p { margin-bottom: 15px; font-size: 20px; color: #475569; display: flex; align-items: center; gap: 15px; }
-    .details-box i { color: #2563eb; font-size: 24px; }
+    .layout {
+        display: flex;
+    }
 
-    .view-btn { background: #2563eb; color: white; border: none; padding: 20px 50px; border-radius: 15px; text-decoration: none; display: inline-block; font-size: 22px; font-weight: 700; transition: all 0.2s; }
-    .view-btn:hover { background: #1d4ed8; color: white; transform: translateY(-3px); }
+    /* --- Sidebar Styles (Seamless Match) --- */
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 250px;
+        height: 100vh;
+        background-color: white;
+        border-right: 1px solid #e5e7eb;
+        padding: 0;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sidebar-logo {
+        height: 72px;
+        display: flex;
+        align-items: center;
+        padding: 0 30px;
+        border-bottom: 1px solid #e5e7eb;
+        margin-right: -1px;
+        border-right: 1px solid white;
+        background-color: white;
+        position: relative;
+        z-index: 10;
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 20px;
+        font-weight: 600;
+        color: #6366f1;
+        text-decoration: none;
+    }
+
+    .sidebar-nav {
+        list-style: none;
+        padding: 20px 0;
+        overflow-y: auto;
+        flex: 1;
+        margin: 0;
+    }
+
+    .sidebar-nav li {
+        margin: 5px 0;
+        list-style: none;
+    }
+
+    .sidebar-nav a {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 12px 30px;
+        text-decoration: none;
+        color: #374151;
+        transition: all 0.2s;
+        font-size: 15px;
+        font-weight: 500;
+    }
+
+    .sidebar-nav a:hover {
+        background-color: #f9fafb;
+    }
+
+    .sidebar-nav a.active {
+        background-color: #eff6ff;
+        color: #2563eb;
+        border-right: 3px solid #2563eb;
+    }
+
+    .sidebar-nav svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    /* Content Area Adjustment */
+    .main-content {
+        flex: 1;
+        margin-left: 250px;
+        padding: 60px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background-color: #f8fafc;
+    }
+
+    .confirm-card {
+        background: white;
+        padding: 60px;
+        border-radius: 25px;
+        text-align: center;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+        max-width: 650px;
+        width: 100%;
+        border: 1px solid #e5e7eb;
+    }
+
+    .success-icon {
+        font-size: 90px;
+        color: #10b981;
+        margin-bottom: 25px;
+    }
+
+    h2 {
+        font-size: 42px;
+        font-weight: 800;
+        color: #1e293b;
+        margin-bottom: 15px;
+    }
+
+    .activity-name {
+        font-weight: 700;
+        color: #2563eb;
+        font-size: 30px;
+        display: block;
+        margin: 20px 0;
+    }
+
+    .details-box {
+        background: #f1f5f9;
+        padding: 30px;
+        border-radius: 20px;
+        margin: 30px 0;
+        text-align: left;
+    }
+
+    .details-box p {
+        margin-bottom: 15px;
+        font-size: 20px;
+        color: #475569;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .details-box i {
+        color: #2563eb;
+        font-size: 24px;
+    }
+
+    .view-btn {
+        background: #2563eb;
+        color: white;
+        border: none;
+        padding: 16px 40px;
+        border-radius: 50px;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 18px;
+        font-weight: 700;
+        transition: all 0.2s;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    }
+
+    .view-btn:hover {
+        background: #1d4ed8;
+        color: white;
+        transform: translateY(-3px);
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid p-0">
+<div class="layout">
     <aside class="sidebar">
-    <div class="sidebar-logo">
-        <a href="{{ url_for('home') }}" class="logo" style="text-decoration: none; color: #6366f1; display: flex; align-items: center; gap: 10px;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-            <span>GenConnect</span>
-        </a>
-    </div>
-    <ul class="sidebar-nav">
-        <li><a href="{{ url_for('home') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a></li>
-        <li><a href="{{ url_for('activities_home') }}" class="active"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg><span>Explore Activities</span></a></li>
-        <li><a href="{{ url_for('create_activity') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>Create</span></a></li>
-        <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Notification</span></a></li>
-        <li><a href="{{ url_for('messages') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Messages</span></a></li>
-        <li><a href="{{ url_for('profile') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a></li>
-        <li style="margin-top: 20px; border-top: 1px solid #e5e7eb; list-style: none;"></li>
-        <li><a href="{{ url_for('logout') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></a></li>
-    </ul>
-</aside>
+        <div class="sidebar-logo">
+            <a href="{{ url_for('home') }}" class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                    <path d="M2 17l10 5 10-5" />
+                    <path d="M2 12l10 5 10-5" />
+                </svg>
+                <span>GenConnect</span>
+            </a>
+        </div>
+        <ul class="sidebar-nav">
+            <li><a href="{{ url_for('home') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                        <polyline points="9 22 9 12 15 12 15 22" />
+                    </svg><span>Home</span></a></li>
+            <li><a href="{{ url_for('activities_home') }}" class="active"><svg width="22" height="22"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <circle cx="12" cy="10" r="3" />
+                        <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662" />
+                    </svg><span>Explore Activities</span></a></li>
+
+            <li><a href="{{ url_for('create_post') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="16" x2="12" y2="12" />
+                        <line x1="12" y1="8" x2="12.01" y2="8" />
+                    </svg><span>Create</span></a></li>
+
+            <li><a href="{{ url_for('notifications_page') }}"><svg width="22" height="22" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                    </svg><span>Notification</span></a></li>
+            <li><a href="{{ url_for('messages') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg><span>Messages</span></a></li>
+            <li><a href="{{ url_for('profile') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg><span>Profile</span></a></li>
+            <li style="margin-top: 20px; border-top: 1px solid #e5e7eb; list-style: none;"></li>
+            <li><a href="{{ url_for('logout') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg><span>Logout</span></a></li>
+        </ul>
+    </aside>
 
     <main class="main-content">
         <div class="confirm-card">
@@ -83,6 +265,8 @@
     const date = params.get('date') || "TBD";
     const loc = params.get('loc') || "Location";
     const time = params.get('time') || "TBD";
+    const cat = params.get('cat') || "General";
+    const desc = params.get('desc') || "No description provided.";
 
     document.getElementById('display-title').innerText = title;
     document.getElementById('display-date').innerText = date;
@@ -90,15 +274,23 @@
     document.getElementById('display-time').innerText = time;
 
     function saveToJoined() {
-        const activityData = { title, date, loc, time };
+        const activityData = { title, date, loc, time, cat, desc };
         let joined = JSON.parse(localStorage.getItem('joinedActivities')) || [];
-        
+
         // Check if already in list to avoid duplicates
         const exists = joined.some(a => a.title === title && a.date === date);
-        
+
         if (!exists) {
             joined.push(activityData);
             localStorage.setItem('joinedActivities', JSON.stringify(joined));
+
+            // Increment participant count in activityStatus
+            let status = JSON.parse(localStorage.getItem('activityStatus')) || {};
+            const key = `${title}-${date}`;
+            if (status[key]) {
+                status[key].participants += 1;
+                localStorage.setItem('activityStatus', JSON.stringify(status));
+            }
         }
     }
     window.onload = saveToJoined;

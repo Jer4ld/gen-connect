@@ -3,102 +3,729 @@
 {% block title %}My Activities | GenConnect{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-    :root { 
-      --sidebar-width: 250px; 
+    :root {
+        --sidebar-width: 250px;
+        --primary-blue: #2563eb;
     }
-    
-    body { font-family: Arial, sans-serif; background-color: #f7f9fc; margin: 0; }
-    
+
+    body {
+        margin: 0;
+        font-family: 'Outfit', -apple-system, sans-serif;
+        background-color: #f7f9fc;
+        color: #1e293b;
+    }
+
+    /* --- Sidebar Styles (Seamless Match) --- */
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 250px;
+        height: 100vh;
+        background-color: white;
+        border-right: 1px solid #e5e7eb;
+        padding: 0;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sidebar-logo {
+        height: 72px;
+        display: flex;
+        align-items: center;
+        padding: 0 30px;
+        border-bottom: 1px solid #e5e7eb;
+        margin-right: -1px;
+        border-right: 1px solid white;
+        background-color: white;
+        position: relative;
+        z-index: 10;
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 20px;
+        font-weight: 600;
+        color: #6366f1;
+        text-decoration: none;
+    }
+
+    .sidebar-nav {
+        list-style: none;
+        padding: 20px 0;
+        overflow-y: auto;
+        flex: 1;
+        margin: 0;
+    }
+
+    .sidebar-nav li {
+        margin: 5px 0;
+        list-style: none;
+    }
+
+    .sidebar-nav a {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 12px 30px;
+        text-decoration: none;
+        color: #374151;
+        transition: all 0.2s;
+        font-size: 15px;
+        font-weight: 500;
+    }
+
+    .sidebar-nav a:hover {
+        background-color: #f9fafb;
+    }
+
+    .sidebar-nav a.active {
+        background-color: #eff6ff;
+        color: #2563eb;
+        border-right: 3px solid #2563eb;
+    }
+
+    .sidebar-nav svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    /* ----------------------------- */
+
     /* Content Area Adjustment for Group Sidebar */
-    .main-content { 
-        flex: 1; 
-        margin-left: var(--sidebar-width); 
-        padding: 40px; 
+    .main-content {
+        flex: 1;
+        margin-left: var(--sidebar-width);
+        padding: 40px;
         min-height: calc(100vh - 60px);
     }
 
-    .back-btn { display: inline-flex; align-items: center; gap: 10px; background: #2563eb; color: #ffffff; border: none; border-radius: 12px; padding: 10px 20px; font-weight: bold; text-decoration: none; box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2); }
-    .back-btn:hover { color: white; opacity: 0.9; }
-    
-    .header-area { text-align: center; margin-bottom: 20px; }
-    h1 { font-size: 32px; font-weight: bold; color: #1f2937; }
-    
-    .search-container { max-width: 600px; margin: 0 auto 20px auto; display: flex; gap: 10px; }
-    .search-container input { border-radius: 25px; padding: 10px 20px; border: 1px solid #d1d5db; flex: 1; outline: none; }
-    .search-btn { background-color: #2563eb; color: white; border: none; border-radius: 25px; padding: 0 25px; font-weight: bold; cursor: pointer; }
-    
-    .toggle-buttons { text-align: center; margin-bottom: 30px; }
-    .toggle-buttons button { margin: 0 10px; padding: 10px 20px; font-weight: bold; border-radius: 12px; border: none; cursor: pointer; transition: 0.2s; }
-    .toggle-active { background-color: #2563eb; color: white; }
-    .toggle-inactive { background-color: #e5e7eb; color: #4b5563; }
-    
-    .activity-card { background: white; border-radius: 15px; margin-bottom: 30px; display: flex; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e5e7eb; min-height: 250px; }
-    .card-main-info { flex: 2; padding: 25px; }
-    .card-actions { flex: 0.8; background: #f8fafc; border-left: 1px solid #e5e7eb; display: flex; flex-direction: column; justify-content: center; padding: 20px; gap: 10px; }
-    
-    .category { color: #2563eb; font-weight: bold; font-size: 14px; text-transform: uppercase; margin-bottom: 5px; display: block; }
-    .card-main-info h2 { font-weight: bold; font-size: 24px; margin-bottom: 10px; color: #1f2937; }
-    .card-main-info p { margin: 4px 0; color: #4b5563; font-size: 15px; display: flex; align-items: center; gap: 8px; }
-    .card-desc { margin-top: 15px; font-style: italic; color: #6b7280; font-size: 15px; }
-    
-    .btn-action { border: none; padding: 10px; font-weight: bold; border-radius: 8px; text-align: center; text-decoration: none; display: block; width: 100%; transition: 0.2s; cursor:pointer; }
-    .btn-edit { background-color: #0ea5e9; color: white; }
-    .btn-delete { background-color: #ef4444; color: white; }
-    .empty-state { text-align: center; padding: 50px; background: white; border-radius: 15px; border: 2px dashed #ccc; }
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background-color: #eff6ff;
+        color: #2563eb;
+        border: 1px solid #bfdbfe;
+        border-radius: 10px;
+        padding: 8px 16px;
+        font-weight: 700;
+        font-size: 15px;
+        text-decoration: none;
+        transition: all 0.2s;
+        margin-bottom: 25px;
+    }
 
-    /* Custom Withdraw Modal */
-    #confirmModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:999; }
-    #confirmModalContent { background:white; padding:25px; border-radius:12px; min-width:300px; text-align:center; box-shadow:0 5px 15px rgba(0,0,0,0.3); }
+    .back-btn:hover {
+        background-color: #dbeafe;
+        color: #1d4ed8;
+        transform: translateX(-3px);
+    }
+
+    .back-btn i {
+        font-size: 14px;
+    }
+
+    .header-area {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    h1 {
+        font-size: 36px;
+        font-weight: 800;
+        color: #1e293b;
+        letter-spacing: -0.02em;
+        margin-bottom: 5px;
+    }
+
+    /* --- Quota & Status Styles --- */
+    .quota-info {
+        margin-top: 15px;
+    }
+
+    .quota-progress-container {
+        width: 100%;
+        height: 10px;
+        background: #e2e8f0;
+        border-radius: 5px;
+        overflow: hidden;
+        margin-top: 4px;
+    }
+
+    .quota-progress-bar {
+        height: 100%;
+        transition: width 0.5s ease;
+        border-radius: 5px;
+    }
+
+    .progress-green {
+        background: linear-gradient(90deg, #10b981, #34d399);
+    }
+
+    .progress-yellow {
+        background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    }
+
+    .progress-red {
+        background: linear-gradient(90deg, #ef4444, #f87171);
+    }
+
+    .status-label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: 800;
+        display: inline-block;
+        margin-bottom: 4px;
+    }
+
+    .label-trending {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .label-fast {
+        background: #fef9c3;
+        color: #854d0e;
+    }
+
+    .label-almost {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .quota-text {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 14px;
+        color: #4b5563;
+        margin-bottom: 5px;
+    }
+
+    .quota-text i {
+        color: var(--primary-blue);
+        margin-right: 5px;
+    }
+
+    .social-proof {
+        font-size: 12px;
+        color: #64748b;
+        font-weight: 500;
+        font-style: italic;
+    }
+
+    .search-container {
+        max-width: 650px;
+        margin: 0 auto 40px auto;
+        display: flex;
+        gap: 12px;
+        position: relative;
+    }
+
+    .search-container input {
+        border-radius: 50px;
+        padding: 18px 30px;
+        border: 2px solid #e2e8f0;
+        flex: 1;
+        outline: none;
+        font-size: 18px;
+        /* Larger text for seniors */
+        color: #334155;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+
+    .search-container input:focus {
+        border-color: var(--primary-blue);
+        box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .search-btn {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 0 35px;
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 18px;
+        box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .search-btn:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 15px 30px -5px rgba(37, 99, 235, 0.5);
+        background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    }
+
+    .search-btn:active {
+        transform: translateY(-1px);
+        box-shadow: 0 5px 10px -3px rgba(37, 99, 235, 0.4);
+    }
+
+    .toggle-buttons {
+        text-align: center;
+        margin-bottom: 40px;
+        display: flex;
+        justify-content: center;
+        background: #f1f5f9;
+        padding: 6px;
+        border-radius: 16px;
+        width: fit-content;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .toggle-buttons button {
+        margin: 0;
+        padding: 12px 30px;
+        font-weight: 700;
+        border-radius: 12px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 16px;
+        color: #64748b;
+        background: transparent;
+    }
+
+    .toggle-active {
+        background-color: white !important;
+        color: var(--primary-blue) !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        transform: scale(1.05);
+    }
+
+    .toggle-inactive:hover {
+        background-color: #e2e8f0;
+        color: #475569;
+    }
+
+    .activity-card {
+        background: white;
+        border-radius: 24px;
+        margin-bottom: 35px;
+        display: flex;
+        overflow: hidden;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+        border: 1px solid rgba(226, 232, 240, 0.6);
+        /* Very subtle border */
+        min-height: 260px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .activity-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 35px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        border-color: rgba(37, 99, 235, 0.2);
+    }
+
+    .card-main-info {
+        flex: 2;
+        padding: 35px;
+    }
+
+    .card-actions {
+        flex: 0.8;
+        background: #f8fafc;
+        border-left: 1px solid #e5e7eb;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 20px;
+        gap: 10px;
+    }
+
+    .category {
+        color: var(--primary-blue);
+        font-weight: bold;
+        font-size: 14px;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    .card-main-info h2 {
+        font-weight: 800;
+        font-size: 28px;
+        /* Larger for seniors */
+        margin-bottom: 12px;
+        color: #1e293b;
+        letter-spacing: -0.01em;
+        line-height: 1.2;
+    }
+
+    .card-main-info p {
+        margin: 8px 0;
+        color: #475569;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 500;
+    }
+
+    .card-desc {
+        margin-top: 15px;
+        font-style: italic;
+        color: #6b7280;
+        font-size: 15px;
+    }
+
+    .btn-action {
+        border: none;
+        padding: 10px;
+        font-weight: bold;
+        border-radius: 8px;
+        text-align: center;
+        text-decoration: none;
+        display: block;
+        width: 100%;
+        transition: 0.2s;
+        cursor: pointer;
+    }
+
+    .btn-edit {
+        background-color: #0ea5e9;
+        color: white;
+    }
+
+    .btn-delete {
+        background-color: #ef4444;
+        color: white;
+    }
+
+    .empty-state {
+        display: none !important;
+    }
+
+    #noResultsMessage {
+        padding: 80px 40px;
+        text-align: center;
+        background: white;
+        border-radius: 24px;
+        border: 2px dashed #cbd5e1;
+        margin: 60px auto;
+        max-width: 500px;
+        color: #64748b;
+        display: none;
+        /* Hidden by default */
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    #noResultsMessage i {
+        font-size: 72px;
+        color: #94a3b8;
+        margin-bottom: 10px;
+        opacity: 0.8;
+    }
+
+    #noResultsMessage h4 {
+        margin: 0;
+        color: #334155;
+        font-weight: 800;
+        font-size: 22px;
+        letter-spacing: -0.01em;
+    }
+
+    #noResultsMessage p {
+        margin: 0;
+        font-size: 16px;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    #confirmModal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    #confirmModalContent {
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        border: 1px solid #f1f5f9;
+    }
+
+    #confirmModalContent p {
+        font-size: 18px;
+        color: #1e293b;
+        font-weight: 600;
+        margin-bottom: 30px;
+        line-height: 1.5;
+    }
+
+    .modal-btn {
+        flex: 1;
+        padding: 12px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+    }
+
+    .btn-stay {
+        background-color: #f1f5f9;
+        color: #475569;
+    }
+
+    .btn-stay:hover {
+        background-color: #e2e8f0;
+    }
+
+    .btn-withdraw-confirm {
+        background-color: #ef4444;
+        color: white;
+    }
+
+    .btn-withdraw-confirm:hover {
+        background-color: #dc2626;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
+    /* Page-level Reminder Banner */
+    #upcoming-reminders-container {
+        display: none;
+        /* Hidden by default */
+        margin-top: 20px;
+        margin-bottom: 30px;
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        border: 1px solid #60a5fa;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.1);
+    }
+
+    .reminder-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        color: #1e40af;
+    }
+
+    .reminder-header i {
+        font-size: 28px;
+        color: #2563eb;
+    }
+
+    .reminder-header h4 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+    }
+
+    .reminder-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .reminder-card {
+        background: white;
+        border-radius: 14px;
+        padding: 18px;
+        border: 1px solid rgba(37, 99, 235, 0.2);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .reminder-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+        border-color: #2563eb;
+    }
+
+    .reminder-main-info h5 {
+        margin: 0 0 6px 0;
+        font-size: 17px;
+        color: #1e293b;
+        font-weight: 800;
+    }
+
+    .reminder-sub-info {
+        display: flex;
+        gap: 18px;
+        font-size: 14px;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    .reminder-sub-info span {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .reminder-sub-info i {
+        color: #2563eb;
+        font-size: 16px;
+    }
+
+    .reminder-invitation {
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px dashed #93c5fd;
+        text-align: center;
+        font-size: 15px;
+        color: #1e3a8a;
+        font-weight: 700;
+        font-style: italic;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid p-0">
     <aside class="sidebar">
-    <div class="sidebar-logo">
-        <a href="{{ url_for('home') }}" class="logo" style="text-decoration: none; color: #6366f1; display: flex; align-items: center; gap: 10px;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-            <span>GenConnect</span>
-        </a>
-    </div>
-    <ul class="sidebar-nav">
-        <li><a href="{{ url_for('home') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a></li>
-        <li><a href="{{ url_for('activities_home') }}" class="active"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg><span>Explore Activities</span></a></li>
-        <li><a href="{{ url_for('create_post') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>Create</span></a></li>
-        <li><a href="{{ url_for('notifications_page') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Notification</span></a></li>
-        <li><a href="{{ url_for('messages') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Messages</span></a></li>
-        <li><a href="{{ url_for('profile') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a></li>
-        <li style="margin-top: 20px; border-top: 1px solid #e5e7eb; list-style: none;"></li>
-        <li><a href="{{ url_for('logout') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></a></li>
-    </ul>
-</aside>
+        <div class="sidebar-logo">
+            <a href="{{ url_for('home') }}" class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                    <path d="M2 17l10 5 10-5" />
+                    <path d="M2 12l10 5 10-5" />
+                </svg>
+                <span>GenConnect</span>
+            </a>
+        </div>
+        <ul class="sidebar-nav">
+            <li><a href="{{ url_for('home') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                        <polyline points="9 22 9 12 15 12 15 22" />
+                    </svg><span>Home</span></a></li>
+            <li><a href="{{ url_for('activities_home') }}" class="active"><svg width="22" height="22"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <circle cx="12" cy="10" r="3" />
+                        <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662" />
+                    </svg><span>Explore Activities</span></a></li>
+            <li><a href="{{ url_for('create_post') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="16" x2="12" y2="12" />
+                        <line x1="12" y1="8" x2="12.01" y2="8" />
+                    </svg><span>Create</span></a></li>
+            <li><a href="{{ url_for('notifications_page') }}"><svg width="22" height="22" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                    </svg><span>Notification</span></a></li>
+            <li><a href="{{ url_for('messages') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg><span>Messages</span></a></li>
+            <li><a href="{{ url_for('profile') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg><span>Profile</span></a></li>
+            <li style="margin-top: 20px; border-top: 1px solid #e5e7eb; list-style: none;"></li>
+            <li><a href="{{ url_for('logout') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg><span>Logout</span></a></li>
+        </ul>
+    </aside>
 
     <main class="main-content">
-        <a href="{{ url_for('activities_home') }}" class="back-btn"><i class="bi bi-arrow-left"></i> Back to Activities</a>
-        <div class="header-area"><h1>My Activities</h1></div>
-        
+        <a href="{{ url_for('activities_home') }}" class="back-btn"><i class="fas fa-arrow-left"></i> Back to
+            Activities</a>
+        <div class="header-area">
+            <h1>My Activities</h1>
+        </div>
+
+        <!-- Upcoming Reminders Banner -->
+        <div id="upcoming-reminders-container">
+            <div class="reminder-header">
+                <i class="bi bi-bell-fill"></i>
+                <h4>Upcoming Reminders</h4>
+            </div>
+            <div id="reminder-list" class="reminder-list">
+                <!-- Reminders populated via JS -->
+            </div>
+            <div class="reminder-invitation">
+                Your neighbors are looking forward to seeing you!
+            </div>
+        </div>
+
         <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Search your activities...">
+            <input type="text" id="searchInput" placeholder="Search your activities..." oninput="searchActivities()">
             <button class="search-btn" onclick="searchActivities()">Search</button>
         </div>
-        
+
         <div class="toggle-buttons">
-            <button id="createdBtn" class="toggle-active" onclick="toggleActivities('created')">My Created Activities</button>
-            <button id="joinedBtn" class="toggle-inactive" onclick="toggleActivities('joined')">Joined Activities</button>
+            <button id="createdBtn" class="toggle-active" onclick="toggleActivities('created')">My Created
+                Activities</button>
+            <button id="joinedBtn" class="toggle-inactive" onclick="toggleActivities('joined')">Joined
+                Activities</button>
         </div>
-        
+
         <div id="activities-list"></div>
+
+        <div id="noResultsMessage">
+            <i class="bi bi-search"></i>
+            <h4>No personal activities found</h4>
+            <p>You haven't created or joined any activities that match this search. Try searching for something else!
+            </p>
+        </div>
     </main>
 </div>
 
 <div id="confirmModal">
     <div id="confirmModalContent">
         <p>Are you sure you want to withdraw from this activity?</p>
-        <div style="display:flex; justify-content:center; gap:20px;">
-            <button id="confirmYes" style="background:#ef4444; color:white; padding:10px 20px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Yes</button>
-            <button id="confirmNo" style="background:#e5e7eb; color:#4b5563; padding:10px 20px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">No</button>
+        <div style="display:flex; justify-content:center; gap:15px;">
+            <button id="confirmNo" class="modal-btn btn-stay">Stay</button>
+            <button id="confirmYes" class="modal-btn btn-withdraw-confirm">Withdraw</button>
         </div>
     </div>
 </div>
@@ -106,41 +733,135 @@
 
 {% block extra_js %}
 <script>
-let currentView = 'created';
-let withdrawIndex = null;
-let lastSearch = '';
+    let currentView = 'created';
+    let withdrawIndex = null;
+    let lastSearch = '';
 
-// URLs for navigation - generated by Flask
-const editUrlBase = "{{ url_for('edit_activity') }}";
-const deleteUrlBase = "{{ url_for('delete_confirmation') }}";
+    // Use client-side edit/delete pages (they read `index` from query string)
+    const editUrlBase = "{{ url_for('edit_activity_page') }}";
+    const deleteUrlBase = "{{ url_for('delete_confirmation_page') }}";
 
-function getActivities() {
-    const created = JSON.parse(localStorage.getItem('myCreatedActivities')) || [];
-    const joined = JSON.parse(localStorage.getItem('joinedActivities')) || [];
-    return currentView === 'created' ? created : joined;
-}
+    function getActivities() {
+        const created = JSON.parse(localStorage.getItem('myCreatedActivities')) || [];
+        const joined = JSON.parse(localStorage.getItem('joinedActivities')) || [];
 
-function renderActivities() {
-    const list = document.getElementById('activities-list');
-    const filter = lastSearch.toLowerCase();
-    const data = getActivities();
+        // Map to preserve original indices and origin
+        const createdMapped = created.map((act, index) => ({ ...act, _origin: 'created', _index: index }));
+        const joinedMapped = joined.map((act, index) => ({ ...act, _origin: 'joined', _index: index }));
 
-    const filteredData = data.filter(act => (act.title || '').toLowerCase().includes(filter));
+        // One-time demo initialization
+        if (!localStorage.getItem('demoInitialized_v2')) {
+            const demoActs = [
+                {
+                    title: "Community Gardening",
+                    cat: "Outdoor",
+                    date: "10 Feb 2026",
+                    time: "10:00 AM – 12:00 PM",
+                    loc: "Community Garden",
+                    desc: "Join your neighbors for a community gardening session.",
+                    quota: 20
+                },
+                {
+                    title: "Tablet Basics",
+                    cat: "Tech Help",
+                    date: "11 Feb 2026",
+                    time: "2:00 PM – 4:00 PM",
+                    loc: "Learning Center",
+                    desc: "Learn how to use your tablet for video calls and entertainment.",
+                    quota: 15
+                },
+                {
+                    title: "Verification Neighborhood Breakfast (Tomorrow)",
+                    cat: "Social",
+                    date: "10 Feb 2026",
+                    time: "9:00 AM – 10:30 AM",
+                    loc: "Central Clubhouse",
+                    desc: "Join your neighbors for a friendly breakfast and chat.",
+                    quota: 30
+                }
+            ];
+            // Merge avoiding duplicates
+            demoActs.forEach(act => {
+                if (!joined.some(j => j.title === act.title)) {
+                    joined.push(act);
+                }
+            });
+            localStorage.setItem('joinedActivities', JSON.stringify(joined));
+            localStorage.setItem('demoInitialized_v2', 'true');
+        }
 
-    if (!filteredData.length) {
-        list.innerHTML = `<div class="empty-state">No activities found.</div>`;
-        return;
+        // If searching, we still only return the checking view list to keep them separate.
+        // The filter will be applied in renderActivities.
+        return currentView === 'created' ? createdMapped : joinedMapped;
     }
 
-    list.innerHTML = filteredData.map((act, i) => {
-        const title = act.title || "Untitled Activity";
-        const cat = act.cat || "General";
-        const date = act.date || "Date TBD";
-        const time = act.time || "Time TBD";
-        const loc = act.loc || "Location TBD";
-        const desc = act.desc || "No description provided.";
-        
-        return `
+    function renderActivities() {
+        const list = document.getElementById('activities-list');
+        const filter = lastSearch.toLowerCase();
+        const data = getActivities();
+
+        const filteredData = data.filter(act => {
+            if (!filter) return true;
+            const term = filter;
+            const title = (act.title || '').toLowerCase();
+            const desc = (act.desc || '').toLowerCase();
+            const loc = (act.loc || '').toLowerCase();
+            const cat = (act.cat || '').toLowerCase();
+            return title.includes(term) || desc.includes(term) || loc.includes(term) || cat.includes(term);
+        });
+
+        // Toggle button visual state -- Removed because search is now per-tab
+        // We always want the correct tab to be active
+        document.getElementById('createdBtn').className = currentView === 'created' ? 'toggle-active' : 'toggle-inactive';
+        document.getElementById('joinedBtn').className = currentView === 'joined' ? 'toggle-active' : 'toggle-inactive';
+
+        if (!filteredData.length) {
+            list.style.display = 'none';
+            document.getElementById('noResultsMessage').style.display = 'flex';
+            // Update message based on context
+            const msgTitle = document.getElementById('noResultsMessage').querySelector('h4');
+            msgTitle.textContent = lastSearch.length > 0 ? `No matches for "${lastSearch}"` : "No personal activities found";
+            return;
+        }
+
+        list.style.display = 'block';
+        document.getElementById('noResultsMessage').style.display = 'none';
+
+        list.innerHTML = filteredData.map((act) => {
+            const title = act.title || "Untitled Activity";
+            const cat = act.cat || "General";
+            const date = act.date || "Date TBD";
+            const time = act.time || "Time TBD";
+            const loc = act.loc || "Location TBD";
+            const desc = act.desc || "No description provided.";
+            const isCreated = act._origin === 'created';
+            const realIndex = act._index;
+
+            // Quota Calculation Logic
+            const activityStatus = JSON.parse(localStorage.getItem('activityStatus')) || {};
+            const activityKey = `${title}-${date}`;
+
+            // Default values if status missing
+            let status = activityStatus[activityKey];
+            if (!status) {
+                status = { participants: 0, quota: act.quota || 20 };
+            }
+
+            const ratio = (status.participants / status.quota) * 100;
+            let barColor = 'progress-green';
+            let statusLabel = '';
+
+            if (ratio >= 90) {
+                barColor = 'progress-red';
+                statusLabel = '<span class="status-label label-almost">Almost Full!</span>';
+            } else if (ratio >= 60) {
+                barColor = 'progress-yellow';
+                statusLabel = '<span class="status-label label-fast">Filling Fast!</span>';
+            } else if (status.participants > 0) {
+                statusLabel = '<span class="status-label label-trending">Popular Choice!</span>';
+            }
+
+            return `
             <div class="activity-card">
                 <div class="card-main-info">
                     <span class="category">${cat}</span>
@@ -148,54 +869,124 @@ function renderActivities() {
                     <p><i class="bi bi-calendar3"></i> ${date}</p>
                     <p><i class="bi bi-clock"></i> ${time}</p>
                     <p><i class="bi bi-geo-alt"></i> ${loc}</p>
+                    
+                    <div class="quota-info">
+                        <div class="quota-text">
+                            <span><i class="bi bi-people-fill"></i> Slots Available</span>
+                            <span class="social-proof">${status.participants} / ${status.quota} Joined</span>
+                        </div>
+                        ${statusLabel}
+                        <div class="quota-progress-container">
+                            <div class="quota-progress-bar ${barColor}" style="width: ${ratio}%"></div>
+                        </div>
+                    </div>
+
                     <div class="card-desc">${desc}</div>
                 </div>
                 <div class="card-actions">
-                    ${currentView === 'created' 
-                        ? `<a href="${editUrlBase}?index=${i}" class="btn-action btn-edit">Edit</a>
-                           <a href="${deleteUrlBase}?index=${i}" class="btn-action btn-delete">Delete</a>`
-                        : `<button class="btn-action btn-delete" onclick="withdrawActivity(${i})">Withdraw</button>`}
+                    ${isCreated
+                    ? `<a href="${editUrlBase}?index=${realIndex}" class="btn-action btn-edit">Edit</a>
+                           <a href="${deleteUrlBase}?index=${realIndex}" class="btn-action btn-delete">Delete</a>`
+                    : `<button class="btn-action btn-delete" onclick="withdrawActivity(${realIndex})">Withdraw</button>`}
                 </div>
             </div>
         `;
-    }).join('');
-}
-
-function toggleActivities(view) {
-    currentView = view;
-    document.getElementById('createdBtn').className = view === 'created' ? 'toggle-active' : 'toggle-inactive';
-    document.getElementById('joinedBtn').className = view === 'joined' ? 'toggle-active' : 'toggle-inactive';
-    lastSearch = ''; 
-    document.getElementById('searchInput').value = '';
-    renderActivities();
-}
-
-function searchActivities() {
-    lastSearch = document.getElementById('searchInput').value.trim();
-    renderActivities();
-}
-
-function withdrawActivity(index) {
-    withdrawIndex = index;
-    document.getElementById('confirmModal').style.display = 'flex';
-}
-
-document.getElementById('confirmYes').addEventListener('click', () => {
-    const joined = JSON.parse(localStorage.getItem('joinedActivities')) || [];
-    if (withdrawIndex !== null) {
-        joined.splice(withdrawIndex, 1);
-        localStorage.setItem('joinedActivities', JSON.stringify(joined));
-        renderActivities();
-        withdrawIndex = null;
+        }).join('');
     }
-    document.getElementById('confirmModal').style.display = 'none';
-});
 
-document.getElementById('confirmNo').addEventListener('click', () => {
-    withdrawIndex = null;
-    document.getElementById('confirmModal').style.display = 'none';
-});
+    function toggleActivities(view) {
+        currentView = view;
+        // Optionally clear search when switching tabs to avoid confusion
+        // or keep it to allow searching the same term in the other tab.
+        // User request implies "search works separately", so clearing it feels cleaner.
+        lastSearch = '';
+        document.getElementById('searchInput').value = '';
+        renderActivities();
+    }
 
-window.onload = renderActivities;
+    function searchActivities() {
+        lastSearch = document.getElementById('searchInput').value.trim();
+        renderActivities();
+    }
+
+    function withdrawActivity(index) {
+        withdrawIndex = index;
+        document.getElementById('confirmModal').style.display = 'flex';
+    }
+
+    document.getElementById('confirmYes').addEventListener('click', () => {
+        const joined = JSON.parse(localStorage.getItem('joinedActivities')) || [];
+        if (withdrawIndex !== null) {
+            joined.splice(withdrawIndex, 1);
+            localStorage.setItem('joinedActivities', JSON.stringify(joined));
+            renderActivities();
+            withdrawIndex = null;
+        }
+        document.getElementById('confirmModal').style.display = 'none';
+    });
+
+    document.getElementById('confirmNo').addEventListener('click', () => {
+        withdrawIndex = null;
+        document.getElementById('confirmModal').style.display = 'none';
+    });
+
+    function checkUpcomingActivities() {
+        const joinedActivities = JSON.parse(localStorage.getItem('joinedActivities')) || [];
+        const now = new Date();
+        const upcoming = [];
+
+        joinedActivities.forEach(act => {
+            const actDateParts = act.date.split(' ');
+            if (actDateParts.length === 3) {
+                const day = parseInt(actDateParts[0]);
+                const monthName = actDateParts[1];
+                const year = parseInt(actDateParts[2]);
+
+                const months = {
+                    'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+                    'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+                };
+
+                const actDateTime = new Date(year, months[monthName], day);
+                const diffTime = actDateTime - now;
+                const diffDays = diffTime / (1000 * 60 * 60 * 24);
+
+                if (diffDays >= -0.5 && diffDays <= 2.5) {
+                    upcoming.push(act);
+                }
+            }
+        });
+
+
+
+        const container = document.getElementById('upcoming-reminders-container');
+        const list = document.getElementById('reminder-list');
+
+        if (upcoming.length > 0) {
+            container.style.display = 'block';
+            list.innerHTML = '';
+            upcoming.forEach(act => {
+                const card = document.createElement('div');
+                card.className = 'reminder-card';
+                card.innerHTML = `
+                    <div class="reminder-main-info">
+                        <h5>${act.title}</h5>
+                        <div class="reminder-sub-info">
+                            <span><i class="bi bi-clock-fill"></i> ${act.time}</span>
+                            <span><i class="bi bi-geo-alt-fill"></i> ${act.loc}</span>
+                        </div>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        } else {
+            container.style.display = 'none';
+        }
+    }
+
+    window.onload = function () {
+        renderActivities();
+        checkUpcomingActivities();
+    };
 </script>
 {% endblock %}
