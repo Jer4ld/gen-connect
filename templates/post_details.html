@@ -250,16 +250,33 @@
                     </div>
                     {% endif %}
                     <div class="post-footer">
-                        <div class="d-flex gap-4">
-                            <a href="{{ url_for('like_post', post_id=post.id) }}" class="text-decoration-none text-muted">
-                                {% if post.user_has_liked(current_user.id) %}
-                                    <i class="fas fa-thumbs-up text-primary"></i> <span class="text-primary">{{ post.likes|length }}</span>
-                                {% else %}
-                                    <i class="far fa-thumbs-up"></i> {{ post.likes|length }}
-                                {% endif %}
-                            </a>
+                        <div class="d-flex gap-4 align-items-center">
+                            <button class="btn p-0 border-0 bg-transparent text-muted" onclick="toggleLike(this, '{{ post.id }}')" style="font-size: 16px;">
+                                <i class="{{ 'fas fa-thumbs-up text-primary' if post.user_has_liked(current_user.id) else 'far fa-thumbs-up' }}" id="like-icon-{{ post.id }}"></i> 
+                                <span id="like-count-{{ post.id }}" class="{{ 'text-primary' if post.user_has_liked(current_user.id) else '' }}">
+                                    {{ post.likes|length }}
+                                </span>
+                            </button>
+
                             <span class="text-muted"><i class="far fa-comment-alt"></i> {{ post.comments|length }}</span>
-                            <span class="text-muted"><i class="fas fa-share"></i> Share</span>
+
+                            <div class="dropdown d-inline">
+                                <span class="text-muted" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-share"></i> Share
+                                </span>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" href="#" 
+                                        data-link="{{ url_for('post_details', post_id=post.id, _external=True) }}"
+                                        onclick="navigator.clipboard.writeText(this.dataset.link).then(() => { alert('Link copied!'); }); return false;">
+                                            <i class="fas fa-link me-2"></i> Copy Link
+                                        </a>
+                                    </li>
+                                    <li><a class="dropdown-item" href="#"><i class="fab fa-twitter me-2"></i> Share to Twitter</a></li>
+                                    <li><a class="dropdown-item" href="#"><i class="fab fa-facebook me-2"></i> Share to Facebook</a></li>
+                                    <li><a class="dropdown-item" href="#"><i class="fab fa-whatsapp me-2"></i> Share to WhatsApp</a></li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -520,6 +537,40 @@
         } else {
             textDiv.style.display = "none";
             form.style.display = "block";
+        }
+    }
+
+    // Toggle Like Function (AJAX)
+    async function toggleLike(btn, postId) {
+        try {
+            const response = await fetch(`/like_post/${postId}`, { 
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            
+            if (response.status === 401) {
+                window.location.href = "{{ url_for('login') }}";
+                return;
+            }
+
+            const data = await response.json();
+            
+            // Get elements
+            const icon = document.getElementById(`like-icon-${postId}`);
+            const count = document.getElementById(`like-count-${postId}`);
+            
+            // Update UI
+            if (data.liked) {
+                icon.className = 'fas fa-thumbs-up text-primary';
+                count.className = 'text-primary';
+            } else {
+                icon.className = 'far fa-thumbs-up';
+                count.className = '';
+            }
+            count.innerText = data.new_count;
+
+        } catch (error) {
+            console.error('Error liking post:', error);
         }
     }
 </script>

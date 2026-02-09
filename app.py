@@ -14,7 +14,6 @@ from sqlalchemy.exc import IntegrityError
 import os
 import random
 import traceback
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -28,22 +27,11 @@ app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 app.config['MAIL_USERNAME'] = 'liewqien5@gmail.com'
-app.config['MAIL_PASSWORD'] = 'abxvtnbhstipemhg'  # No spaces
+app.config['MAIL_PASSWORD'] = 'abxvtnbhstipemhg'
 app.config['MAIL_DEFAULT_SENDER'] = 'liewqien5@gmail.com'
 app.config['MAIL_DEBUG'] = True
 
-
 mail = Mail(app)
-
-# Initialize LoginManager
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'login'
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
-
 
 # Upload Config
 UPLOAD_FOLDER = 'uploads'
@@ -84,7 +72,7 @@ def format_chat_time(dt):
 
 # ==================== MODELS ====================
 
-class User(UserMixin, db.Model):
+class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -107,7 +95,6 @@ class User(UserMixin, db.Model):
     community_memberships = db.relationship('CommunityMember', backref='user', lazy=True, cascade='all, delete-orphan')
     saved_posts = db.relationship('SavedPost', backref='user', lazy=True, cascade='all, delete-orphan')
     
-    # FIXED: Explicitly use back_populates to avoid conflicts
     sent_messages = db.relationship('Message', foreign_keys='Message.sender_id', back_populates='sender', lazy='dynamic', cascade='all, delete-orphan')
     received_messages = db.relationship('Message', foreign_keys='Message.receiver_id', back_populates='receiver', lazy='dynamic', cascade='all, delete-orphan')
     
@@ -117,7 +104,6 @@ class User(UserMixin, db.Model):
     followers = db.relationship('Follow', foreign_keys='Follow.followed_id', back_populates='followed_user', lazy='dynamic', cascade='all, delete-orphan')
     following = db.relationship('Follow', foreign_keys='Follow.follower_id', back_populates='follower_user', lazy='dynamic', cascade='all, delete-orphan')
     
-    # Settings
     font_size = db.Column(db.String(20), default='Normal')
     high_contrast = db.Column(db.Boolean, default=False)
     screen_reader = db.Column(db.Boolean, default=False)
@@ -172,8 +158,6 @@ class Message(db.Model):
     is_read = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # FIXED: Explicit relationships to User
     sender = db.relationship('User', foreign_keys=[sender_id], back_populates='sent_messages')
     receiver = db.relationship('User', foreign_keys=[receiver_id], back_populates='received_messages')
 
@@ -209,8 +193,6 @@ class Contact(db.Model):
     status = db.Column(db.String(20), default='accepted')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # FIXED: Explicit relationships to User
     user = db.relationship('User', foreign_keys=[user_id], back_populates='contacts_initiated')
     contact_user = db.relationship('User', foreign_keys=[contact_user_id], back_populates='contacts_received')
     
@@ -276,8 +258,6 @@ class Follow(db.Model):
     follower_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     followed_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    # FIXED: Explicit relationships
     follower_user = db.relationship('User', foreign_keys=[follower_id], back_populates='following')
     followed_user = db.relationship('User', foreign_keys=[followed_id], back_populates='followers')
 
@@ -292,7 +272,6 @@ class Activity(db.Model):
     description = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-# --- NEW: Reported/Blocked Users Table ---
 class ReportedUsers(db.Model):
     __tablename__ = 'reported_users'
     id = db.Column(db.Integer, primary_key=True)
@@ -304,7 +283,6 @@ class ReportedUsers(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 # ==================== ROUTES ====================
-
 @app.route('/')
 def index():
     if 'user_id' in session: return redirect(url_for('home'))
@@ -700,8 +678,6 @@ def edit_group_name(group_id):
     if group and new_name and group.name != new_name:
         old_name = group.name
         group.name = new_name
-        
-        # ⬇️ NEW: Add System Message to Chat
         sys_msg = Message(
             sender_id=session['user_id'], 
             community_id=group_id, 
@@ -715,14 +691,12 @@ def edit_group_name(group_id):
         
     return jsonify({'success': False, 'message': 'No changes made or invalid group.'})
 
-
-
 @app.route('/add_group_members', methods=['POST'])
 def add_group_members():
     if 'user_id' not in session: return jsonify({'success': False}), 401
     
     group_id = request.form.get('group_id')
-    member_ids = request.form.getlist('member_ids') # List of IDs to invite
+    member_ids = request.form.getlist('member_ids')
     
     # 1. Verify Admin Status
     caller = CommunityMember.query.filter_by(user_id=session['user_id'], community_id=group_id).first()
@@ -806,7 +780,6 @@ def update_pinned_chats():
         
         # 2. Add new pins
         for item in selected_items:
-            # item format is expected to be "type_id" (e.g. "user_2" or "group_5")
             if '_' in item:
                 ctype, cid = item.split('_')
                 new_pin = PinnedConversation(
@@ -850,9 +823,6 @@ def notifications_page():
     if 'user_id' not in session: return redirect(url_for('login'))
     user_notifications = Notification.query.filter_by(recipient_id=session['user_id']).order_by(Notification.created_at.desc()).all()
     return render_template('notifications.html', notifications=user_notifications)
-
-# --- UPDATED: Add Contact with specific Block Validation message ---
-# In app.py
 
 @app.route('/add_contact', methods=['POST'])
 def add_contact():
@@ -908,7 +878,6 @@ def respond_notification(notif_id, action):
             join_msg = Message(sender_id=session['user_id'], community_id=notif.target_id, content=f"🔔 {current_user.username} has joined the group via invitation.", is_read=True)
             db.session.add(join_msg)
             
-        # ⬇️ NEW LOGIC: Admin Removes User via Report
         elif notif.type == 'group_member_report':
             member_to_remove = CommunityMember.query.filter_by(user_id=notif.sender_id, community_id=notif.target_id).first()
             if member_to_remove:
@@ -927,7 +896,6 @@ def respond_notification(notif_id, action):
         if notif.type == 'contact_request':
             db.session.add(Notification(recipient_id=notif.sender_id, sender_id=session['user_id'], type='request_rejected', message=f"{current_user.username} declined your contact request."))
         
-        # ⬇️ NEW LOGIC: Admin ignores report
         elif notif.type == 'group_member_report':
             notif.status = 'ignored'
 
@@ -946,7 +914,6 @@ def report_group_member():
     
     try:
         # 1. Find the Group Admin(s)
-        # We need to send the notification to the admin(s)
         admins = CommunityMember.query.filter_by(community_id=group_id, is_admin=True).all()
         
         if not admins:
@@ -957,16 +924,14 @@ def report_group_member():
         reported_user = User.query.get(reported_user_id)
 
         # 2. Create Notification for EACH Admin
-        # TRICK: We set 'sender_id' to the REPORTED USER. 
-        # This makes it easy for the Admin to "Remove Sender" in the notification logic.
         for admin in admins:
-            # Don't send notification if the admin is the one being reported (edge case)
+            # Don't send notification if the admin is the one being reported
             if admin.user_id == int(reported_user_id): continue 
 
             notif = Notification(
                 recipient_id=admin.user_id,
-                sender_id=reported_user_id, # Pointing to the bad actor
-                type='group_member_report', # New Type
+                sender_id=reported_user_id,
+                type='group_member_report',
                 target_id=group_id,
                 message=f"⚠️ REPORT: {reporter.username} reported this user for: {reason}. Details: {details}"
             )
@@ -1002,7 +967,6 @@ def remove_contact(contact_id):
         )).delete(synchronize_session=False)
         
         # 3. Create Notification for the Removed User
-        # Important: Type is 'contact_removed' so buttons won't show in notifications.html
         current_user = User.query.get(current_user_id)
         db.session.add(Notification(
             recipient_id=contact_id,
@@ -1019,7 +983,6 @@ def remove_contact(contact_id):
         print(f"Error removing contact: {e}")
         return jsonify({'success': False, 'message': 'Database error occurred'}), 500
 
-# --- UPDATED: Block User Functionality (Replaces Report User) ---
 @app.route('/block_user/<int:contact_id>', methods=['POST'])
 def block_user(contact_id):
     if 'user_id' not in session: return jsonify({'success': False}), 401
@@ -1030,7 +993,6 @@ def block_user(contact_id):
     
     try:
         # 1. Save Block Entry to Database
-        # 'reason' is hardcoded as 'User Blocked' or similar, 'details' contains the user input
         block_entry = ReportedUsers(
             reporter_id=current_user_id,
             reported_id=contact_id,
@@ -1064,7 +1026,6 @@ def block_user(contact_id):
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
 
-# --- NEW: Get Block List ---
 @app.route('/get_block_list', methods=['GET'])
 def get_block_list():
     if 'user_id' not in session: return jsonify({'success': False}), 401
@@ -1085,7 +1046,6 @@ def get_block_list():
             
     return jsonify({'success': True, 'blocked_users': blocked_list})
 
-# --- NEW: Unblock User ---
 @app.route('/unblock_user/<int:user_id>', methods=['POST'])
 def unblock_user(user_id):
     if 'user_id' not in session: return jsonify({'success': False}), 401
@@ -1185,8 +1145,6 @@ def edit_profile():
                 # Create unique filename
                 filename = secure_filename(f"pfp_{user.id}_{int(datetime.utcnow().timestamp())}.{file.filename.split('.')[-1]}")
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                
-                # FIX: Save ONLY the filename to the database
                 user.profile_picture = filename
 
         # 3. Handle Banner Image Upload
@@ -1196,8 +1154,6 @@ def edit_profile():
                 # Create unique filename
                 filename = secure_filename(f"banner_{user.id}_{int(datetime.utcnow().timestamp())}.{file.filename.split('.')[-1]}")
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                
-                # FIX: Save ONLY the filename to the database
                 user.banner_image = filename
 
         try:
@@ -1466,20 +1422,32 @@ def report_post(post_id):
     return redirect(request.referrer or url_for('home'))
 
 # Like Functionality
-@app.route('/like/<int:post_id>')
+@app.route('/like_post/<int:post_id>', methods=['POST'])
 def like_post(post_id):
-    if 'user_id' not in session: return redirect(url_for('login'))
-    user_id = session['user_id']
-    existing_like = Like.query.filter_by(user_id=user_id, post_id=post_id).first()
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
 
+    post = Post.query.get_or_404(post_id)
+    user_id = session['user_id']
+    
+    # Check if the user already liked this post
+    existing_like = Like.query.filter_by(user_id=user_id, post_id=post_id).first()
+    
+    liked = False
     if existing_like:
         db.session.delete(existing_like)
+        liked = False
     else:
         new_like = Like(user_id=user_id, post_id=post_id)
         db.session.add(new_like)
-    
+        liked = True
+        
     db.session.commit()
-    return redirect(request.referrer or url_for('home'))
+    
+    return jsonify({
+        'liked': liked,
+        'new_count': len(post.likes)
+    })
 
 @app.route('/search')
 def search():
@@ -1606,8 +1574,7 @@ def ranking():
     # 1. Get the current user
     user = User.query.get(session['user_id'])
     
-    # 2. OPTIONAL: Get top 3 users for the leaderboard
-    # (If you want to replace the hardcoded "Sarah Chen" in your HTML later)
+    # 2. Get top 3 users for the leaderboard
     top_users = User.query.order_by(User.points.desc()).limit(3).all()
     
     return render_template('ranking.html', user=user, top_users=top_users)
@@ -1667,12 +1634,12 @@ def give_points():
         db.session.commit()
         return "Points updated to 1000!"
     return "Please log in first."
-# ================= SETTINGS ROUTES =================
 
+# ================= SETTINGS ROUTES =================
 @app.route('/settings')
 def settings():
     if 'user_id' not in session: return redirect(url_for('login'))
-    # Redirects to profile page and tells it to open the #settings tab
+    # Redirects to profile page and tells it to open the settings tab
     return redirect(url_for('profile') + '#settings')
 
 @app.route('/update_settings', methods=['POST'])
@@ -1700,7 +1667,6 @@ def update_settings():
     return redirect(url_for('profile') + '#settings')
 
 # ================= ACTIVITIES ROUTES =================
-
 @app.route('/activities')
 def activities_home():
     # This grabs every activity stored in the 'activities' table
@@ -1759,22 +1725,6 @@ def not_found(error):
 def internal_error(error): 
     db.session.rollback()
     return '<h1>500 - Internal Server Error</h1>', 500
-
-@app.route('/edit-activity')
-def edit_activity_page():
-    return render_template('edit-activity.html')
-
-@app.route('/delete-confirmation')
-def delete_confirmation_page():
-    return render_template('delete-confirmation.html')
-
-@app.route('/delete-success')
-def delete_success_page():
-    return render_template('delete-success.html')
-
-@app.route('/update-confirmation')
-def update_confirmation_page():
-    return render_template('update-confirmation.html')
 
 if __name__ == '__main__':
     with app.app_context():
