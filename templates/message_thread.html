@@ -269,6 +269,21 @@
             color: #FFD700 !important;
         }
 
+        /* FIX: Remove bottom border from conversations header to merge with search bar */
+        body.high-contrast .conversations-header {
+            border-bottom: none !important;
+        }
+
+        /* FIX: Ensure the Messages Header Text is visible */
+        body.high-contrast .conversations-header h2 {
+            color: #FFD700 !important;
+        }
+
+        /* FIX: Color the header 3-dot icon */
+        body.high-contrast .header-icon {
+            color: #FFD700 !important;
+        }
+
         /* Sidebar Links */
         body.high-contrast .sidebar-nav a { color: #FFD700 !important; }
         body.high-contrast .sidebar-nav a:hover { background-color: #333 !important; }
@@ -280,7 +295,21 @@
         /* Conversations List */
         body.high-contrast .conversation-item { border-bottom: 1px solid #333 !important; color: #fff !important; }
         body.high-contrast .conversation-item:hover { background-color: #111 !important; }
-        body.high-contrast .conversation-item.active { background-color: #222 !important; border-left: 3px solid #FFD700 !important; }
+        
+        /* FIXED: Active item background is now dark (not white) with Gold text */
+        body.high-contrast .conversation-item.active { 
+            background-color: #222 !important; 
+            border-left: 3px solid #FFD700 !important; 
+            color: #FFD700 !important;
+        }
+        
+        /* FIXED: Pinned item background is dark (black) */
+        body.high-contrast .conversation-item.pinned {
+            background-color: #111 !important;
+            border-left: 3px solid #FFD700 !important;
+            color: #FFD700 !important;
+        }
+
         body.high-contrast .conversation-name { color: #FFD700 !important; }
         body.high-contrast .last-message { color: #ccc !important; }
         body.high-contrast .timestamp { color: #888 !important; }
@@ -296,6 +325,12 @@
         body.high-contrast .chat-user-info h3 { color: #FFD700 !important; }
         body.high-contrast .action-icon { color: #FFD700 !important; }
         body.high-contrast .access-btn { border-color: #FFD700 !important; color: #FFD700 !important; }
+        
+        /* FIX: White Line under Group Chat header */
+        /* We force the border to be yellow (or consistent with theme) instead of default grey/white */
+        body.high-contrast .chat-header {
+            border-bottom: 1px solid #FFD700 !important;
+        }
 
         /* Messages */
         body.high-contrast .message-bubble {
@@ -342,9 +377,27 @@
             color: #fff !important;
         }
 
+        /* FIX: Search Icon Color */
+        body.high-contrast .conversations-sidebar svg[style*="color:#9ca3af"] {
+            color: #FFD700 !important;
+        }
+
         /* Buttons in Modals */
         body.high-contrast .btn-submit { background: #FFD700 !important; color: #000 !important; }
         body.high-contrast .btn-cancel { background: #000 !important; border: 1px solid #FFD700 !important; color: #FFD700 !important; }
+
+        /* --- FIXED SEARCH BAR STYLES FOR HIGH CONTRAST --- */
+        /* Target the div wrapping the search input (it acts as the container) */
+        body.high-contrast .conversations-sidebar > div:nth-child(2) > div {
+            background-color: #000 !important; /* Black background */
+            border: 1px solid #FFD700 !important; /* Yellow border (around) */
+        }
+        
+        /* Target the placeholder text to be yellow */
+        body.high-contrast ::placeholder {
+            color: #FFD700 !important;
+            opacity: 0.7;
+        }
     </style>
 </head>
 <body>
@@ -1031,8 +1084,26 @@
     const icebreakers = ["What was your favorite toy growing up?", "What was the first music concert you ever went to?", "How much did a movie ticket cost when you were a teenager?", "What was your first job, and did you like it?", "Did you have a nickname growing up?", "What is the biggest change in the world you've witnessed?", "Tell me about your best friend from primary school.", "What was your favorite subject in school?", "Did you ever get into trouble as a kid?", "What was your favorite home-cooked meal?"];
     function toggleIcebreakers() { const container = document.getElementById('icebreakerContainer'); if (container.innerHTML !== '') { container.innerHTML = ''; return; } const shuffled = icebreakers.sort(() => 0.5 - Math.random()); const selected = shuffled.slice(0, 3); selected.forEach(text => { const chip = document.createElement('div'); chip.innerText = text; chip.style.cssText = "background: #eff6ff; color: #2563eb; padding: 6px 12px; border-radius: 20px; font-size: 13px; cursor: pointer; white-space: nowrap; border: 1px solid #dbeafe; transition: background 0.2s;"; chip.onmouseover = () => chip.style.background = "#dbeafe"; chip.onmouseout = () => chip.style.background = "#eff6ff"; chip.onclick = () => { document.getElementById('messageInput').value = text; container.innerHTML = ''; document.getElementById('messageInput').focus(); }; container.appendChild(chip); }); }
 
-    const fontSizes = ['', 'text-large', 'text-xl']; let currentFontIndex = 0;
-    function cycleTextSize() { const body = document.body; if (fontSizes[currentFontIndex]) { body.classList.remove(fontSizes[currentFontIndex]); } currentFontIndex = (currentFontIndex + 1) % fontSizes.length; if (fontSizes[currentFontIndex]) { body.classList.add(fontSizes[currentFontIndex]); } }
+    // FIXED: Updated Class Names to match CSS
+    const fontSizes = ['', 'fs-Large', 'fs-X-Large']; 
+    let currentFontIndex = 0;
+    
+    function cycleTextSize() { 
+        const body = document.body; 
+        
+        // Remove current class if it exists
+        if (fontSizes[currentFontIndex]) { 
+            body.classList.remove(fontSizes[currentFontIndex]); 
+        } 
+        
+        // Advance Index
+        currentFontIndex = (currentFontIndex + 1) % fontSizes.length; 
+        
+        // Add new class if it's not the default empty string
+        if (fontSizes[currentFontIndex]) { 
+            body.classList.add(fontSizes[currentFontIndex]); 
+        } 
+    }
 
     function toggleVoiceInput() { if (!('webkitSpeechRecognition' in window)) { alert("Voice input is not supported in this browser. Try Chrome."); return; } const recognition = new webkitSpeechRecognition(); recognition.lang = 'en-US'; recognition.start(); const icon = document.getElementById('voiceInputBtn'); icon.style.color = '#ef4444'; recognition.onresult = function(event) { const transcript = event.results[0][0].transcript; const input = document.getElementById('messageInput'); input.value += (input.value ? ' ' : '') + transcript; icon.style.color = '#6b7280'; }; recognition.onerror = function(event) { icon.style.color = '#6b7280'; }; }
 
@@ -1131,3 +1202,4 @@
 </script>
 </body>
 </html>
+
