@@ -32,21 +32,7 @@
         .messages-container { margin-left: 250px; flex: 1; display: flex; height: 100vh; background-color: #f9fafb; }
         .conversations-sidebar { width: 280px; background: white; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column; position: relative; }
         
-        /* ALIGNMENT: Match headers to 72px */
         .conversations-header { height: 72px; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; }
-        .conversations-header h2 { font-size: 20px; font-weight: 700; color: #111827; }
-        
-        .chat-area { flex: 1; display: flex; flex-direction: column; background: white; position: relative; }
-        .chat-header { 
-            height: 72px; 
-            display: flex; align-items: center; justify-content: space-between; 
-            padding: 0 30px; 
-            border-bottom: 1px solid #e5e7eb; background: white; z-index: 10; 
-        }
-        
-        .messages-container { margin-left: 250px; flex: 1; display: flex; height: 100vh; background-color: #f9fafb; }
-        .conversations-sidebar { width: 280px; background: white; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column; position: relative; }
-        .conversations-header { padding: 20px 20px 10px 20px; display: flex; justify-content: space-between; align-items: center; }
         .conversations-header h2 { font-size: 20px; font-weight: 700; color: #111827; }
         .header-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.2s; color: #6b7280; }
         .header-icon:hover { background-color: #f3f4f6; }
@@ -112,7 +98,7 @@
         }
 
         .chat-area { flex: 1; display: flex; flex-direction: column; background: white; position: relative; }
-        .chat-header { display: flex; align-items: center; justify-content: space-between; padding: 15px 30px; border-bottom: 1px solid #e5e7eb; background: white; z-index: 10; }
+        .chat-header { display: flex; align-items: center; justify-content: space-between; padding: 15px 30px; border-bottom: 1px solid #e5e7eb; background: white; z-index: 10; height: 72px; }
         .chat-header-info { display: flex; align-items: center; gap: 15px; }
         .chat-avatar { width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 16px; }
         .chat-user-info h3 { font-size: 16px; font-weight: 600; color: #111827; margin-bottom: 2px; }
@@ -219,12 +205,6 @@
         .wallpaper-grid { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .color-circle { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; border: 2px solid #e5e7eb; transition: transform 0.2s; }
         .color-circle:hover { transform: scale(1.1); border-color: #6366f1; }
-        .text-large .message-text { font-size: 18px !important; line-height: 1.6; }
-        .text-large .message-bubble { padding: 15px 18px; }
-        .text-xl .message-text { font-size: 24px !important; line-height: 1.6; }
-        .text-xl .message-bubble { padding: 20px 24px; }
-        .text-xl .conversation-name { font-size: 18px; }
-        .text-xl .chat-user-info h3 { font-size: 20px; }
         .access-btn { width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; color: #6b7280; border: 1px solid #e5e7eb; margin-right: 10px; font-size: 16px; transition: all 0.2s; }
         .access-btn:hover { background-color: #f3f4f6; color: #6366f1; border-color: #6366f1; }
         /* Report Chips */
@@ -252,9 +232,127 @@
         .tick-icon.read svg {
             color: #53bdeb; /* Blue when read */
         }
+
+        /* =========================================
+           ACCESSIBILITY & HIGH CONTRAST
+           ========================================= */
+
+        /* --- Font Sizing --- */
+        body.fs-Large { font-size: 18px; }
+        body.fs-Large .message-text { font-size: 18px !important; line-height: 1.6; }
+        body.fs-Large .message-bubble { padding: 15px 18px; }
+        body.fs-Large .conversation-name { font-size: 17px; }
+        body.fs-Large .sidebar-nav a { font-size: 17px; }
+        
+        body.fs-X-Large { font-size: 20px; }
+        body.fs-X-Large .message-text { font-size: 24px !important; line-height: 1.6; }
+        body.fs-X-Large .message-bubble { padding: 20px 24px; }
+        body.fs-X-Large .conversation-name { font-size: 19px; }
+        body.fs-X-Large .chat-user-info h3 { font-size: 22px; }
+        body.fs-X-Large .sidebar-nav a { font-size: 19px; }
+
+        /* --- High Contrast (Black & Gold) --- */
+        body.high-contrast {
+            background-color: #000000 !important;
+            color: #ffffff !important;
+        }
+
+        /* Sidebar & Headers */
+        body.high-contrast .sidebar, 
+        body.high-contrast .sidebar-logo,
+        body.high-contrast .conversations-sidebar,
+        body.high-contrast .conversations-header,
+        body.high-contrast .chat-header {
+            background-color: #000000 !important;
+            border-right: 1px solid #FFD700 !important;
+            border-bottom: 1px solid #FFD700 !important;
+            color: #FFD700 !important;
+        }
+
+        /* Sidebar Links */
+        body.high-contrast .sidebar-nav a { color: #FFD700 !important; }
+        body.high-contrast .sidebar-nav a:hover { background-color: #333 !important; }
+        body.high-contrast .sidebar-nav a.active { background-color: #FFD700 !important; color: #000 !important; }
+        body.high-contrast .logo, body.high-contrast .logo span { color: #FFD700 !important; }
+        body.high-contrast .sidebar svg { stroke: #FFD700 !important; }
+        body.high-contrast .sidebar-nav li[style*="border-top"] { border-top-color: #FFD700 !important; }
+
+        /* Conversations List */
+        body.high-contrast .conversation-item { border-bottom: 1px solid #333 !important; color: #fff !important; }
+        body.high-contrast .conversation-item:hover { background-color: #111 !important; }
+        body.high-contrast .conversation-item.active { background-color: #222 !important; border-left: 3px solid #FFD700 !important; }
+        body.high-contrast .conversation-name { color: #FFD700 !important; }
+        body.high-contrast .last-message { color: #ccc !important; }
+        body.high-contrast .timestamp { color: #888 !important; }
+
+        /* Chat Area */
+        body.high-contrast .chat-area, 
+        body.high-contrast .messages-area,
+        body.high-contrast .message-input-area {
+            background-color: #000 !important;
+        }
+        
+        /* Chat Header Text */
+        body.high-contrast .chat-user-info h3 { color: #FFD700 !important; }
+        body.high-contrast .action-icon { color: #FFD700 !important; }
+        body.high-contrast .access-btn { border-color: #FFD700 !important; color: #FFD700 !important; }
+
+        /* Messages */
+        body.high-contrast .message-bubble {
+            background-color: #111 !important;
+            color: #fff !important;
+            border: 1px solid #FFD700 !important;
+            box-shadow: none !important;
+        }
+        
+        /* Sent Message Override */
+        body.high-contrast .message.sent .message-bubble {
+            background: #FFD700 !important;
+            color: #000000 !important;
+            border: 1px solid #fff !important;
+        }
+        body.high-contrast .message.sent .message-meta { color: #000 !important; }
+
+        /* Input Area */
+        body.high-contrast .message-input-area { border-top: 1px solid #FFD700 !important; }
+        body.high-contrast .input-wrapper { background-color: #111 !important; border: 1px solid #FFD700 !important; }
+        body.high-contrast textarea { color: #fff !important; }
+        body.high-contrast .attachment-button { background-color: #000 !important; border: 1px solid #FFD700 !important; color: #FFD700 !important; }
+        body.high-contrast .send-button { background: #FFD700 !important; color: #000 !important; }
+
+        /* Modals & Dropdowns */
+        body.high-contrast .dropdown-menu,
+        body.high-contrast .modal-content,
+        body.high-contrast .info-card {
+            background-color: #000 !important;
+            border: 1px solid #FFD700 !important;
+            color: #fff !important;
+        }
+        body.high-contrast .menu-item { color: #fff !important; }
+        body.high-contrast .menu-item:hover { background-color: #222 !important; }
+        body.high-contrast .modal-header h3 { color: #FFD700 !important; }
+        body.high-contrast .modal-close { color: #FFD700 !important; }
+        
+        /* Modal Inputs */
+        body.high-contrast .form-group input, 
+        body.high-contrast .form-group textarea,
+        body.high-contrast #userSearchInput {
+            background-color: #111 !important;
+            border: 1px solid #FFD700 !important;
+            color: #fff !important;
+        }
+
+        /* Buttons in Modals */
+        body.high-contrast .btn-submit { background: #FFD700 !important; color: #000 !important; }
+        body.high-contrast .btn-cancel { background: #000 !important; border: 1px solid #FFD700 !important; color: #FFD700 !important; }
     </style>
 </head>
 <body>
+
+<div id="user-settings" 
+     data-contrast="{{ 'true' if current_user.high_contrast else 'false' }}" 
+     data-fontsize="{{ current_user.font_size or 'Normal' }}"
+     style="display: none;"></div>
 
 <div class="container">
     <aside class="sidebar">
@@ -643,6 +741,25 @@
 
     // --- TIMEZONE FIX START ---
     document.addEventListener("DOMContentLoaded", function() {
+        // 1. Get Settings
+        const settingsDiv = document.getElementById('user-settings');
+        if (settingsDiv) {
+            const contrastSetting = settingsDiv.getAttribute('data-contrast').toLowerCase();
+            const fontSize = settingsDiv.getAttribute('data-fontsize');
+
+            // Apply High Contrast
+            if (contrastSetting === 'true' || contrastSetting === '1' || contrastSetting === 'on') {
+                document.body.classList.add('high-contrast');
+            }
+
+            // Apply Font Size
+            if (fontSize) {
+                document.body.classList.remove('fs-Normal', 'fs-Large', 'fs-X-Large');
+                document.body.classList.add('fs-' + fontSize);
+            }
+        }
+
+        // 2. Adjust Timezones
         const timeElements = document.querySelectorAll('.msg-time');
         timeElements.forEach(el => {
             const utcStr = el.getAttribute('data-utc');
