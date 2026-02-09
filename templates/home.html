@@ -206,7 +206,7 @@
     body.fs-X-Large .post-title { font-size: 26px; }
     body.fs-X-Large .post-content { font-size: 19px; }
 
-    /* --- High Contrast Fixes (Ensures Three Dots & Icons appear) --- */
+    /* --- High Contrast Fixes --- */
     body.high-contrast {
         background-color: #000000 !important;
         color: #ffffff !important;
@@ -220,7 +220,6 @@
         border-bottom: 1px solid #FFD700 !important;
     }
     
-    /* Force Three Dots (btn-link) and Icons to Gold */
     body.high-contrast .logo, 
     body.high-contrast .logo span,
     body.high-contrast .sidebar svg,
@@ -236,7 +235,10 @@
 
     body.high-contrast .sidebar-nav a { color: #FFD700 !important; }
     body.high-contrast .sidebar-nav a:hover { background-color: #222 !important; }
+    
+    /* FIX: Active sidebar link -> Gold Background, Black Text AND Black Icon */
     body.high-contrast .sidebar-nav a.active { background-color: #FFD700 !important; color: #000 !important; }
+    body.high-contrast .sidebar-nav a.active svg { stroke: #000000 !important; color: #000000 !important; }
 
     body.high-contrast .search-input-wrapper input {
         background-color: #111 !important;

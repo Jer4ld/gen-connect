@@ -198,6 +198,9 @@
     body.high-contrast .sidebar-nav a:hover { background-color: #222 !important; }
     body.high-contrast .sidebar-nav a.active { background-color: #FFD700 !important; color: #000 !important; }
 
+    /* FIX: Active Sidebar Icon Black */
+    body.high-contrast .sidebar-nav a.active svg { stroke: #000000 !important; color: #000000 !important; }
+
     body.high-contrast .post-card, 
     body.high-contrast .comments-section,
     body.high-contrast .custom-modal-content {
@@ -213,6 +216,12 @@
     body.high-contrast .report-chip { background-color: #000 !important; color: #FFD700 !important; border-color: #FFD700 !important; }
     body.high-contrast .report-chip.active { background-color: #FFD700 !important; color: #000 !important; }
     body.high-contrast .btn-primary, body.high-contrast .btn-modal-submit { background-color: #FFD700 !important; color: #000 !important; font-weight: 800 !important; }
+
+    /* FIX: Username and Time Visibility */
+    body.high-contrast .text-dark,
+    body.high-contrast .text-muted {
+        color: #FFD700 !important;
+    }
 
 </style>
 {% endblock %}
@@ -510,6 +519,7 @@
             </div>
             <form id="reportForm" method="POST" action="">
                 <div class="modal-body custom-modal-body">
+                    <input type="hidden" name="category" id="reportCategory">
                     <div class="report-reasons-grid">
                         <div class="report-chip" onclick="toggleReportChip(this)">Impersonation</div>
                         <div class="report-chip" onclick="toggleReportChip(this)">Threatening Violence</div>
