@@ -11,6 +11,9 @@
         background-color: #f9fafb;
         font-family: 'Outfit', -apple-system, sans-serif; /* Updated Font */
         color: #1e293b;
+        /* Necessary for Google Translate support */
+        top: 0 !important; 
+        position: static !important; 
     }
     .container { display: flex; min-height: 100vh; max-width: 100%; padding: 0; }
 
@@ -142,10 +145,95 @@
         color: #374151; font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.2s;
     }
     .btn-view-profile:hover { background: #f3f4f6; color: #111827; }
+
+    /* --- GOOGLE TRANSLATE CSS HACKS --- */
+    .goog-te-banner-frame.skiptranslate { display: none !important; }
+    body > .skiptranslate { display: none !important; }
+    #goog-gt-tt, .goog-te-balloon-frame { display: none !important; }
+    .goog-text-highlight { background: none !important; box-shadow: none !important; }
+    #google_translate_element { visibility: hidden; position: absolute; top: -9999px; left: -9999px; }
+
+    /* =========================================
+       NEW ACCESSIBILITY STYLES (Added)
+       ========================================= */
+
+    /* --- Font Sizing --- */
+    body.fs-Large { font-size: 18px; }
+    body.fs-Large .sidebar-nav a { font-size: 17px; }
+    body.fs-Large .post-content, body.fs-Large .comm-desc { font-size: 17px; }
+    
+    body.fs-X-Large { font-size: 20px; }
+    body.fs-X-Large .sidebar-nav a { font-size: 19px; }
+    body.fs-X-Large .post-content, body.fs-X-Large .comm-desc { font-size: 19px; }
+
+    /* --- High Contrast (Black & Gold) --- */
+    body.high-contrast {
+        background-color: #000000 !important;
+        color: #ffffff !important;
+    }
+
+    body.high-contrast .sidebar, 
+    body.high-contrast .sidebar-logo,
+    body.high-contrast .sticky-top-bar {
+        background-color: #000000 !important;
+        border-right: 1px solid #FFD700 !important;
+        border-bottom: 1px solid #FFD700 !important;
+    }
+    
+    body.high-contrast .logo, 
+    body.high-contrast .logo span,
+    body.high-contrast .sidebar svg,
+    body.high-contrast .comm-info h3,
+    body.high-contrast .people-details h4,
+    body.high-contrast .fw-bold.text-dark { 
+        color: #FFD700 !important; 
+        stroke: #FFD700 !important; 
+    }
+
+    body.high-contrast .sidebar-nav a { color: #FFD700 !important; }
+    body.high-contrast .sidebar-nav a:hover { background-color: #222 !important; }
+    body.high-contrast .sidebar-nav a.active { background-color: #FFD700 !important; color: #000 !important; }
+
+    body.high-contrast .search-input-wrapper input,
+    body.high-contrast .tab-btn {
+        background-color: #111 !important;
+        border: 1px solid #FFD700 !important;
+        color: #fff !important;
+    }
+    body.high-contrast .tab-btn.active { background-color: #FFD700 !important; color: #000 !important; }
+
+    body.high-contrast .post,
+    body.high-contrast .community-card,
+    body.high-contrast .people-card {
+        background-color: #000 !important;
+        border: 1px solid #FFD700 !important;
+        box-shadow: none !important;
+    }
+
+    body.high-contrast .post-content,
+    body.high-contrast .comm-desc,
+    body.high-contrast .text-muted {
+        color: #ffffff !important;
+    }
+
+    body.high-contrast .btn-view-profile {
+        background-color: #000 !important;
+        border: 1px solid #FFD700 !important;
+        color: #FFD700 !important;
+    }
+
 </style>
 {% endblock %}
 
 {% block content %}
+<div id="user-settings" 
+     data-contrast="{{ 'true' if current_user.is_authenticated and current_user.high_contrast else 'false' }}" 
+     data-fontsize="{{ current_user.font_size if current_user.is_authenticated and current_user.font_size else 'Normal' }}"
+     data-lang="{{ current_user.language if current_user.is_authenticated and current_user.language else 'en' }}"
+     style="display: none;"></div>
+
+<div id="google_translate_element"></div>
+
 <div class="container">
     <aside class="sidebar">
         <div class="sidebar-logo">
@@ -202,7 +290,7 @@
                             </div>
                         </div>
                         <a href="{{ url_for('post_details', post_id=post.id) }}" class="text-decoration-none text-dark">
-                            {% if post.title %}<div style="padding: 0 15px 5px 15px; font-size: 18px; font-weight: 700;">{{ post.title }}</div>{% endif %}
+                            {% if post.title %}<div class="post-title-content" style="padding: 0 15px 5px 15px; font-size: 18px; font-weight: 700;">{{ post.title }}</div>{% endif %}
                             <div class="post-content">{{ post.content }}</div>
                             {% if post.media_file %}
                                 <div class="post-media">
@@ -275,4 +363,50 @@
     </div>
 </main>
 </div>
+
+<script type="text/javascript">
+    function googleTranslateElementInit() {
+        new google.translate.TranslateElement({
+            pageLanguage: 'en',
+            includedLanguages: 'en,zh-CN,ta',
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+            autoDisplay: false
+        }, 'google_translate_element');
+    }
+</script>
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+<script>
+    // --- Application of Accessibility Settings ---
+    document.addEventListener("DOMContentLoaded", function() {
+        const settingsDiv = document.getElementById('user-settings');
+        if (settingsDiv) {
+            const contrast = settingsDiv.getAttribute('data-contrast').toLowerCase();
+            const fontSize = settingsDiv.getAttribute('data-fontsize');
+            const lang = settingsDiv.getAttribute('data-lang');
+
+            // 1. Apply High Contrast
+            if (contrast === 'true') {
+                document.body.classList.add('high-contrast');
+            }
+
+            // 2. Apply Font Size
+            if (fontSize && fontSize !== 'Normal') {
+                document.body.classList.add('fs-' + fontSize);
+            }
+
+            // 3. Auto-Translate Language
+            if (lang && lang !== 'en') {
+                const checkGoogle = setInterval(() => {
+                    const combo = document.querySelector('.goog-te-combo');
+                    if (combo) {
+                        combo.value = lang;
+                        combo.dispatchEvent(new Event('change'));
+                        clearInterval(checkGoogle);
+                    }
+                }, 500);
+            }
+        }
+    });
+</script>
 {% endblock %}

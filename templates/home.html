@@ -11,7 +11,17 @@
         background-color: #f9fafb;
         font-family: 'Outfit', -apple-system, sans-serif;
         color: #1e293b;
+        /* Support for Google Translate top offset */
+        top: 0 !important; 
+        position: static !important; 
     }
+
+    /* --- GOOGLE TRANSLATE HACKS (Hides the ugly bar) --- */
+    .goog-te-banner-frame.skiptranslate { display: none !important; }
+    body > .skiptranslate { display: none !important; }
+    #goog-gt-tt, .goog-te-balloon-frame { display: none !important; }
+    .goog-text-highlight { background: none !important; box-shadow: none !important; }
+    #google_translate_element { visibility: hidden; position: absolute; top: -9999px; left: -9999px; }
 
     .container {
         display: flex;
@@ -180,10 +190,95 @@
     .report-textarea { width: 100%; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; font-size: 14px; resize: vertical; min-height: 100px; }
     .btn-modal-submit { background-color: #2563eb; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 600; }
     .btn-modal-submit:hover { background-color: #1d4ed8; }
+
+    /* =========================================
+       ACCESSIBILITY & HIGH CONTRAST (Added)
+       ========================================= */
+
+    /* --- Font Sizing --- */
+    body.fs-Large { font-size: 18px; }
+    body.fs-Large .sidebar-nav a { font-size: 17px; }
+    body.fs-Large .post-title { font-size: 22px; }
+    body.fs-Large .post-content { font-size: 17px; }
+    
+    body.fs-X-Large { font-size: 20px; }
+    body.fs-X-Large .sidebar-nav a { font-size: 19px; }
+    body.fs-X-Large .post-title { font-size: 26px; }
+    body.fs-X-Large .post-content { font-size: 19px; }
+
+    /* --- High Contrast Fixes (Ensures Three Dots & Icons appear) --- */
+    body.high-contrast {
+        background-color: #000000 !important;
+        color: #ffffff !important;
+    }
+
+    body.high-contrast .sidebar, 
+    body.high-contrast .sidebar-logo,
+    body.high-contrast .sticky-top-bar {
+        background-color: #000000 !important;
+        border-right: 1px solid #FFD700 !important;
+        border-bottom: 1px solid #FFD700 !important;
+    }
+    
+    /* Force Three Dots (btn-link) and Icons to Gold */
+    body.high-contrast .logo, 
+    body.high-contrast .logo span,
+    body.high-contrast .sidebar svg,
+    body.high-contrast .post-title,
+    body.high-contrast .btn-link,
+    body.high-contrast .fa-ellipsis-h,
+    body.high-contrast .fas,
+    body.high-contrast .far,
+    body.high-contrast .fw-bold.text-dark { 
+        color: #FFD700 !important; 
+        stroke: #FFD700 !important; 
+    }
+
+    body.high-contrast .sidebar-nav a { color: #FFD700 !important; }
+    body.high-contrast .sidebar-nav a:hover { background-color: #222 !important; }
+    body.high-contrast .sidebar-nav a.active { background-color: #FFD700 !important; color: #000 !important; }
+
+    body.high-contrast .search-input-wrapper input {
+        background-color: #111 !important;
+        border: 1px solid #FFD700 !important;
+        color: #fff !important;
+    }
+
+    body.high-contrast .post,
+    body.high-contrast .custom-modal-content {
+        background-color: #000 !important;
+        border: 1px solid #FFD700 !important;
+        box-shadow: none !important;
+    }
+
+    body.high-contrast .post-content,
+    body.high-contrast .text-muted,
+    body.high-contrast .custom-modal-body {
+        color: #ffffff !important;
+    }
+
+    body.high-contrast .post-footer,
+    body.high-contrast .post-header {
+        border-color: #333 !important;
+    }
+
+    body.high-contrast .btn-light, 
+    body.high-contrast .text-primary {
+        color: #FFD700 !important;
+    }
+
 </style>
 {% endblock %}
 
 {% block content %}
+<div id="user-settings" 
+     data-contrast="{{ 'true' if current_user.is_authenticated and current_user.high_contrast else 'false' }}" 
+     data-fontsize="{{ current_user.font_size if current_user.is_authenticated and current_user.font_size else 'Normal' }}"
+     data-lang="{{ current_user.language if current_user.is_authenticated and current_user.language else 'en' }}"
+     style="display: none;"></div>
+
+<div id="google_translate_element"></div>
+
 <div class="container">
     <aside class="sidebar">
         <div class="sidebar-logo">
@@ -236,13 +331,13 @@
                                     <i class="fas fa-ellipsis-h"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
-                                    {% if current_user.id == post.author.id %}
+                                    {% if current_user.is_authenticated and current_user.id == post.author.id %}
                                         <li><a class="dropdown-item" href="{{ url_for('edit_post', post_id=post.id) }}"><i class="fas fa-edit me-2"></i>Edit</a></li>
                                     {% endif %}
                                     
                                     <li>
                                         <a class="dropdown-item" href="{{ url_for('save_post', post_id=post.id) }}">
-                                            {% if post.user_has_saved(current_user.id) %}
+                                            {% if current_user.is_authenticated and post.user_has_saved(current_user.id) %}
                                                 <i class="fas fa-bookmark me-2"></i>Unsave
                                             {% else %}
                                                 <i class="far fa-bookmark me-2"></i>Save
@@ -259,7 +354,7 @@
                                         </button>
                                     </li>
                                     
-                                    {% if current_user.id == post.author.id %}
+                                    {% if current_user.is_authenticated and current_user.id == post.author.id %}
                                         <li><hr class="dropdown-divider"></li>
                                         <li>
                                             <button type="button" class="dropdown-item text-danger" 
@@ -300,7 +395,7 @@
                             <div class="d-flex justify-content-around">
                                 
                                 <button class="btn btn-light flex-grow-1" onclick="toggleLike(this, '{{ post.id }}')">
-                                    {% if post.user_has_liked(current_user.id) %}
+                                    {% if current_user.is_authenticated and post.user_has_liked(current_user.id) %}
                                         <i class="fas fa-thumbs-up text-primary me-2"></i><span class="text-primary">Like</span>
                                     {% else %}
                                         <i class="far fa-thumbs-up me-2"></i>Like
@@ -402,8 +497,47 @@
     </div>
 </div>
 
+<script type="text/javascript">
+    function googleTranslateElementInit() {
+        new google.translate.TranslateElement({ pageLanguage: 'en', includedLanguages: 'en,zh-CN,ta', layout: google.translate.TranslateElement.InlineLayout.SIMPLE, autoDisplay: false }, 'google_translate_element');
+    }
+</script>
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
 <script>
-    // Toggle Hide Post
+    // --- Application of Accessibility Settings ---
+    document.addEventListener("DOMContentLoaded", function() {
+        const settingsDiv = document.getElementById('user-settings');
+        if (settingsDiv) {
+            const contrast = settingsDiv.getAttribute('data-contrast').toLowerCase();
+            const fontSize = settingsDiv.getAttribute('data-fontsize');
+            const lang = settingsDiv.getAttribute('data-lang');
+
+            // 1. Apply High Contrast
+            if (contrast === 'true') {
+                document.body.classList.add('high-contrast');
+            }
+
+            // 2. Apply Font Size
+            if (fontSize && fontSize !== 'Normal') {
+                document.body.classList.add('fs-' + fontSize);
+            }
+
+            // 3. Auto-Translate Language
+            if (lang && lang !== 'en') {
+                const checkGoogle = setInterval(() => {
+                    const combo = document.querySelector('.goog-te-combo');
+                    if (combo) {
+                        combo.value = lang;
+                        combo.dispatchEvent(new Event('change'));
+                        clearInterval(checkGoogle);
+                    }
+                }, 500);
+            }
+        }
+    });
+
+    // --- Original Logic (Preserved) ---
     function toggleHidePost(postId) {
         let visiblePart = document.getElementById('post-visible-' + postId);
         let hiddenPart = document.getElementById('post-hidden-' + postId);
@@ -417,60 +551,46 @@
         }
     }
 
-    // Open POST Delete Modal
     function openPostDeleteModal(deleteUrl) {
         let modal = new bootstrap.Modal(document.getElementById('deletePostModal'));
         document.getElementById('deletePostForm').action = deleteUrl;
         modal.show();
     }
 
-    // Handle Report Modal
     function openReportModal(reportUrl) {
         let modal = new bootstrap.Modal(document.getElementById('reportModal'));
         document.getElementById('reportForm').action = reportUrl;
         modal.show();
     }
 
-    // Toggle Chip Selection & Set Hidden Input
     function toggleReportChip(element) {
-        // 1. Remove 'active' class from all other chips
         document.querySelectorAll('.report-chip').forEach(chip => {
             chip.classList.remove('active');
         });
-
-        // 2. Add 'active' class to the clicked chip
         element.classList.add('active');
-
-        // 3. Set the hidden input value
         document.getElementById('reportCategory').value = element.innerText;
     }
 
     async function toggleLike(btn, postId) {
         try {
-            // Send the request to the server
             const response = await fetch(`/like_post/${postId}`, { 
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+                headers: { 'Content-Type': 'application/json' }
             });
             
             if (response.status === 401) {
-                // If user is not logged in, redirect them
                 window.location.href = "{{ url_for('login') }}";
                 return;
             }
 
             const data = await response.json();
 
-            // 1. Update the Button Style (Icon and Text)
             if (data.liked) {
                 btn.innerHTML = `<i class="fas fa-thumbs-up text-primary me-2"></i><span class="text-primary">Like</span>`;
             } else {
                 btn.innerHTML = `<i class="far fa-thumbs-up me-2"></i>Like`;
             }
 
-            // 2. Update the Like Count Number
             const countSpan = document.getElementById(`like-count-${postId}`);
             if (countSpan) {
                 countSpan.innerHTML = `<i class="fas fa-thumbs-up text-primary"></i> ${data.new_count} Likes`;

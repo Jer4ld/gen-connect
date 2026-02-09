@@ -11,7 +11,16 @@
         background-color: #f9fafb;
         font-family: 'Outfit', -apple-system, sans-serif;
         color: #1e293b;
+        top: 0 !important; 
+        position: static !important; 
     }
+
+    /* --- GOOGLE TRANSLATE HACKS (Hides the ugly bar) --- */
+    .goog-te-banner-frame.skiptranslate { display: none !important; }
+    body > .skiptranslate { display: none !important; }
+    #goog-gt-tt, .goog-te-balloon-frame { display: none !important; }
+    .goog-text-highlight { background: none !important; box-shadow: none !important; }
+    #google_translate_element { visibility: hidden; position: absolute; top: -9999px; left: -9999px; }
 
     .page-container {
         display: flex;
@@ -252,10 +261,78 @@
     input[type="file"] {
         display: none;
     }
+
+    /* =========================================
+       ACCESSIBILITY & HIGH CONTRAST (BLACK & GOLD)
+       ========================================= */
+
+    /* --- Font Sizing --- */
+    body.fs-Large { font-size: 18px; }
+    body.fs-Large .sidebar-nav a { font-size: 17px; }
+    body.fs-Large .page-title { font-size: 28px; }
+    body.fs-Large .form-control-lg { font-size: 18px; }
+    
+    body.fs-X-Large { font-size: 20px; }
+    body.fs-X-Large .sidebar-nav a { font-size: 19px; }
+    body.fs-X-Large .page-title { font-size: 32px; }
+    body.fs-X-Large .form-control-lg { font-size: 20px; }
+
+    /* --- High Contrast Overrides --- */
+    body.high-contrast {
+        background-color: #000000 !important;
+        color: #ffffff !important;
+    }
+
+    body.high-contrast .sidebar, 
+    body.high-contrast .sidebar-logo {
+        background-color: #000000 !important;
+        border-right: 1px solid #FFD700 !important;
+        border-bottom: 1px solid #FFD700 !important;
+    }
+    
+    body.high-contrast .logo, body.high-contrast .logo span,
+    body.high-contrast .sidebar-nav a, body.high-contrast .page-title,
+    body.high-contrast .sidebar svg { color: #FFD700 !important; stroke: #FFD700 !important; }
+
+    body.high-contrast .sidebar-nav a:hover { background-color: #222 !important; }
+    body.high-contrast .sidebar-nav a.active { background-color: #FFD700 !important; color: #000 !important; }
+
+    body.high-contrast .main-content-area { background-color: #000 !important; }
+    body.high-contrast .create-post-card {
+        background-color: #000 !important;
+        border: 1px solid #FFD700 !important;
+        box-shadow: none !important;
+    }
+
+    body.high-contrast .form-control-lg {
+        background-color: #111 !important;
+        border: 1px solid #FFD700 !important;
+        color: #fff !important;
+    }
+
+    body.high-contrast .media-btn, body.high-contrast .btn-cancel {
+        background-color: #000 !important;
+        border: 1px solid #FFD700 !important;
+        color: #FFD700 !important;
+    }
+
+    body.high-contrast .btn-post {
+        background-color: #FFD700 !important;
+        color: #000 !important;
+        border: 1px solid #FFD700 !important;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
+<div id="user-settings" 
+     data-contrast="{{ 'true' if current_user.is_authenticated and current_user.high_contrast else 'false' }}" 
+     data-fontsize="{{ current_user.font_size if current_user.is_authenticated and current_user.font_size else 'Normal' }}"
+     data-lang="{{ current_user.language if current_user.is_authenticated and current_user.language else 'en' }}"
+     style="display: none;"></div>
+
+<div id="google_translate_element"></div>
+
 <div class="page-container">
     <aside class="sidebar">
         <div class="sidebar-logo">
@@ -284,7 +361,6 @@
             <h1 class="page-title">Create post</h1>
             
             <form action="{{ url_for('create_post') }}" method="POST" enctype="multipart/form-data">
-                
                 <div class="media-buttons">
                     <label class="media-btn">
                         <i class="fas fa-image"></i> Add Photos
@@ -319,8 +395,50 @@
     </main>
 </div>
 
+<script type="text/javascript">
+    function googleTranslateElementInit() {
+        new google.translate.TranslateElement({
+            pageLanguage: 'en',
+            includedLanguages: 'en,zh-CN,ta',
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+            autoDisplay: false
+        }, 'google_translate_element');
+    }
+</script>
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
 <script>
-    // --- 1. Media Preview & Remove Logic ---
+    document.addEventListener("DOMContentLoaded", function() {
+        const settingsDiv = document.getElementById('user-settings');
+        if (settingsDiv) {
+            const contrast = settingsDiv.getAttribute('data-contrast').toLowerCase();
+            const fontSize = settingsDiv.getAttribute('data-fontsize');
+            const lang = settingsDiv.getAttribute('data-lang');
+
+            // Apply High Contrast
+            if (contrast === 'true') {
+                document.body.classList.add('high-contrast');
+            }
+
+            // Apply Font Size
+            if (fontSize && fontSize !== 'Normal') {
+                document.body.classList.add('fs-' + fontSize);
+            }
+
+            // Auto-Translate Language
+            if (lang && lang !== 'en') {
+                const checkGoogle = setInterval(() => {
+                    const combo = document.querySelector('.goog-te-combo');
+                    if (combo) {
+                        combo.value = lang;
+                        combo.dispatchEvent(new Event('change'));
+                        clearInterval(checkGoogle);
+                    }
+                }, 500);
+            }
+        }
+    });
+
     function previewMedia(input) {
         const file = input.files[0];
         if (file) {
@@ -351,21 +469,16 @@
     function removeMedia() {
         const inputs = document.querySelectorAll('input[type="file"]');
         inputs.forEach(input => input.value = '');
-
-        // Hide preview
         document.getElementById('media-preview-container').style.display = 'none';
         document.getElementById('image-preview').src = '';
         document.getElementById('video-preview').src = '';
     }
 
-    // --- 2. Auto-Resize Textarea Logic ---
     const textarea = document.getElementById('autoResizeContent');
-
     function autoResize() {
         this.style.height = 'auto'; 
         this.style.height = this.scrollHeight + 'px';
     }
-
     if (textarea) {
         textarea.addEventListener('input', autoResize);
     }

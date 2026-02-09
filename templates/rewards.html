@@ -15,7 +15,16 @@
             url('https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1600&fit=crop'); 
         background-size: cover; background-attachment: fixed; background-position: center;
         font-family: 'Outfit', -apple-system, sans-serif; color: #1e293b;
+        top: 0 !important; 
+        position: static !important; 
     }
+
+    /* --- GOOGLE TRANSLATE HACKS (Hide the Ugly Bar) --- */
+    .goog-te-banner-frame.skiptranslate { display: none !important; }
+    body > .skiptranslate { display: none !important; }
+    #goog-gt-tt, .goog-te-balloon-frame { display: none !important; }
+    .goog-text-highlight { background: none !important; box-shadow: none !important; }
+    #google_translate_element { visibility: hidden; position: absolute; top: -9999px; left: -9999px; }
 
     /* --- SIDEBAR (Solid White) --- */
     .container { display: flex; min-height: 100vh; }
@@ -238,6 +247,8 @@
      data-contrast="{{ 'true' if user.high_contrast else 'false' }}" 
      data-fontsize="{{ user.font_size or 'Normal' }}"
      style="display: none;"></div>
+
+<div id="google_translate_element"></div>
 
 <div class="container">
     <aside class="sidebar">
@@ -466,6 +477,19 @@
         </div>
     </main>
 </div>
+
+<script type="text/javascript">
+    function googleTranslateElementInit() {
+        new google.translate.TranslateElement({
+            pageLanguage: 'en',
+            includedLanguages: 'en,zh-CN,ta',
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+            autoDisplay: false
+        }, 'google_translate_element');
+    }
+</script>
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
 <script>
     // 1. APPLY HIGH CONTRAST & FONT (If user has them on)
     document.addEventListener("DOMContentLoaded", function() {
