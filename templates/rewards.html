@@ -84,9 +84,20 @@
     .daily-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.15); }
     .daily-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
 
+    /* Timer Style */
+    #countdownTimer {
+        margin-top: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 4px 12px;
+        border-radius: 20px;
+        display: none; /* Hidden by default */
+    }
+
     /* --- REWARDS GRID --- */
     .section-title { font-size: 20px; font-weight: 800; color: #1e293b; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-    .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
+    .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
 
     .item-card {
         background: white; border-radius: 20px; border: 1px solid #e2e8f0;
@@ -104,6 +115,7 @@
     .item-tag { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; width: fit-content; }
     .tag-community { background: #e0e7ff; color: #4338ca; }
     .tag-profile { background: #fef3c7; color: #b45309; }
+    .tag-special { background: #fce7f3; color: #7e22ce; }
     
     .item-title { font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 8px; }
     .item-desc { font-size: 14px; color: #64748b; line-height: 1.5; margin-bottom: 20px; flex: 1; }
@@ -118,9 +130,6 @@
     }
     .btn-redeem:hover { background: #1e293b; color: white; border-color: #1e293b; }
 
-    body.senior-mode .main-content { margin-left: 280px; }
-    body.senior-mode .sidebar { width: 280px; }
-    
     @media (max-width: 1024px) {
         .stats-row { grid-template-columns: 1fr; }
         .sidebar { display: none; }
@@ -182,7 +191,8 @@
     body.high-contrast .item-price,
     body.high-contrast .section-title,
     body.high-contrast .daily-icon,
-    body.high-contrast .coin-visual {
+    body.high-contrast .coin-visual,
+    body.high-contrast #countdownTimer {
         color: #FFD700 !important;
     }
 
@@ -224,6 +234,11 @@
 {% endblock %}
 
 {% block content %}
+<div id="user-settings" 
+     data-contrast="{{ 'true' if user.high_contrast else 'false' }}" 
+     data-fontsize="{{ user.font_size or 'Normal' }}"
+     style="display: none;"></div>
+
 <div class="container">
     <aside class="sidebar">
         <div class="sidebar-logo">
@@ -234,13 +249,14 @@
         </div>
         <ul class="sidebar-nav">
             <li><a href="{{ url_for('home') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a></li>
-            <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg><span>Activities</span></a></li>
-            <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Community</span></a></li>
-            <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>Create</span></a></li>
-            <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Alerts</span></a></li>
-            <li><a href="{{ url_for('messages') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Chat</span></a></li>
+            <li><a href="{{ url_for('activities_home') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg><span>Activities</span></a></li>
+            <li><a href="{{ url_for('create_post') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>Create</span></a></li>
+            <li><a href="{{ url_for('notifications_page') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Notification</span></a></li>
+            <li><a href="{{ url_for('messages') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Message</span></a></li>
             <li><a href="{{ url_for('profile') }}" class="active"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a></li>
-            <li><a href="#" onclick="toggleSeniorMode()" style="color: #059669; border-top: 1px solid #e5e7eb; margin-top:20px; padding-top:20px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg><span>Senior Mode (Aa+)</span></a></li>
+            
+            <li style="margin-top: 20px; border-top: 1px solid #e5e7eb;"></li>
+            
             <li><a href="{{ url_for('logout') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></a></li>
         </ul>
     </aside>
@@ -278,6 +294,7 @@
                     <button class="daily-btn" id="dailyBtn" onclick="claimDailyPoints()">
                         Claim +50 Pts
                     </button>
+                    <div id="countdownTimer"></div>
                 </div>
             </div>
 
@@ -319,10 +336,127 @@
                     <div class="item-content">
                         <span class="item-tag tag-community">Event</span>
                         <div class="item-title">Workshop Fast-Pass</div>
-                        <div class="item-desc">Skip the waitlist and get guaranteed entry to the next "Tech for Seniors" workshop.</div>
+                        <div class="item-desc">Skip the waitlist and get guaranteed entry to the next workshop.</div>
                         <div class="item-footer">
                             <div class="item-price">200 Pts</div>
                             <button class="btn-redeem" onclick="redeemItem(200, 'Workshop Pass')">Redeem</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-icon-area">🌈</div>
+                    <div class="item-content">
+                        <span class="item-tag tag-profile">Cosmetic</span>
+                        <div class="item-title">Custom Name Color</div>
+                        <div class="item-desc">Stand out in chats with a unique username color of your choice.</div>
+                        <div class="item-footer">
+                            <div class="item-price">400 Pts</div>
+                            <button class="btn-redeem" onclick="redeemItem(400, 'Name Color')">Redeem</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-icon-area">🖼️</div>
+                    <div class="item-content">
+                        <span class="item-tag tag-profile">Cosmetic</span>
+                        <div class="item-title">Custom Banner</div>
+                        <div class="item-desc">Upload a custom image for your profile header background.</div>
+                        <div class="item-footer">
+                            <div class="item-price">600 Pts</div>
+                            <button class="btn-redeem" onclick="redeemItem(600, 'Custom Banner')">Redeem</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-icon-area">🚫</div>
+                    <div class="item-content">
+                        <span class="item-tag tag-special">Premium</span>
+                        <div class="item-title">Ad-Free Week</div>
+                        <div class="item-desc">Enjoy a distraction-free experience on GenConnect for 7 days.</div>
+                        <div class="item-footer">
+                            <div class="item-price">800 Pts</div>
+                            <button class="btn-redeem" onclick="redeemItem(800, 'Ad-Free Week')">Redeem</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-icon-area">🎓</div>
+                    <div class="item-content">
+                        <span class="item-tag tag-community">Status</span>
+                        <div class="item-title">Mentor Badge</div>
+                        <div class="item-desc">Display a special badge showing you are open to mentoring others.</div>
+                        <div class="item-footer">
+                            <div class="item-price">150 Pts</div>
+                            <button class="btn-redeem" onclick="redeemItem(150, 'Mentor Badge')">Redeem</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-icon-area">✏️</div>
+                    <div class="item-content">
+                        <span class="item-tag tag-community">Chat</span>
+                        <div class="item-title">Rename Group Chat</div>
+                        <div class="item-desc">One-time pass to rename a group chat you are part of.</div>
+                        <div class="item-footer">
+                            <div class="item-price">100 Pts</div>
+                            <button class="btn-redeem" onclick="redeemItem(100, 'Rename Group')">Redeem</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-icon-area">👻</div>
+                    <div class="item-content">
+                        <span class="item-tag tag-special">Privacy</span>
+                        <div class="item-title">Ghost Mode (24h)</div>
+                        <div class="item-desc">Browse profiles and posts without appearing in "Viewed by" lists.</div>
+                        <div class="item-footer">
+                            <div class="item-price">250 Pts</div>
+                            <button class="btn-redeem" onclick="redeemItem(250, 'Ghost Mode')">Redeem</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-icon-area">🎁</div>
+                    <div class="item-content">
+                        <span class="item-tag tag-community">Social</span>
+                        <div class="item-title">Gift Points</div>
+                        <div class="item-desc">Send 100 of your points to a friend as a gift. (Costs 110 pts).</div>
+                        <div class="item-footer">
+                            <div class="item-price">110 Pts</div>
+                            <button class="btn-redeem" onclick="redeemItem(110, 'Gift Points')">Redeem</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-icon-area">📊</div>
+                    <div class="item-content">
+                        <span class="item-tag tag-profile">Data</span>
+                        <div class="item-title">Profile Analytics</div>
+                        <div class="item-desc">See who viewed your profile and which posts are most popular for 30 days.</div>
+                        <div class="item-footer">
+                            <div class="item-price">1000 Pts</div>
+                            <button class="btn-redeem" onclick="redeemItem(1000, 'Profile Analytics')">Redeem</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-icon-area">👑</div>
+                    <div class="item-content">
+                        <span class="item-tag tag-special">Ultimate</span>
+                        <div class="item-title">VIP Status (1 Month)</div>
+                        <div class="item-desc">Get the Gold Frame, Ad-Free, and Spotlight access for a full month.</div>
+                        <div class="item-footer">
+                            <div class="item-price">2500 Pts</div>
+                            <button class="btn-redeem" onclick="redeemItem(2500, 'VIP Status')">Redeem</button>
                         </div>
                     </div>
                 </div>
@@ -335,13 +469,19 @@
 <script>
     // 1. APPLY HIGH CONTRAST & FONT (If user has them on)
     document.addEventListener("DOMContentLoaded", function() {
-        {% if user.high_contrast %}
-            document.body.classList.add('high-contrast');
-        {% endif %}
+        const settingsDiv = document.getElementById('user-settings');
+        if (settingsDiv) {
+            const highContrast = settingsDiv.getAttribute('data-contrast');
+            const fontSize = settingsDiv.getAttribute('data-fontsize');
 
-        {% if user.font_size %}
-            document.body.classList.add('fs-{{ user.font_size }}');
-        {% endif %}
+            if (highContrast === 'true') {
+                document.body.classList.add('high-contrast');
+            }
+
+            if (fontSize) {
+                document.body.classList.add('fs-' + fontSize);
+            }
+        }
     });
 
     // 2. POINTS LOGIC
@@ -353,6 +493,7 @@
     
     if(lastClaimDate === today) {
         disableDailyBtn("Come back tomorrow");
+        startCountdown();
     }
 
     function claimDailyPoints() {
@@ -368,9 +509,13 @@
                 localStorage.setItem('lastClaimDate', new Date().toDateString());
                 disableDailyBtn("Claimed!");
                 alert("Success! You've earned 50 points.");
+                startCountdown();
             } else {
                 alert(data.message); 
-                if(data.message.includes("Already")) disableDailyBtn("Come back tomorrow");
+                if(data.message.includes("Already")) {
+                    disableDailyBtn("Come back tomorrow");
+                    startCountdown();
+                }
             }
         })
         .catch(error => console.error('Error:', error));
@@ -414,14 +559,27 @@
         }
     }
 
-    function toggleSeniorMode() {
-        document.body.classList.toggle('senior-mode');
-        const isSenior = document.body.classList.contains('senior-mode');
-        localStorage.setItem('seniorMode', isSenior);
-    }
-    
-    if(localStorage.getItem('seniorMode') === 'true') {
-        document.body.classList.add('senior-mode');
+    function startCountdown() {
+        const timerElement = document.getElementById('countdownTimer');
+        timerElement.style.display = 'block';
+
+        function updateTimer() {
+            const now = new Date();
+            const tomorrow = new Date();
+            tomorrow.setDate(now.getDate() + 1);
+            tomorrow.setHours(0, 0, 0, 0);
+
+            const diff = tomorrow - now;
+            
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            timerElement.innerText = `Next in: ${hours}h ${minutes}m ${seconds}s`;
+        }
+
+        updateTimer();
+        setInterval(updateTimer, 1000);
     }
 </script>
 {% endblock %}
