@@ -848,8 +848,14 @@ def leave_group(group_id):
 @app.route('/notifications')
 def notifications_page():
     if 'user_id' not in session: return redirect(url_for('login'))
+    
+    # 1. Fetch the user object to get your preferences (high contrast, font, etc.)
+    user = User.query.get(session['user_id'])
+    
     user_notifications = Notification.query.filter_by(recipient_id=session['user_id']).order_by(Notification.created_at.desc()).all()
-    return render_template('notifications.html', notifications=user_notifications)
+    
+    # 2. Pass current_user=user to the template
+    return render_template('notifications.html', notifications=user_notifications, current_user=user)
 
 # --- UPDATED: Add Contact with specific Block Validation message ---
 # In app.py
