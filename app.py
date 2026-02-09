@@ -14,6 +14,7 @@ from sqlalchemy.exc import IntegrityError
 import os
 import random
 import traceback
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -31,7 +32,18 @@ app.config['MAIL_PASSWORD'] = 'abxvtnbhstipemhg'  # No spaces
 app.config['MAIL_DEFAULT_SENDER'] = 'liewqien5@gmail.com'
 app.config['MAIL_DEBUG'] = True
 
+
 mail = Mail(app)
+
+# Initialize LoginManager
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
 
 # Upload Config
 UPLOAD_FOLDER = 'uploads'
@@ -72,7 +84,7 @@ def format_chat_time(dt):
 
 # ==================== MODELS ====================
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -1747,6 +1759,22 @@ def not_found(error):
 def internal_error(error): 
     db.session.rollback()
     return '<h1>500 - Internal Server Error</h1>', 500
+
+@app.route('/edit-activity')
+def edit_activity_page():
+    return render_template('edit-activity.html')
+
+@app.route('/delete-confirmation')
+def delete_confirmation_page():
+    return render_template('delete-confirmation.html')
+
+@app.route('/delete-success')
+def delete_success_page():
+    return render_template('delete-success.html')
+
+@app.route('/update-confirmation')
+def update_confirmation_page():
+    return render_template('update-confirmation.html')
 
 if __name__ == '__main__':
     with app.app_context():

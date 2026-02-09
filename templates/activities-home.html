@@ -3,74 +3,512 @@
 {% block title %}GenConnect – Activities{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-    body { margin: 0; font-family: Arial, sans-serif; background-color: #f7f9fc; }
-    .layout { display: flex; }
-    
-    /* Group Sidebar Styles */
-    .sidebar { width: 250px; height: 100vh; background-color: white; border-right: 1px solid #e0e0e0; position: fixed; top: 0; z-index: 1000; }
-    .sidebar-logo { padding: 20px 30px; font-weight: 600; color: #6366f1; }
-    .sidebar-nav { list-style: none; padding: 0; }
-    .sidebar-nav a { display: flex; align-items: center; gap: 15px; padding: 12px 30px; text-decoration: none; color: #333; transition: 0.2s; }
-    .sidebar-nav a:hover { background-color: #f5f5f5; }
-    .sidebar-nav a.active { background-color: #eff6ff; color: #2563eb; border-right: 3px solid #2563eb; }
-    .sidebar-nav svg { width: 22px; height: 22px; }
+    body {
+        margin: 0;
+        font-family: 'Outfit', -apple-system, sans-serif;
+        background-color: #f7f9fc;
+        color: #1e293b;
+    }
+
+    .layout {
+        display: flex;
+    }
+
+    /* --- Sidebar Styles (Seamless Match) --- */
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 250px;
+        height: 100vh;
+        background-color: white;
+        border-right: 1px solid #e5e7eb;
+        padding: 0;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sidebar-logo {
+        height: 72px;
+        display: flex;
+        align-items: center;
+        padding: 0 30px;
+        border-bottom: 1px solid #e5e7eb;
+        margin-right: -1px;
+        border-right: 1px solid white;
+        background-color: white;
+        position: relative;
+        z-index: 10;
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 20px;
+        font-weight: 600;
+        color: #6366f1;
+        text-decoration: none;
+    }
+
+    .sidebar-nav {
+        list-style: none;
+        padding: 20px 0;
+        overflow-y: auto;
+        flex: 1;
+        margin: 0;
+    }
+
+    .sidebar-nav li {
+        margin: 5px 0;
+        list-style: none;
+    }
+
+    .sidebar-nav a {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 12px 30px;
+        text-decoration: none;
+        color: #374151;
+        transition: all 0.2s;
+        font-size: 15px;
+        font-weight: 500;
+    }
+
+    .sidebar-nav a:hover {
+        background-color: #f9fafb;
+    }
+
+    .sidebar-nav a.active {
+        background-color: #eff6ff;
+        color: #2563eb;
+        border-right: 3px solid #2563eb;
+    }
+
+    .sidebar-nav svg {
+        width: 22px;
+        height: 22px;
+    }
 
     /* Your Content Styles */
-    .content { flex: 1; margin-left: 250px; padding: 30px; }
-    .page-header { margin-bottom: 30px; }
-    .page-header h2 { font-size: 32px; font-weight: bold; color: #1f2937; margin: 0; }
-    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .top-bar input { padding: 10px 20px; border-radius: 20px; border: 1px solid #d1d5db; width: 300px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
-    .filters { margin-bottom: 25px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .filters button { border: none; padding: 8px 22px; border-radius: 25px; background-color: #e5e7eb; color: #4b5563; transition: 0.3s; }
-    .filters button.active { background-color: #2563eb; color: white; font-weight: bold; }
-    .action-buttons { margin-left: auto; display: flex; gap: 12px; }
-    .create-btn { background: linear-gradient(135deg, #f97316, #fb923c); color: white; border: none; padding: 10px 20px; border-radius: 25px; font-weight: bold; cursor: pointer; text-decoration: none; }
-    .my-btn { background: linear-gradient(135deg, #8b5cf6, #a78bfa); color: white; border: none; padding: 10px 20px; border-radius: 25px; font-weight: bold; cursor: pointer; text-decoration: none; }
-    
-    .activity-card { display: flex; align-items: center; background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-    .activity-details { flex: 1; }
-    .category { font-size: 12px; color: #2563eb; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
-    .activity-details h5 { margin: 8px 0; font-size: 20px; color: #1f2937; font-weight: 800; }
-    .meta { font-size: 14px; color: #4b5563; margin-bottom: 8px; font-weight: 500; display: flex; flex-direction: column; gap: 4px; }
-    .meta-item { display: flex; align-items: center; gap: 8px; }
-    .meta-item i { color: #2563eb; font-size: 16px; width: 18px; }
-    .description { font-style: italic; color: #6b7280; font-size: 14px; }
-    .actions { display: flex; flex-direction: column; gap: 10px; min-width: 150px; }
-    .join-btn { background-color: #10b981; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 600; cursor: pointer; }
-    .details-btn { background-color: #0ea5e9; color: white; border: none; padding: 10px; border-radius: 8px; text-decoration: none; text-align: center; font-weight: 600; cursor: pointer; }
-    .toggle-container { text-align: center; margin: 30px 0; }
-    .toggle-view-btn { border: none; background: transparent; color: #2563eb; font-weight: bold; font-size: 18px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
-    .hidden-card { display: none; }
+    .content {
+        flex: 1;
+        margin-left: 250px;
+        padding: 30px;
+    }
+
+    .page-header {
+        margin-bottom: 30px;
+    }
+
+    .page-header h2 {
+        font-size: 32px;
+        font-weight: bold;
+        color: #1f2937;
+        margin: 0;
+    }
+
+    .top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .top-bar input {
+        padding: 10px 20px;
+        border-radius: 20px;
+        border: 1px solid #d1d5db;
+        width: 300px;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .filters {
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .filters button {
+        border: none;
+        padding: 8px 22px;
+        border-radius: 25px;
+        background-color: #e5e7eb;
+        color: #4b5563;
+        transition: 0.3s;
+    }
+
+    .filters button.active {
+        background-color: #2563eb;
+        color: white;
+        font-weight: bold;
+    }
+
+    .action-buttons {
+        margin-left: auto;
+        display: flex;
+        gap: 12px;
+    }
+
+    .create-btn {
+        background: linear-gradient(135deg, #f97316, #fb923c);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-weight: bold;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .my-btn {
+        background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-weight: bold;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .activity-card {
+        display: flex;
+        align-items: center;
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+        gap: 25px;
+    }
+
+    .activity-details {
+        flex: 1;
+    }
+
+    .category {
+        font-size: 12px;
+        color: #2563eb;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .activity-details h5 {
+        margin: 8px 0;
+        font-size: 20px;
+        color: #1f2937;
+        font-weight: 800;
+    }
+
+    .meta {
+        font-size: 14px;
+        color: #4b5563;
+        margin-bottom: 8px;
+        font-weight: 500;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .meta-item i {
+        color: #2563eb;
+        font-size: 16px;
+        width: 18px;
+    }
+
+    .description {
+        font-style: italic;
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-width: 150px;
+    }
+
+    .join-btn {
+        background-color: #10b981;
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .details-btn {
+        background-color: #0ea5e9;
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 8px;
+        text-decoration: none;
+        text-align: center;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .managed-tag,
+    .joined-tag,
+    .quota-full-tag {
+        background-color: #f1f5f9;
+        color: #64748b;
+        padding: 10px;
+        border-radius: 8px;
+        font-weight: 700;
+        text-align: center;
+        font-size: 14px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .joined-tag {
+        background-color: #ecfdf5;
+        color: #059669;
+        border-color: #10b981;
+    }
+
+    .quota-full-tag {
+        background-color: #fef2f2;
+        color: #dc2626;
+        border-color: #f87171;
+    }
+
+    .quota-info {
+        font-size: 15px;
+        /* Increased for seniors */
+        font-weight: 700;
+        color: #1e293b;
+        margin-top: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .quota-progress-container {
+        width: 100%;
+        height: 10px;
+        background: #e2e8f0;
+        border-radius: 5px;
+        overflow: hidden;
+        margin-top: 4px;
+    }
+
+    .quota-progress-bar {
+        height: 100%;
+        transition: width 0.5s ease;
+        border-radius: 5px;
+    }
+
+    .progress-green {
+        background: linear-gradient(90deg, #10b981, #34d399);
+    }
+
+    .progress-yellow {
+        background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    }
+
+    .progress-red {
+        background: linear-gradient(90deg, #ef4444, #f87171);
+    }
+
+    .status-label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: 800;
+        display: inline-block;
+        margin-bottom: 4px;
+    }
+
+    .label-trending {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .label-fast {
+        background: #fef9c3;
+        color: #854d0e;
+    }
+
+    .label-almost {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .quota-text {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .social-proof {
+        font-size: 12px;
+        color: #64748b;
+        font-weight: 500;
+        font-style: italic;
+    }
+
+
+    .toggle-container {
+        display: flex;
+        justify-content: center;
+        padding: 30px 0;
+        margin-top: 10px;
+    }
+
+    .toggle-view-btn {
+        border: none;
+        background: transparent;
+        color: #2563eb;
+        font-weight: bold;
+        font-size: 18px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .hidden-card {
+        display: none;
+    }
+
+    .d-none {
+        display: none !important;
+    }
+
+    #noResultsMessage {
+        padding: 60px 20px;
+        text-align: center;
+        background: white;
+        border-radius: 20px;
+        border: 2px dashed #e2e8f0;
+        margin: 40px auto;
+        max-width: 600px;
+        color: #64748b;
+        display: none;
+        /* Hidden by default */
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    #noResultsMessage i {
+        font-size: 64px;
+        color: #cbd5e1;
+        margin-bottom: 5px;
+    }
+
+    #noResultsMessage h4 {
+        margin: 0;
+        color: #1e293b;
+        font-weight: 700;
+        font-size: 20px;
+    }
+
+    #noResultsMessage p {
+        margin: 0;
+        font-size: 16px;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="layout">
     <aside class="sidebar">
-    <div class="sidebar-logo">
-        <a href="{{ url_for('home') }}" class="logo" style="text-decoration: none; color: #6366f1; display: flex; align-items: center; gap: 10px;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-            <span>GenConnect</span>
-        </a>
-    </div>
-    <ul class="sidebar-nav">
-        <li><a href="{{ url_for('home') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></a></li>
-        <li><a href="{{ url_for('activities_home') }}" class="active"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg><span>Explore Activities</span></a></li>
-        <li><a href="{{ url_for('create_activity') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>Create</span></a></li>
-        <li><a href="#"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Notification</span></a></li>
-        <li><a href="{{ url_for('messages') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Messages</span></a></li>
-        <li><a href="{{ url_for('profile') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a></li>
-        <li style="margin-top: 20px; border-top: 1px solid #e5e7eb; list-style: none;"></li>
-        <li><a href="{{ url_for('logout') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></a></li>
-    </ul>
-</aside>
+        <div class="sidebar-logo">
+            <a href="{{ url_for('home') }}" class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                    <path d="M2 17l10 5 10-5" />
+                    <path d="M2 12l10 5 10-5" />
+                </svg>
+                <span>GenConnect</span>
+            </a>
+        </div>
+        <ul class="sidebar-nav">
+            <li><a href="{{ url_for('home') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                        <polyline points="9 22 9 12 15 12 15 22" />
+                    </svg><span>Home</span></a></li>
+            <li><a href="{{ url_for('activities_home') }}" class="active"><svg width="22" height="22"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <circle cx="12" cy="10" r="3" />
+                        <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662" />
+                    </svg><span>Explore Activities</span></a></li>
+
+            <li><a href="{{ url_for('create_post') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="16" x2="12" y2="12" />
+                        <line x1="12" y1="8" x2="12.01" y2="8" />
+                    </svg><span>Create</span></a></li>
+
+            <li><a href="{{ url_for('notifications_page') }}"><svg width="22" height="22" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                    </svg><span>Notification</span></a></li>
+            <li><a href="{{ url_for('messages') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg><span>Messages</span></a></li>
+            <li><a href="{{ url_for('profile') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg><span>Profile</span></a></li>
+            <li style="margin-top: 20px; border-top: 1px solid #e5e7eb; list-style: none;"></li>
+            <li><a href="{{ url_for('logout') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg><span>Logout</span></a></li>
+        </ul>
+    </aside>
+
 
     <main class="content" id="activities-container">
-        <div class="page-header">
-            <h2>Explore Activities</h2>
+        <div class="page-header" style="margin-bottom: 20px;">
+            <h2 style="font-size: 28px; color: #1f2937; margin-bottom: 5px;">Explore Opportunities</h2>
+            <p style="color: #6b7280; font-size: 16px; margin-top: 0;">Find your next passion, make a difference in your
+                community, and build lasting friendships.</p>
         </div>
 
         <div class="top-bar">
@@ -97,6 +535,44 @@
             <div class="activity-card" data-category="Outdoor">
                 <div class="activity-details">
                     <div class="category">Outdoor</div>
+                    <h5>Community Gardening</h5>
+                    <div class="meta">
+                        <div class="meta-item"><i class="bi bi-calendar3"></i> 10 Feb 2026</div>
+                        <div class="meta-item"><i class="bi bi-clock"></i> 10:00 AM – 12:00 PM</div>
+                        <div class="meta-item"><i class="bi bi-geo-alt"></i> Community Garden</div>
+                    </div>
+                    <div class="description">"Join your neighbors for a community gardening session."</div>
+                </div>
+                <div class="actions">
+                    <a href="{{ url_for('join_confirmation', activity_id=10) }}?title=Community Gardening&cat=Outdoor&date=10 Feb 2026&time=10:00 AM – 12:00 PM&loc=Community Garden&desc=Join your neighbors for a community gardening session.&instructions=Bring your own gloves if you have them."
+                        class="join-btn" style="text-decoration:none; text-align:center;">Join</a>
+                    <a href="{{ url_for('activity_details', activity_id=10, title='Community Gardening', cat='Outdoor', date='10 Feb 2026', time='10:00 AM – 12:00 PM', loc='Community Garden', img='https://loremflickr.com/800/400/garden', desc='Join your neighbors for a community gardening session.') }}&instructions=Bring your own gloves if you have them."
+                        class="details-btn">View Details</a>
+                </div>
+            </div>
+
+            <div class="activity-card" data-category="Tech Help">
+                <div class="activity-details">
+                    <div class="category">Tech Help</div>
+                    <h5>Tablet Basics</h5>
+                    <div class="meta">
+                        <div class="meta-item"><i class="bi bi-calendar3"></i> 11 Feb 2026</div>
+                        <div class="meta-item"><i class="bi bi-clock"></i> 2:00 PM – 4:00 PM</div>
+                        <div class="meta-item"><i class="bi bi-geo-alt"></i> Learning Center</div>
+                    </div>
+                    <div class="description">"Learn how to use your tablet for video calls and entertainment."</div>
+                </div>
+                <div class="actions">
+                    <a href="{{ url_for('join_confirmation', activity_id=11) }}?title=Tablet Basics&cat=Tech Help&date=11 Feb 2026&time=2:00 PM – 4:00 PM&loc=Learning Center&desc=Learn how to use your tablet for video calls and entertainment.&instructions=Bring your own tablet fully charged."
+                        class="join-btn" style="text-decoration:none; text-align:center;">Join</a>
+                    <a href="{{ url_for('activity_details', activity_id=11, title='Tablet Basics', cat='Tech Help', date='11 Feb 2026', time='2:00 PM – 4:00 PM', loc='Learning Center', img='https://loremflickr.com/800/400/tablet', desc='Learn how to use your tablet for video calls and entertainment.') }}&instructions=Bring your own tablet fully charged."
+                        class="details-btn">View Details</a>
+                </div>
+            </div>
+
+            <div class="activity-card" data-category="Outdoor">
+                <div class="activity-details">
+                    <div class="category">Outdoor</div>
                     <h5>Morning Yoga</h5>
                     <div class="meta">
                         <div class="meta-item"><i class="bi bi-calendar3"></i> 17 Dec 2025</div>
@@ -106,8 +582,10 @@
                     <div class="description">"Start your day with gentle stretches and mindfulness."</div>
                 </div>
                 <div class="actions">
-                    <button class="join-btn">Join</button>
-                    <button class="details-btn">View Details</button>
+                    <a href="{{ url_for('join_confirmation', activity_id=1) }}?title=Morning Yoga&cat=Outdoor&date=17 Dec 2025&time=7:30 AM – 9:00 AM&loc=Studio 1, Community Hall&desc=Start your day with gentle stretches and mindfulness.&instructions=Bring your own yoga mat and water bottle."
+                        class="join-btn" style="text-decoration:none; text-align:center;">Join</a>
+                    <a href="{{ url_for('activity_details', activity_id=1, title='Morning Yoga', cat='Outdoor', date='17 Dec 2025', time='7:30 AM – 9:00 AM', loc='Studio 1, Community Hall', img='https://loremflickr.com/800/400/yoga', desc='Start your day with gentle stretches and mindfulness.') }}&instructions=Bring your own yoga mat and water bottle."
+                        class="details-btn">View Details</a>
                 </div>
             </div>
 
@@ -123,8 +601,10 @@
                     <div class="description">"Friendly matches for youth and seniors to stay active."</div>
                 </div>
                 <div class="actions">
-                    <button class="join-btn">Join</button>
-                    <button class="details-btn">View Details</button>
+                    <a href="{{ url_for('join_confirmation', activity_id=2) }}?title=Badminton Fun&cat=Outdoor&date=28 Dec 2025&time=10:00 AM – 12:00 PM&loc=Community Sports Hall&desc=Friendly matches for youth and seniors to stay active.&instructions=Rackets are provided, but feel free to bring your own."
+                        class="join-btn" style="text-decoration:none; text-align:center;">Join</a>
+                    <a href="{{ url_for('activity_details', activity_id=2, title='Badminton Fun', cat='Outdoor', date='28 Dec 2025', time='10:00 AM – 12:00 PM', loc='Community Sports Hall', img='https://loremflickr.com/800/400/badminton', desc='Friendly matches for youth and seniors to stay active.') }}&instructions=Rackets are provided, but feel free to bring your own."
+                        class="details-btn">View Details</a>
                 </div>
             </div>
 
@@ -140,8 +620,68 @@
                     <div class="description">"Express your creativity with guided craft projects."</div>
                 </div>
                 <div class="actions">
-                    <button class="join-btn">Join</button>
-                    <button class="details-btn">View Details</button>
+                    <a href="{{ url_for('join_confirmation', activity_id=3) }}?title=Arts %26 Crafts Workshop&cat=Hobbies&date=30 Dec 2025&time=2:00 PM – 4:00 PM&loc=Community Hall Room&desc=Express your creativity with guided craft projects.&instructions=All materials are included. Wear clothes you don't mind getting dirty!"
+                        class="join-btn" style="text-decoration:none; text-align:center;">Join</a>
+                    <a href="{{ url_for('activity_details', activity_id=3, title='Arts %26 Crafts Workshop', cat='Hobbies', date='30 Dec 2025', time='2:00 PM – 4:00 PM', loc='Community Hall Room', img='https://loremflickr.com/800/400/art', desc='Express your creativity with guided craft projects.') }}&instructions=All materials are included. Wear clothes you don't mind getting dirty!"
+                        class="details-btn">View Details</a>
+                </div>
+            </div>
+
+            <div class="activity-card" data-category="Hobbies">
+                <div class="activity-details">
+                    <div class="category">Hobbies</div>
+                    <h5>Advanced Origami</h5>
+                    <div class="meta">
+                        <div class="meta-item"><i class="bi bi-calendar3"></i> 25 Feb 2026</div>
+                        <div class="meta-item"><i class="bi bi-clock"></i> 3:00 PM – 5:00 PM</div>
+                        <div class="meta-item"><i class="bi bi-geo-alt"></i> Art Studio, Level 1</div>
+                    </div>
+                    <div class="description">"Master complex paper folding techniques. Previous experience recommended."
+                    </div>
+                </div>
+                <div class="actions">
+                    <a href="{{ url_for('join_confirmation', activity_id=12) }}?title=Advanced Origami&cat=Hobbies&date=25 Feb 2026&time=3:00 PM – 5:00 PM&loc=Art Studio, Level 1&desc=Master complex paper folding techniques. Previous experience recommended.&instructions=Paper provided."
+                        class="join-btn" style="text-decoration:none; text-align:center;">Join</a>
+                    <a href="{{ url_for('activity_details', activity_id=12, title='Advanced Origami', cat='Hobbies', date='25 Feb 2026', time='3:00 PM – 5:00 PM', loc='Art Studio, Level 1', img='https://loremflickr.com/800/400/origami', desc='Master complex paper folding techniques. Previous experience recommended.') }}&instructions=Paper provided."
+                        class="details-btn">View Details</a>
+                </div>
+            </div>
+
+            <div class="activity-card hidden-card" data-category="Volunteer">
+                <div class="activity-details">
+                    <div class="category">Volunteer</div>
+                    <h5>Library Book Sorting</h5>
+                    <div class="meta">
+                        <div class="meta-item"><i class="bi bi-calendar3"></i> 24 Jan 2026</div>
+                        <div class="meta-item"><i class="bi bi-clock"></i> 10:00 AM – 1:00 PM</div>
+                        <div class="meta-item"><i class="bi bi-geo-alt"></i> Central Library</div>
+                    </div>
+                    <div class="description">"Assist in organizing and sorting books for the community library."</div>
+                </div>
+                <div class="actions">
+                    <a href="{{ url_for('join_confirmation', activity_id=14) }}?title=Library Book Sorting&cat=Volunteer&date=24 Jan 2026&time=10:00 AM – 1:00 PM&loc=Central Library&desc=Assist in organizing and sorting books for the community library.&instructions=No heavy lifting required."
+                        class="join-btn" style="text-decoration:none; text-align:center;">Join</a>
+                    <a href="{{ url_for('activity_details', activity_id=14, title='Library Book Sorting', cat='Volunteer', date='24 Jan 2026', time='10:00 AM – 1:00 PM', loc='Central Library', img='https://loremflickr.com/800/400/library', desc='Assist in organizing and sorting books for the community library.') }}&instructions=No heavy lifting required."
+                        class="details-btn">View Details</a>
+                </div>
+            </div>
+
+            <div class="activity-card hidden-card" data-category="Volunteer">
+                <div class="activity-details">
+                    <div class="category">Volunteer</div>
+                    <h5>Park Tree Planting</h5>
+                    <div class="meta">
+                        <div class="meta-item"><i class="bi bi-calendar3"></i> 28 Jan 2026</div>
+                        <div class="meta-item"><i class="bi bi-clock"></i> 9:00 AM – 12:00 PM</div>
+                        <div class="meta-item"><i class="bi bi-geo-alt"></i> Green Meadows Park</div>
+                    </div>
+                    <div class="description">"Join us in planting new trees to beautify our local park."</div>
+                </div>
+                <div class="actions">
+                    <a href="{{ url_for('join_confirmation', activity_id=15) }}?title=Park Tree Planting&cat=Volunteer&date=28 Jan 2026&time=9:00 AM – 12:00 PM&loc=Green Meadows Park&desc=Join us in planting new trees to beautify our local park.&instructions=Gardening gloves provided."
+                        class="join-btn" style="text-decoration:none; text-align:center;">Join</a>
+                    <a href="{{ url_for('activity_details', activity_id=15, title='Park Tree Planting', cat='Volunteer', date='28 Jan 2026', time='9:00 AM – 12:00 PM', loc='Green Meadows Park', img='https://loremflickr.com/800/400/park', desc='Join us in planting new trees to beautify our local park.') }}&instructions=Gardening gloves provided."
+                        class="details-btn">View Details</a>
                 </div>
             </div>
 
@@ -157,105 +697,27 @@
                     <div class="description">"Master your phone with simple, step-by-step guidance."</div>
                 </div>
                 <div class="actions">
-                    <button class="join-btn">Join</button>
-                    <button class="details-btn">View Details</button>
+                    <a href="{{ url_for('join_confirmation', activity_id=4) }}?title=Smartphone Basics&cat=Tech Help&date=05 Jan 2026&time=11:00 AM – 12:30 PM&loc=Learning Hub, Level 2&desc=Master your phone with simple, step-by-step guidance.&instructions=Please bring your smartphone fully charged."
+                        class="join-btn" style="text-decoration:none; text-align:center;">Join</a>
+                    <a href="{{ url_for('activity_details', activity_id=4, title='Smartphone Basics', cat='Tech Help', date='05 Jan 2026', time='11:00 AM – 12:30 PM', loc='Learning Hub, Level 2', img='https://loremflickr.com/800/400/phone', desc='Master your phone with simple, step-by-step guidance.') }}&instructions=Please bring your smartphone fully charged."
+                        class="details-btn">View Details</a>
                 </div>
             </div>
 
-            <div class="activity-card hidden-card" data-category="Volunteer">
-                <div class="activity-details">
-                    <div class="category">Volunteer</div>
-                    <h5>Food Bank Packing</h5>
-                    <div class="meta">
-                        <div class="meta-item"><i class="bi bi-calendar3"></i> 12 Jan 2026</div>
-                        <div class="meta-item"><i class="bi bi-clock"></i> 9:00 AM – 1:00 PM</div>
-                        <div class="meta-item"><i class="bi bi-geo-alt"></i> Central Warehouse</div>
-                    </div>
-                    <div class="description">"Give back to the community by helping pack essential supplies."</div>
-                </div>
-                <div class="actions">
-                    <button class="join-btn">Join</button>
-                    <button class="details-btn">View Details</button>
-                </div>
-            </div>
-
-            <div class="activity-card hidden-card" data-category="Hobbies">
-                <div class="activity-details">
-                    <div class="category">Hobbies</div>
-                    <h5>Pottery Session</h5>
-                    <div class="meta">
-                        <div class="meta-item"><i class="bi bi-calendar3"></i> 15 Jan 2026</div>
-                        <div class="meta-item"><i class="bi bi-clock"></i> 3:00 PM – 5:00 PM</div>
-                        <div class="meta-item"><i class="bi bi-geo-alt"></i> Art Studio, Level 1</div>
-                    </div>
-                    <div class="description">"Create unique pottery pieces in a hands-on workshop."</div>
-                </div>
-                <div class="actions">
-                    <button class="join-btn">Join</button>
-                    <button class="details-btn">View Details</button>
-                </div>
-            </div>
-
-            <div class="activity-card hidden-card" data-category="Tech Help">
-                <div class="activity-details">
-                    <div class="category">Tech Help</div>
-                    <h5>PC Troubleshooting</h5>
-                    <div class="meta">
-                        <div class="meta-item"><i class="bi bi-calendar3"></i> 18 Jan 2026</div>
-                        <div class="meta-item"><i class="bi bi-clock"></i> 10:00 AM – 12:00 PM</div>
-                        <div class="meta-item"><i class="bi bi-geo-alt"></i> IT Lab, Level 2</div>
-                    </div>
-                    <div class="description">"Learn basic PC troubleshooting and maintenance skills."</div>
-                </div>
-                <div class="actions">
-                    <button class="join-btn">Join</button>
-                    <button class="details-btn">View Details</button>
-                </div>
-            </div>
-
-            <div class="activity-card hidden-card" data-category="Outdoor">
-                <div class="activity-details">
-                    <div class="category">Outdoor</div>
-                    <h5>Community Walkathon</h5>
-                    <div class="meta">
-                        <div class="meta-item"><i class="bi bi-calendar3"></i> 20 Jan 2026</div>
-                        <div class="meta-item"><i class="bi bi-clock"></i> 6:30 AM – 8:00 AM</div>
-                        <div class="meta-item"><i class="bi bi-geo-alt"></i> Riverside Park</div>
-                    </div>
-                    <div class="description">"Join a fun morning walk for fitness and charity."</div>
-                </div>
-                <div class="actions">
-                    <button class="join-btn">Join</button>
-                    <button class="details-btn">View Details</button>
-                </div>
-            </div>
-
-            <div class="activity-card hidden-card" data-category="Volunteer">
-                <div class="activity-details">
-                    <div class="category">Volunteer</div>
-                    <h5>Beach Cleanup</h5>
-                    <div class="meta">
-                        <div class="meta-item"><i class="bi bi-calendar3"></i> 22 Jan 2026</div>
-                        <div class="meta-item"><i class="bi bi-clock"></i> 8:00 AM – 11:00 AM</div>
-                        <div class="meta-item"><i class="bi bi-geo-alt"></i> Sunny Beach</div>
-                    </div>
-                    <div class="description">"Help clean and protect the local beach environment."</div>
-                </div>
-                <div class="actions">
-                    <button class="join-btn">Join</button>
-                    <button class="details-btn">View Details</button>
-                </div>
-            </div>
+            <!-- Partial file content continued... -->
         </div>
 
         <div id="noResultsMessage">
-            <i class="bi bi-search" style="font-size: 3rem; display: block; margin-bottom: 10px;"></i>
-            Oops! No activities found matching your search.
+            <i class="bi bi-search"></i>
+            <h4>Oops! No activities found</h4>
+            <p>We couldn't find any activities matching your current search or filter. Try a different keyword!</p>
         </div>
 
         <div class="toggle-container" id="toggleSection">
-            <button class="toggle-view-btn" id="viewMoreBtn">View More Activities <i class="bi bi-chevron-down"></i></button>
-            <button class="toggle-view-btn" id="viewLessBtn" style="display: none;">View Less <i class="bi bi-chevron-up"></i></button>
+            <button class="toggle-view-btn" id="viewMoreBtn">View More Activities <i
+                    class="fa-solid fa-chevron-down"></i></button>
+            <button class="toggle-view-btn" id="viewLessBtn" style="display: none;">View Less <i
+                    class="fa-solid fa-chevron-up"></i></button>
         </div>
     </main>
 </div>
@@ -264,31 +726,352 @@
 {% block extra_js %}
 <script>
     function loadCustomActivities() {
-      const custom = JSON.parse(localStorage.getItem('myCreatedActivities')) || [];
-      const parkingSpot = document.getElementById('custom-activities-parking');
-      custom.forEach((act, i) => {
-        const card = document.createElement('div');
-        card.className = 'activity-card';
-        card.setAttribute('data-category', act.cat);
-        card.innerHTML = `<div class="activity-details">...</div>`; // Same innerHTML logic as before
-        parkingSpot.appendChild(card);
-      });
+        const custom = JSON.parse(localStorage.getItem('myCreatedActivities')) || [];
+        const parkingSpot = document.getElementById('custom-activities-parking');
+
+        // Base URLs for activities
+        const joinBase = "{{ url_for('join_confirmation', activity_id=999) }}".replace('999', '100');
+        const detailsBase = "{{ url_for('activity_details', activity_id=999) }}".replace('999', '100');
+
+        custom.forEach((act, i) => {
+            const card = document.createElement('div');
+            card.className = 'activity-card';
+            // Added gap for consistency with CSS change
+            card.style.gap = '25px';
+
+            // Robust Parsing: Handle both "🎨 Hobbies" and plain "Hobbies"
+            let catName = act.cat;
+            if (act.cat.includes(' ')) {
+                // If there's a space, assume format is "Emoji Name" and take the name part
+                catName = act.cat.split(' ').slice(1).join(' ');
+            }
+            card.setAttribute('data-category', catName);
+
+            // Construct URLs with query parameters
+            const params = new URLSearchParams({
+                title: act.title,
+                date: act.date,
+                time: act.time,
+                loc: act.loc,
+                cat: catName,
+                desc: act.desc,
+                cat: catName,
+                desc: act.desc,
+                quota: act.quota || 20,
+                instructions: act.instructions || '',
+                img: `https://loremflickr.com/800/400/${catName.toLowerCase().replace(' ', '')}`
+            }).toString();
+
+            const fullJoinUrl = `${joinBase}?${params}`;
+            const fullDetailsUrl = `${detailsBase}?${params}`;
+
+            const activityStatus = JSON.parse(localStorage.getItem('activityStatus')) || {};
+            const activityKey = `${act.title}-${act.date}`;
+            if (!activityStatus[activityKey]) {
+                activityStatus[activityKey] = { participants: 0, quota: act.quota || 20 };
+                localStorage.setItem('activityStatus', JSON.stringify(activityStatus));
+            }
+            const status = activityStatus[activityKey];
+
+            const ratio = (status.participants / status.quota) * 100;
+            let barColor = 'progress-green';
+            let statusLabel = '';
+
+            if (ratio >= 90) {
+                barColor = 'progress-red';
+                statusLabel = '<span class="status-label label-almost">Almost Full!</span>';
+            } else if (ratio >= 60) {
+                barColor = 'progress-yellow';
+                statusLabel = '<span class="status-label label-fast">Filling Fast!</span>';
+            } else if (status.participants > 0) {
+                statusLabel = '<span class="status-label label-trending">Popular Choice!</span>';
+            }
+
+            card.innerHTML = `
+            <div class="activity-details">
+                <div class="category">${catName}</div>
+                <h5>${act.title}</h5>
+                <div class="meta">
+                    <div class="meta-item"><i class="bi bi-calendar3"></i> ${act.date}</div>
+                    <div class="meta-item"><i class="bi bi-clock"></i> ${act.time}</div>
+                    <div class="meta-item"><i class="bi bi-geo-alt"></i> ${act.loc}</div>
+                </div>
+                <div class="quota-info">
+                    <div class="quota-text">
+                        <span><i class="bi bi-people-fill"></i> Slots Available</span>
+                        <span class="social-proof">${status.participants} / ${status.quota} Joined</span>
+                    </div>
+                    ${statusLabel}
+                    <div class="quota-progress-container">
+                        <div class="quota-progress-bar ${barColor}" style="width: ${ratio}%"></div>
+                    </div>
+                </div>
+                <div class="description" style="margin-top: 10px;">"${act.desc}"</div>
+            </div>
+            <div class="actions">
+                <div class="managed-tag">Managed by You</div>
+                <a href="${fullDetailsUrl}" class="details-btn">View Details</a>
+            </div>
+        `;
+            parkingSpot.appendChild(card);
+        });
+        // Re-run filter after loading custom activities to ensure correct initial state
+        const activeBtn = document.querySelector('.filters button.active');
+        if (activeBtn) filterActivities(activeBtn.textContent, activeBtn);
     }
 
-    function searchActivities() { /* Your original logic */ }
-    function filterActivities(category, btn) { /* Your original logic */ }
-    window.onload = function() { loadCustomActivities(); };
-    
-    document.getElementById('viewMoreBtn').onclick = function() {
-        document.querySelectorAll('.hidden-card').forEach(card => card.style.display = 'flex');
-        this.style.display = 'none'; 
+    function searchActivities() {
+        const input = document.getElementById('searchInput');
+        const filter = input.value.toUpperCase();
+        const cards = document.querySelectorAll('.activity-card');
+        const toggleSection = document.getElementById('toggleSection');
+        const noResults = document.getElementById('noResultsMessage');
+
+        let visibleCount = 0;
+
+        // If searching, hide the toggle section
+        if (filter.length > 0) {
+            toggleSection.style.display = 'none';
+
+            cards.forEach(card => {
+                const title = card.querySelector('h5').textContent;
+                const desc = card.querySelector('.description').textContent;
+                if (title.toUpperCase().indexOf(filter) > -1 || desc.toUpperCase().indexOf(filter) > -1) {
+                    card.style.display = 'flex';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        } else {
+            // If search is cleared, revert to current category filter
+            const activeBtn = document.querySelector('.filters button.active');
+            filterActivities(activeBtn.textContent, activeBtn);
+            return;
+        }
+
+        noResults.style.display = visibleCount === 0 ? 'flex' : 'none';
+    }
+
+    function filterActivities(category, btn) {
+        // Update active button
+        const buttons = document.querySelectorAll('.filters button');
+        buttons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const cards = document.querySelectorAll('.activity-card');
+        const toggleSection = document.getElementById('toggleSection');
+        const viewMoreBtn = document.getElementById('viewMoreBtn');
+        const viewLessBtn = document.getElementById('viewLessBtn');
+        const noResults = document.getElementById('noResultsMessage');
+
+        // Reset search input
+        document.getElementById('searchInput').value = '';
+
+        let visibleCount = 0;
+
+        // Default: Reset View More/Less buttons state
+        // This ensures when we go back to "All", it starts collapsed
+        viewMoreBtn.style.display = 'inline-flex';
+        viewLessBtn.style.display = 'none';
+
+        if (category === 'All') {
+            // Show toggle section for 'All'
+            toggleSection.classList.remove('d-none');
+            toggleSection.style.display = 'flex';
+
+            // Show first 3, hide rest
+            cards.forEach((card, index) => {
+                if (index < 3) {
+                    card.style.display = 'flex';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Optional: Hide toggle if fewer than 3 items
+            if (cards.length <= 3) {
+                toggleSection.style.display = 'none';
+                toggleSection.classList.add('d-none');
+            }
+
+        } else {
+            // Hide toggle section completely for specific filters
+            toggleSection.style.display = 'none';
+            toggleSection.classList.add('d-none'); // Force class hide
+            viewMoreBtn.style.display = 'none';
+            viewLessBtn.style.display = 'none';
+
+            cards.forEach(card => {
+                // Check if card category matches
+                if (card.getAttribute('data-category') === category) {
+                    card.style.display = 'flex';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        noResults.style.display = visibleCount === 0 ? 'flex' : 'none';
+    }
+
+    // View More/Less Logic
+    document.getElementById('viewMoreBtn').onclick = function () {
+        const cards = document.querySelectorAll('.activity-card');
+        cards.forEach(card => card.style.display = 'flex');
+
+        this.style.display = 'none';
         document.getElementById('viewLessBtn').style.display = 'inline-flex';
     };
-    document.getElementById('viewLessBtn').onclick = function() {
-        document.querySelectorAll('.hidden-card').forEach(card => card.style.display = 'none');
-        this.style.display = 'none'; 
+
+    document.getElementById('viewLessBtn').onclick = function () {
+        const cards = document.querySelectorAll('.activity-card');
+        // Reset to first 3 Only if we are in "All" mode (which we should be if this button is visible)
+        cards.forEach((card, index) => {
+            if (index < 3) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        this.style.display = 'none';
         document.getElementById('viewMoreBtn').style.display = 'inline-flex';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Scroll to top of activities list
+        document.getElementById('activities-container').scrollIntoView({ behavior: 'smooth' });
+    };
+
+    function showFlashMessage(message, category) {
+        let container = document.querySelector('.flash-messages');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'flash-messages';
+            document.body.appendChild(container); // Base template might not have it if no messages were passed
+        }
+
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${category}`;
+        alertDiv.innerHTML = message;
+
+        container.appendChild(alertDiv);
+
+        // Auto-dismiss
+        setTimeout(() => {
+            alertDiv.style.transition = 'all 0.5s ease';
+            alertDiv.style.opacity = '0';
+            alertDiv.style.transform = 'translateY(-20px)';
+            setTimeout(() => alertDiv.remove(), 500);
+        }, 4000);
+    }
+
+    function updateJoinButtons() {
+        const joinedActivities = JSON.parse(localStorage.getItem('joinedActivities')) || [];
+        const activityStatus = JSON.parse(localStorage.getItem('activityStatus')) || {};
+        const cards = document.querySelectorAll('.activity-card');
+
+        cards.forEach(card => {
+            const titleElement = card.querySelector('h5');
+            const dateElement = card.querySelector('.meta-item i.bi-calendar3');
+
+            if (!titleElement || !dateElement) return;
+
+            const title = titleElement.textContent.trim();
+            const date = dateElement.parentElement.textContent.trim();
+            const activityKey = `${title}-${date}`;
+
+            // Initialize status if missing
+            if (!activityStatus[activityKey]) {
+                const isSystem = !card.closest('#custom-activities-parking');
+
+                let initialParticipants = isSystem ? Math.floor(Math.random() * 8) + 2 : 0;
+                let initialQuota = isSystem ? Math.floor(Math.random() * 10) + 12 : 20;
+
+                // FORCE "Advanced Origami" to be FULL
+                if (title === "Advanced Origami") {
+                    initialParticipants = 20;
+                    initialQuota = 20;
+                }
+
+                activityStatus[activityKey] = {
+                    participants: initialParticipants,
+                    quota: initialQuota
+                };
+            }
+
+            const status = activityStatus[activityKey];
+
+            // Update/Display quota info
+            let quotaDisplay = card.querySelector('.quota-info');
+            if (!quotaDisplay) {
+                quotaDisplay = document.createElement('div');
+                quotaDisplay.className = 'quota-info';
+                // Insert after the meta div
+                const metaDiv = card.querySelector('.meta');
+                if (metaDiv) metaDiv.after(quotaDisplay);
+            }
+
+            const ratio = (status.participants / status.quota) * 100;
+            let barColor = 'progress-green';
+            let statusLabelText = '';
+
+            if (ratio >= 90) {
+                barColor = 'progress-red';
+                statusLabelText = '<span class="status-label label-almost">Almost Full!</span>';
+            } else if (ratio >= 60) {
+                barColor = 'progress-yellow';
+                statusLabelText = '<span class="status-label label-fast">Filling Fast!</span>';
+            } else if (status.participants > 0) {
+                statusLabelText = '<span class="status-label label-trending">Popular Choice!</span>';
+            }
+
+            quotaDisplay.innerHTML = `
+                <div class="quota-text">
+                    <span><i class="bi bi-people-fill"></i> Slots Available</span>
+                    <span class="social-proof">${status.participants} / ${status.quota} Joined</span>
+                </div>
+                ${statusLabelText}
+                <div class="quota-progress-container">
+                    <div class="quota-progress-bar ${barColor}" style="width: ${ratio}%"></div>
+                </div>
+            `;
+
+            const isJoined = joinedActivities.some(act => act.title === title && act.date === date);
+            const isFull = status.participants >= status.quota;
+            const actions = card.querySelector('.actions');
+
+            if (actions.querySelector('.managed-tag')) return;
+
+            const joinBtn = actions.querySelector('.join-btn');
+            if (joinBtn) {
+                if (isJoined) {
+                    const joinedTag = document.createElement('div');
+                    joinedTag.className = 'joined-tag';
+                    joinedTag.innerHTML = '<i class="bi bi-check-circle-fill"></i> Already Joined';
+                    joinBtn.replaceWith(joinedTag);
+                } else if (isFull) {
+                    // Alert logic requested by user
+                    joinBtn.textContent = 'Quota Full';
+                    joinBtn.href = 'javascript:void(0)'; // Prevent default navigation
+                    joinBtn.style.backgroundColor = '#dc3545'; // Red color for full
+                    joinBtn.style.color = 'white';
+                    joinBtn.style.cursor = 'not-allowed'; // Default cursor to show it's different
+                    // Override styles to look like a badge but be clickable
+
+                    joinBtn.onclick = function (e) {
+                        e.preventDefault();
+                        showFlashMessage('Quota exceeded! Sorry!', 'error');
+                    };
+                }
+            }
+        });
+        localStorage.setItem('activityStatus', JSON.stringify(activityStatus));
+    }
+
+    window.onload = function () {
+        loadCustomActivities();
+        updateJoinButtons();
     };
 </script>
 {% endblock %}

@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}GenConnect{% endblock %}</title>
-    
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
@@ -162,12 +163,15 @@
         /* --- UPDATED FLASH MESSAGES (CENTERED PILL) --- */
         .flash-messages {
             position: fixed;
-            top: 100px; /* Positioned slightly down from top */
+            top: 100px;
+            /* Positioned slightly down from top */
             left: 50%;
-            transform: translateX(-50%); /* Centers the element */
+            transform: translateX(-50%);
+            /* Centers the element */
             z-index: 2000;
             width: 90%;
-            max-width: 500px; /* Wider max-width for readability */
+            max-width: 500px;
+            /* Wider max-width for readability */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -175,15 +179,19 @@
 
         .alert {
             padding: 16px 32px;
-            border-radius: 50px; /* Pill shape */
+            border-radius: 50px;
+            /* Pill shape */
             margin-bottom: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 12px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Nice shadow */
-            font-weight: 600; /* Bolder text */
-            font-size: 16px; /* Larger text */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            /* Nice shadow */
+            font-weight: 600;
+            /* Bolder text */
+            font-size: 16px;
+            /* Larger text */
             animation: slideDownFade 0.4s ease;
         }
 
@@ -192,6 +200,7 @@
                 transform: translateY(-20px);
                 opacity: 0;
             }
+
             to {
                 transform: translateY(0);
                 opacity: 1;
@@ -229,20 +238,24 @@
     </style>
     {% block extra_css %}{% endblock %}
 </head>
+
 <body>
     {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div class="flash-messages">
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">
-                        {% if category == 'success' %}
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                        {% endif %}
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
+    {% if messages %}
+    <div class="flash-messages">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">
+            {% if category == 'success' %}
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            {% endif %}
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
     {% endwith %}
 
     {% block content %}{% endblock %}
@@ -263,4 +276,5 @@
     </script>
     {% block extra_js %}{% endblock %}
 </body>
+
 </html>
