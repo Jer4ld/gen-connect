@@ -30,63 +30,133 @@
     body.fs-Large { font-size: 19px !important; }
     body.fs-X-Large { font-size: 22px !important; }
 
-    /* --- 3. IMPORTANT: HIGH CONTRAST MODE --- */
-    /* This section forces Dark Background & Yellow Text when body has class "high-contrast" */
-    
+    /* --- 3. ULTIMATE HIGH CONTRAST (FINAL FIX) --- */
     body.high-contrast {
+        background-color: #000000 !important;
+        background-image: none !important;
+        color: #ffffff !important;
+    }
+
+    /* 1. MAIN CONTAINERS & CARDS */
+    body.high-contrast .glass-panel, 
+    body.high-contrast .sidebar, 
+    body.high-contrast .content-card,
+    body.high-contrast .profile-hero,
+    body.high-contrast .profile-card,
+    body.high-contrast .post-card,
+    body.high-contrast .settings-section,
+    body.high-contrast .settings-header,
+    body.high-contrast .setting-row,
+    body.high-contrast .dash-item,
+    body.high-contrast .event-card,
+    body.high-contrast .list-item,
+    body.high-contrast .stat-box,
+    body.high-contrast .stats-bar,
+    body.high-contrast .bio-section,
+    body.high-contrast .sidebar-logo,
+    body.high-contrast .modal-box,
+    body.high-contrast .save-bar {
         background: #000000 !important;
+        background-color: #000000 !important;
+        color: #ffffff !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+    }
+
+    /* 2. FIX FOR "UPCOMING EVENTS" (Inline Styles Override) */
+    /* This targets the specific divs inside the panel that have hardcoded white backgrounds */
+    body.high-contrast .glass-panel div[style*="background"] {
+        background: #000000 !important;
+        border: 1px solid #FFD700 !important;
         color: #ffffff !important;
     }
     
-    /* Force dark background on ALL containers */
-    body.high-contrast .glass-panel, 
-    body.high-contrast .sidebar, 
-    body.high-contrast .settings-section,
-    body.high-contrast .content-card,
-    body.high-contrast .profile-hero,
-    body.high-contrast .save-bar,
-    body.high-contrast .event-card,
-    body.high-contrast .list-item,
-    body.high-contrast .font-selector,
-    body.high-contrast .avatar-wrapper {
-        background: #111111 !important;
-        border: 1px solid #333333 !important;
+    /* The Date Badge inside the event (e.g. "19 JAN") */
+    body.high-contrast .glass-panel div[style*="background"] div[style*="background"] {
+        background: #FFD700 !important;
+        color: #000000 !important;
+        border: 1px solid #ffffff !important;
+        font-weight: 800 !important;
+    }
+
+    /* 3. FIX FOR "FONT SIZE" SELECTOR */
+    body.high-contrast .font-selector {
+        background: #000000 !important;
+        border: 1px solid #FFD700 !important;
+    }
+    
+    /* The unselected labels (Normal, Large) */
+    body.high-contrast .font-selector label {
+        background: #000000 !important;
         color: #ffffff !important;
+        border-right: 1px solid #FFD700 !important;
+    }
+    
+    /* The SELECTED label */
+    body.high-contrast .font-selector input:checked + label {
+        background: #FFD700 !important;
+        color: #000000 !important;
+        font-weight: 800 !important;
         box-shadow: none !important;
     }
 
-    /* Make headings and important text YELLOW */
-    body.high-contrast h1, 
-    body.high-contrast h3, 
-    body.high-contrast h4,
-    body.high-contrast .setting-title,
-    body.high-contrast .card-h,
-    body.high-contrast .date-badge span,
-    body.high-contrast .nav-active,
-    body.high-contrast .username,
-    body.high-contrast .big-num,
-    body.high-contrast .stat-num {
-        color: #ffff00 !important;
+    /* 4. TEXT COLORS (Headings = Gold) */
+    body.high-contrast h1, body.high-contrast h2, body.high-contrast h3, 
+    body.high-contrast h4, body.high-contrast strong, body.high-contrast b,
+    body.high-contrast .username, body.high-contrast .big-num, 
+    body.high-contrast .stat-num, body.high-contrast .dash-label,
+    body.high-contrast .card-h, body.high-contrast .setting-title,
+    body.high-contrast i, body.high-contrast svg {
+        color: #FFD700 !important; 
+        fill: #FFD700 !important;
     }
 
-    /* Make secondary text Light Gray */
-    body.high-contrast .setting-desc,
-    body.high-contrast .sub-text,
-    body.high-contrast .card-p,
-    body.high-contrast .sidebar-nav a {
-        color: #dddddd !important;
+    /* 5. BODY TEXT (White) */
+    body.high-contrast p, body.high-contrast span, body.high-contrast div, 
+    body.high-contrast label, body.high-contrast .sub-text, 
+    body.high-contrast .setting-desc, body.high-contrast .card-p,
+    body.high-contrast .points-label, body.high-contrast .stat-label {
+        color: #ffffff !important;
     }
 
-    /* Hover states in High Contrast */
-    body.high-contrast .sidebar-nav a:hover,
-    body.high-contrast .setting-row:hover { 
-        background-color: #333333 !important; 
+    /* 6. LINKS (Gold) */
+    body.high-contrast a, body.high-contrast .sidebar-nav a {
+        color: #FFD700 !important; 
+        text-decoration: none !important;
     }
-    
-    /* Fix Date Badge colors */
-    body.high-contrast .date-badge {
-        background-color: #333 !important;
-        color: #ffff00 !important;
+    body.high-contrast a:hover {
+        text-decoration: underline !important;
+        color: #ffffff !important;
+    }
+
+    /* 7. BUTTONS & GRAPHICS (Gold Blocks) */
+    body.high-contrast .btn, body.high-contrast button, 
+    body.high-contrast .tab-btn.active, body.high-contrast .date-badge,
+    body.high-contrast .btn-exchange, body.high-contrast .btn-glass,
+    body.high-contrast .btn-primary, body.high-contrast .skill-pill,
+    body.high-contrast .btn-save, body.high-contrast .coin-icon-large,
+    body.high-contrast .mini-badge, body.high-contrast .avatar-wrapper,
+    body.high-contrast .level-icon, body.high-contrast .list-icon {
+        background: #FFD700 !important;
+        background-color: #FFD700 !important; /* Force override */
+        color: #000000 !important;
+        border: 1px solid #ffffff !important;
+        box-shadow: none !important;
+    }
+
+    /* 8. INPUTS */
+    body.high-contrast input:not([type="radio"]), 
+    body.high-contrast textarea, 
+    body.high-contrast select {
+        background: #000000 !important;
+        border: 1px solid #FFD700 !important;
+        color: #ffffff !important;
+    }
+
+    /* 9. SIDEBAR ACTIVE */
+    body.high-contrast .sidebar-nav a.active {
+        background-color: #FFD700 !important;
+        color: #000000 !important;
     }
 
     /* --- 4. UI COMPONENTS --- */
