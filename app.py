@@ -1359,7 +1359,6 @@ def delete_post(post_id):
         flash('You are not authorized to delete this post.', 'error')
         return redirect(url_for('home'))
     
-    # Optional: Attempt to delete associated media file from server
     if post.media_file:
         try:
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], post.media_file)

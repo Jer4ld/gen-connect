@@ -9,25 +9,23 @@
     /* --- Global Font & Layout --- */
     body {
         background-color: #f9fafb;
-        font-family: 'Outfit', -apple-system, sans-serif; /* Updated Font */
+        font-family: 'Outfit', -apple-system, sans-serif;
         color: #1e293b;
     }
     .container { display: flex; min-height: 100vh; max-width: 100%; padding: 0; }
 
-    /* --- Sidebar Styles (Seamless Match 72px) --- */
+    /* --- Sidebar Styles --- */
     .sidebar {
         position: fixed; left: 0; top: 0; width: 250px; height: 100vh;
         background-color: white; border-right: 1px solid #e5e7eb;
-        padding: 0; /* Removed padding to align header */
+        padding: 0;
         z-index: 100;
         display: flex; flex-direction: column;
     }
     .sidebar-logo {
-        height: 72px; /* Fixed Height: Matches Home/Edit Page */
+        height: 72px;
         display: flex; align-items: center; padding: 0 30px;
         border-bottom: 1px solid #e5e7eb;
-        
-        /* Seamless Border Hack */
         margin-right: -1px; border-right: 1px solid white;
         background-color: white; position: relative; z-index: 10;
     }
@@ -106,7 +104,6 @@
     }
 
     .reply-item::before {
-        /* Optional: Visual connection line */
         content: '';
         position: absolute;
         left: -25px;
@@ -501,7 +498,7 @@
         element.classList.toggle('active');
     }
 
-        // Toggle Reply Form
+    // Toggle Reply Form
     function toggleReply(id) {
         let form = document.getElementById(id);
         if (form.style.display === "none") {

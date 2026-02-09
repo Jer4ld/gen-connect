@@ -20,7 +20,7 @@
         padding: 0;
     }
 
-    /* --- Sidebar Styles (Seamless Header) --- */
+    /* --- Sidebar Styles --- */
     .sidebar {
         position: fixed;
         left: 0;
@@ -36,14 +36,11 @@
     }
 
     .sidebar-logo {
-        /* FIXED HEIGHT: 72px (Sweet spot between 64px and 80px) */
         height: 72px; 
         display: flex;
         align-items: center;
         padding: 0 30px;
         border-bottom: 1px solid #e5e7eb;
-        
-        /* Seamless Border Hack */
         margin-right: -1px; 
         border-right: 1px solid white; 
         background-color: white;
@@ -63,7 +60,7 @@
 
     .sidebar-nav {
         list-style: none;
-        padding: 20px 0; /* Padding moved inside nav */
+        padding: 20px 0;
         margin: 0;
         overflow-y: auto;
     }
@@ -108,8 +105,7 @@
         top: 0;
         z-index: 90;
         background-color: white;       
-        border-bottom: 1px solid #e5e7eb; 
-        /* FIXED HEIGHT: Matches Sidebar Logo (72px) */
+        border-bottom: 1px solid #e5e7eb;
         height: 72px; 
         display: flex;
         align-items: center;           
@@ -154,7 +150,7 @@
         padding: 40px;
     }
 
-    /* --- Post & Components (Unchanged) --- */
+    /* --- Post & Components --- */
     .post { background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); margin-bottom: 25px; border: 1px solid #e5e7eb; overflow: visible; }
     .post-header { padding: 15px; display: flex; justify-content: space-between; align-items: center; }
     .post-title { padding: 0 15px 5px 15px; font-size: 18px; font-weight: 700; color: #111827; text-align: left; margin: 0; display: block; }

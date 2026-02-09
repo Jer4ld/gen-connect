@@ -180,7 +180,6 @@
         
         <div class="tabs-container">
             <a href="{{ url_for('search', q=query, tab='posts') }}" class="tab-btn {{ 'active' if active_tab == 'posts' else '' }}">Posts</a>
-            <a href="{{ url_for('search', q=query, tab='communities') }}" class="tab-btn {{ 'active' if active_tab == 'communities' else '' }}">Communities</a>
             <a href="{{ url_for('search', q=query, tab='media') }}" class="tab-btn {{ 'active' if active_tab == 'media' else '' }}">Media</a>
             <a href="{{ url_for('search', q=query, tab='people') }}" class="tab-btn {{ 'active' if active_tab == 'people' else '' }}">People</a>
         </div>
@@ -227,22 +226,6 @@
                     <div style="text-align:center; color:#6b7280; padding:40px;">No posts found for "{{ query }}"</div>
                 {% endif %}
             
-            {% elif active_tab == 'communities' %}
-                {% if communities %}
-                    {% for comm in communities %}
-                    <div class="community-card">
-                        <img src="{{ url_for('static', filename=comm.image_url) if comm.image_url else 'https://via.placeholder.com/100' }}" class="comm-img" alt="Community">
-                        <div class="comm-info">
-                            <h3 class="comm-name">c/ {{ comm.name }}</h3>
-                            <p class="comm-desc">{{ comm.description }}</p>
-                            <div class="comm-meta">{{ comm.get_member_count() }} members</div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <div style="text-align:center; color:#6b7280; padding:40px;">No communities found for "{{ query }}"</div>
-                {% endif %}
-
             {% elif active_tab == 'media' %}
                 {% if media_posts %}
                     <div class="media-grid">
@@ -278,7 +261,9 @@
                                 <div class="people-username">@{{ person.username }}</div>
                             </div>
                         </div>
+                        {% if person.id != current_user.id %}
                         <a href="{{ url_for('profile', username=person.username) }}" class="btn-view-profile">View Profile</a>
+                        {% endif %}
                     </div>
                     {% endfor %}
                 {% else %}

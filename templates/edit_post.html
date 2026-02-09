@@ -18,12 +18,12 @@
         min-height: 100vh;
     }
 
-    /* --- Sidebar Styles (Seamless Match) --- */
+    /* --- Sidebar Styles --- */
     .sidebar {
         width: 250px;
         background-color: white;
         border-right: 1px solid #e5e7eb;
-        padding: 0; /* Remove padding to align header to top */
+        padding: 0;
         position: sticky;
         top: 0;
         height: 100vh;
@@ -34,14 +34,11 @@
     }
 
     .sidebar-logo {
-        /* UPDATED HEIGHT: 72px to match Home Page */
         height: 72px; 
         display: flex;
         align-items: center;
         padding: 0 30px;
         border-bottom: 1px solid #e5e7eb;
-        
-        /* Seamless Border Hack */
         margin-right: -1px; 
         border-right: 1px solid white; 
         background-color: white;
@@ -61,7 +58,7 @@
 
     .sidebar-nav {
         list-style: none;
-        padding: 20px 0; /* Padding moved inside nav */
+        padding: 20px 0;
         margin: 0;
         overflow-y: auto;
     }
@@ -355,15 +352,12 @@
         // Hide the current preview
         const section = document.getElementById('current-media-section');
         if(section) section.style.display = 'none';
-        
-        // Set flag to tell backend to delete it
         document.getElementById('delete-media-flag').value = 'true';
     }
 
     // 2. Handle New File Selection
     function handleNewFile(input) {
         if (input.files && input.files[0]) {
-            // Hide the OLD media preview if it exists (since we are replacing it)
             const oldSection = document.getElementById('current-media-section');
             if(oldSection) oldSection.style.display = 'none';
 
@@ -377,8 +371,8 @@
     const textarea = document.getElementById('autoResizeContent');
 
     function autoResize() {
-        this.style.height = 'auto'; // Reset height to recalculate
-        this.style.height = this.scrollHeight + 'px'; // Set to content height
+        this.style.height = 'auto';
+        this.style.height = this.scrollHeight + 'px';
     }
 
     if (textarea) {
@@ -386,7 +380,6 @@
         textarea.addEventListener('input', autoResize);
         
         // Resize immediately on page load to fit existing text
-        // (Using setTimeout ensures CSS styles are loaded first)
         setTimeout(() => {
             textarea.style.height = 'auto';
             textarea.style.height = textarea.scrollHeight + 'px';
