@@ -7,7 +7,9 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-    /* --- 1. RESET & GLOBAL STYLES --- */
+    /* =========================================
+       1. GLOBAL RESET & BASE STYLES
+       ========================================= */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -22,166 +24,267 @@
         font-family: 'Outfit', -apple-system, sans-serif; 
         color: #1e293b;
         transition: background 0.3s, color 0.3s;
+        /* FIX: Force page to top so Google bar doesn't push it down */
+        top: 0 !important; 
+        position: static !important; 
     }
 
-    /* --- 2. ACCESSIBILITY: FONT SIZES --- */
-    /* These classes are added to body by JavaScript */
-    body.fs-Normal { font-size: 16px; }
-    body.fs-Large { font-size: 19px !important; }
-    body.fs-X-Large { font-size: 22px !important; }
-
-    /* --- 3. IMPORTANT: HIGH CONTRAST MODE --- */
-    /* This section forces Dark Background & Yellow Text when body has class "high-contrast" */
+    /* --- GOOGLE TRANSLATE HACKS (Hide the Ugly Bar) --- */
     
-    body.high-contrast {
-        background: #000000 !important;
-        color: #ffffff !important;
+    /* 1. Hide the top iframe bar ("Translated into...") */
+    .goog-te-banner-frame.skiptranslate {
+        display: none !important;
     }
     
-    /* Force dark background on ALL containers */
-    body.high-contrast .glass-panel, 
-    body.high-contrast .sidebar, 
-    body.high-contrast .settings-section,
-    body.high-contrast .content-card,
-    body.high-contrast .profile-hero,
-    body.high-contrast .save-bar,
-    body.high-contrast .event-card,
-    body.high-contrast .list-item,
-    body.high-contrast .font-selector,
-    body.high-contrast .avatar-wrapper {
-        background: #111111 !important;
-        border: 1px solid #333333 !important;
-        color: #ffffff !important;
+    /* 2. Hide the specific body wrapper Google adds */
+    body > .skiptranslate {
+        display: none !important;
+    }
+
+    /* 3. Hide tooltips that appear when you hover text */
+    #goog-gt-tt, .goog-te-balloon-frame {
+        display: none !important;
+    }
+
+    /* 4. Remove the blue highlight on translated text */
+    .goog-text-highlight {
+        background: none !important;
         box-shadow: none !important;
     }
 
-    /* Make headings and important text YELLOW */
-    body.high-contrast h1, 
-    body.high-contrast h3, 
-    body.high-contrast h4,
-    body.high-contrast .setting-title,
-    body.high-contrast .card-h,
-    body.high-contrast .date-badge span,
-    body.high-contrast .nav-active,
-    body.high-contrast .username,
-    body.high-contrast .big-num,
-    body.high-contrast .stat-num {
-        color: #ffff00 !important;
-    }
-
-    /* Make secondary text Light Gray */
-    body.high-contrast .setting-desc,
-    body.high-contrast .sub-text,
-    body.high-contrast .card-p,
-    body.high-contrast .sidebar-nav a {
-        color: #dddddd !important;
-    }
-
-    /* Hover states in High Contrast */
-    body.high-contrast .sidebar-nav a:hover,
-    body.high-contrast .setting-row:hover { 
-        background-color: #333333 !important; 
+    /* 5. Custom Styling for our Fake Dropdown */
+    #google_translate_element {
+        visibility: hidden;
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
     }
     
-    /* Fix Date Badge colors */
-    body.high-contrast .date-badge {
-        background-color: #333 !important;
-        color: #ffff00 !important;
+    .lang-selector-container { position: relative; width: 100%; max-width: 250px; }
+
+    .lang-btn {
+        width: 100%; padding: 10px 16px; background: #ffffff;
+        border: 1px solid #e2e8f0; color: #334155;
+        font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 14px;
+        border-radius: 12px; cursor: pointer; display: flex;
+        justify-content: space-between; align-items: center; transition: 0.2s;
+    }
+    .lang-btn:hover { background: #f8fafc; }
+
+    .lang-dropdown {
+        display: none; position: absolute; top: 110%; left: 0;
+        width: 100%; background: #ffffff; border: 1px solid #e2e8f0;
+        border-radius: 12px; z-index: 1000; overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    .lang-dropdown.show { display: block; animation: fadeIn 0.2s; }
+
+    .lang-option {
+        padding: 12px 16px; color: #334155; cursor: pointer;
+        font-size: 14px; border-bottom: 1px solid #f1f5f9; transition: 0.2s;
+    }
+    .lang-option:last-child { border-bottom: none; }
+    .lang-option:hover { background: #eff6ff; color: #2563eb; }
+
+
+    /* =========================================
+       2. ACCESSIBILITY: FONT SCALING
+       ========================================= */
+    body.fs-Normal { font-size: 16px; }
+
+    body.fs-Large { font-size: 19px !important; }
+    body.fs-Large h1 { font-size: 42px !important; }
+    body.fs-Large h2 { font-size: 32px !important; }
+    body.fs-Large h3 { font-size: 24px !important; }
+    body.fs-Large h4 { font-size: 20px !important; }
+    body.fs-Large p, body.fs-Large span, body.fs-Large div, body.fs-Large a, body.fs-Large button, body.fs-Large input {
+        font-size: 18px !important; line-height: 1.6 !important;
+    }
+    body.fs-Large .sidebar-nav a { font-size: 17px !important; }
+    body.fs-Large .card-h { font-size: 20px !important; }
+    body.fs-Large .stat-num { font-size: 22px !important; }
+
+    body.fs-X-Large { font-size: 22px !important; }
+    body.fs-X-Large h1 { font-size: 48px !important; }
+    body.fs-X-Large h2 { font-size: 36px !important; }
+    body.fs-X-Large h3 { font-size: 28px !important; }
+    body.fs-X-Large h4 { font-size: 24px !important; }
+    body.fs-X-Large p, body.fs-X-Large span, body.fs-X-Large div, body.fs-X-Large a, body.fs-X-Large button, body.fs-X-Large input {
+        font-size: 21px !important; line-height: 1.7 !important;
+    }
+    body.fs-X-Large .sidebar-nav a { font-size: 19px !important; }
+    body.fs-X-Large .card-h { font-size: 24px !important; }
+    body.fs-X-Large .stat-num { font-size: 26px !important; }
+    body.fs-X-Large .sidebar { width: 280px !important; } 
+    body.fs-X-Large .main-content { margin-left: 280px !important; }
+
+
+    /* =========================================
+       3. ULTIMATE HIGH CONTRAST (BLACK & GOLD)
+       ========================================= */
+    body.high-contrast {
+        background-color: #000000 !important;
+        background-image: none !important;
+        color: #ffffff !important;
+        
     }
 
-    /* --- 4. UI COMPONENTS --- */
+    /* Containers */
+    body.high-contrast .glass-panel, body.high-contrast .sidebar, body.high-contrast .content-card,
+    body.high-contrast .profile-hero, body.high-contrast .profile-card, body.high-contrast .post-card,
+    body.high-contrast .settings-section, body.high-contrast .settings-header, body.high-contrast .setting-row,
+    body.high-contrast .dash-item, body.high-contrast .event-card, body.high-contrast .list-item,
+    body.high-contrast .stat-box, body.high-contrast .stats-bar, body.high-contrast .bio-section,
+    body.high-contrast .sidebar-logo, body.high-contrast .modal-box, body.high-contrast .save-bar,
+    body.high-contrast .font-selector {
+        background: #000000 !important;
+        background-color: #000000 !important;
+        border: 1px solid #FFD700 !important;
+        color: #ffffff !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+    }
 
-    /* Toggle Switch */
+    /* Language Dropdown (High Contrast Fix) */
+    body.high-contrast .lang-btn, 
+    body.high-contrast .lang-dropdown {
+        background: #000000 !important;
+        border: 1px solid #FFD700 !important;
+        color: #FFD700 !important;
+    }
+    body.high-contrast .lang-option {
+        color: #ffffff !important;
+        border-bottom: 1px solid #333 !important;
+    }
+    body.high-contrast .lang-option:hover {
+        background: #FFD700 !important;
+        color: #000000 !important;
+        font-weight: 800 !important;
+    }
+    /* --- CUSTOM FIX: Remove Box Borders for specific items --- */
+   body.high-contrast .sidebar-logo,
+   body.high-contrast .stat-box,
+   body.high-contrast .bio-section {
+       border: none !important;
+       background: transparent !important;
+       box-shadow: none !important;
+   }
+    
+    /* Optional: Add a line under the logo instead of a box */
+    body.high-contrast .sidebar-logo {
+        border-bottom: 1px solid #333 !important;
+    }
+
+    /* Inner Elements Fix */
+    body.high-contrast .glass-panel div[style*="background"] {
+        background: #000000 !important; border: 1px solid #FFD700 !important; color: #ffffff !important;
+    }
+    body.high-contrast .glass-panel div[style*="background"] div[style*="background"] {
+        background: #FFD700 !important; color: #000000 !important; border: 1px solid #ffffff !important;
+    }
+
+    /* Text Colors */
+    body.high-contrast h1, body.high-contrast h2, body.high-contrast h3, body.high-contrast h4, 
+    body.high-contrast strong, body.high-contrast b, body.high-contrast .username, 
+    body.high-contrast .big-num, body.high-contrast .stat-num, body.high-contrast .dash-label,
+    body.high-contrast .card-h, body.high-contrast .setting-title, body.high-contrast i, body.high-contrast svg {
+        color: #FFD700 !important;
+    }
+    body.high-contrast p, body.high-contrast span, body.high-contrast div, body.high-contrast label, 
+    body.high-contrast .sub-text, body.high-contrast .setting-desc, body.high-contrast .card-p,
+    body.high-contrast .points-label, body.high-contrast .stat-label {
+        color: #ffffff !important;
+    }
+
+    /* Links & Buttons */
+    body.high-contrast a, body.high-contrast .sidebar-nav a {
+        color: #FFD700 !important; text-decoration: none !important;
+    }
+    body.high-contrast a:hover {
+        text-decoration: underline !important; color: #ffffff !important;
+    }
+    
+    body.high-contrast .btn, body.high-contrast button, body.high-contrast .tab-btn.active, 
+    body.high-contrast .date-badge, body.high-contrast .btn-exchange, body.high-contrast .btn-glass,
+    body.high-contrast .btn-primary, body.high-contrast .skill-pill, body.high-contrast .btn-save, 
+    body.high-contrast .coin-icon-large, body.high-contrast .mini-badge, body.high-contrast .avatar-wrapper,
+    body.high-contrast .level-icon, body.high-contrast .list-icon,
+    body.high-contrast .font-selector input:checked + label {
+        background: #FFD700 !important; color: #000000 !important;
+        border: 1px solid #ffffff !important; box-shadow: none !important;
+    }
+
+    /* Inputs */
+    body.high-contrast input:not([type="radio"]), body.high-contrast textarea, body.high-contrast select {
+        background: #000000 !important; border: 1px solid #FFD700 !important; color: #ffffff !important;
+    }
+    body.high-contrast .sidebar-nav a.active {
+        background-color: #FFD700 !important; color: #000000 !important;
+    }
+    body.high-contrast .font-selector label {
+        color: #ffffff !important; border-right: 1px solid #FFD700 !important;
+    }
+
+
+    /* =========================================
+       4. UI COMPONENTS
+       ========================================= */
     .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
     .switch input { opacity: 0; width: 0; height: 0; }
-    .slider {
-        position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-        background-color: #cbd5e1; transition: 0.3s; border-radius: 24px;
-    }
-    .slider:before {
-        position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
-        background-color: white; transition: 0.3s; border-radius: 50%;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    input:checked + .slider { background-color: #10b981; } /* Success Green */
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: 0.3s; border-radius: 24px; }
+    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: 0.3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    input:checked + .slider { background-color: #10b981; }
     input:checked + .slider:before { transform: translateX(20px); }
 
-    /* Font Selector (Pills) */
-    .font-selector {
-        display: flex; background: #f1f5f9; padding: 4px; border-radius: 12px; border: 1px solid #e2e8f0;
-    }
+    .font-selector { display: flex; background: #f1f5f9; padding: 4px; border-radius: 12px; border: 1px solid #e2e8f0; }
     .font-selector input { display: none; }
-    .font-selector label {
-        flex: 1; padding: 8px 16px; text-align: center; border-radius: 8px; font-size: 13px; font-weight: 600;
-        color: #64748b; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 6px;
-    }
+    .font-selector label { flex: 1; padding: 8px 16px; text-align: center; border-radius: 8px; font-size: 13px; font-weight: 600; color: #64748b; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 6px; }
     .font-selector label:hover { color: #334155; }
-    .font-selector input:checked + label {
-        background: white; color: #4f46e5; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
+    .font-selector input:checked + label { background: white; color: #4f46e5; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
 
-    /* --- 5. LAYOUT & SIDEBAR --- */
+
+    /* =========================================
+       5. LAYOUT & SIDEBAR
+       ========================================= */
     .container { display: flex; min-height: 100vh; }
-    .sidebar { 
-        position: fixed; left: 0; top: 0; width: 250px; height: 100vh; 
-        background-color: white; border-right: 1px solid #e5e7eb; 
-        padding: 20px 0; z-index: 100; display: flex; flex-direction: column;
-    }
+    .sidebar { position: fixed; left: 0; top: 0; width: 250px; height: 100vh; background-color: white; border-right: 1px solid #e5e7eb; padding: 20px 0; z-index: 100; display: flex; flex-direction: column; }
     .sidebar-logo { padding: 0 30px 20px; border-bottom: 1px solid #e5e7eb; margin-bottom: 20px; }
-    .logo { 
-        display: flex; align-items: center; gap: 10px;
-        font-size: 20px; font-weight: 600; color: #6366f1; text-decoration: none;
-    }
+    .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 600; color: #6366f1; text-decoration: none; }
     .sidebar-nav { list-style: none; padding: 0; margin: 0; flex: 1; }
     .sidebar-nav li { margin: 5px 0; }
-    .sidebar-nav a { 
-        display: flex; align-items: center; gap: 15px; 
-        padding: 12px 30px; text-decoration: none; color: #374151; 
-        transition: all 0.2s; font-size: 15px; border-radius: 0;
-    }
+    .sidebar-nav a { display: flex; align-items: center; gap: 15px; padding: 12px 30px; text-decoration: none; color: #374151; transition: all 0.2s; font-size: 15px; border-radius: 0; }
     .sidebar-nav a:hover { background-color: #f9fafb; }
     .sidebar-nav a.active { background-color: #eff6ff; color: #2563eb; border-right: 3px solid #2563eb; }
     .sidebar-nav svg { width: 22px; height: 22px; }
 
-    /* --- 6. MAIN CONTENT & HERO --- */
+
+    /* =========================================
+       6. MAIN CONTENT
+       ========================================= */
     .main-content { margin-left: 250px; flex: 1; padding: 40px; animation: fadeIn 0.6s ease-out; }
     .profile-container { max-width: 1100px; margin: 0 auto; }
 
-    .profile-hero {
-        background: white; border-radius: 24px; border: 1px solid white;
-        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08); overflow: hidden; margin-bottom: 30px; position: relative;
-    }
+    .profile-hero { background: white; border-radius: 24px; border: 1px solid white; box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08); overflow: hidden; margin-bottom: 30px; position: relative; }
     .hero-banner { height: 220px; width: 100%; background-color: #1e293b; position: relative; }
     .hero-banner img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6); }
-    .hero-content {
-        padding: 0 40px 30px 40px; display: flex; justify-content: space-between; align-items: flex-end;
-        position: relative; margin-top: -60px;
-    }
+    .hero-content { padding: 0 40px 30px 40px; display: flex; justify-content: space-between; align-items: flex-end; position: relative; margin-top: -60px; }
     .identity-group { display: flex; align-items: flex-end; gap: 24px; }
-    .avatar-wrapper {
-        width: 140px; height: 140px; border-radius: 50%; border: 5px solid white;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.15); background: white; overflow: hidden; position: relative; z-index: 2;
-    }
+    .avatar-wrapper { width: 140px; height: 140px; border-radius: 50%; border: 5px solid white; box-shadow: 0 10px 25px rgba(0,0,0,0.15); background: white; overflow: hidden; position: relative; z-index: 2; }
     .avatar-wrapper img { width: 100%; height: 100%; object-fit: cover; }
     .user-text { padding-bottom: 10px; z-index: 2; }
     .username { font-size: 36px; font-weight: 800; color: #0f172a; line-height: 1; margin-bottom: 6px; text-shadow: 2px 2px 0px white; }
-    .user-badge {
-        display: inline-flex; align-items: center; gap: 6px; background: #0f172a; color: white; 
-        font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
-        padding: 6px 14px; border-radius: 20px; box-shadow: 0 4px 10px rgba(15, 23, 42, 0.3);
-    }
+    .user-badge { display: inline-flex; align-items: center; gap: 6px; background: #0f172a; color: white; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 6px 14px; border-radius: 20px; box-shadow: 0 4px 10px rgba(15, 23, 42, 0.3); }
     .hero-actions { display: flex; gap: 12px; padding-bottom: 15px; }
-    .btn-action {
-        padding: 10px 20px; border-radius: 12px; font-weight: 600; font-size: 14px;
-        text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
-        transition: all 0.2s; cursor: pointer; border: none;
-    }
+    .btn-action { padding: 10px 20px; border-radius: 12px; font-weight: 600; font-size: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; cursor: pointer; border: none;}
     .btn-primary { background: #4f46e5; color: white; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3); }
     .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4); }
     .btn-glass { background: rgba(255, 255, 255, 0.8); border: 1px solid #e2e8f0; color: #334155; }
     .btn-glass:hover { background: #f8fafc; border-color: #94a3b8; }
 
-    /* --- 7. GRID & CARDS --- */
+
+    /* =========================================
+       7. GRID & CARDS
+       ========================================= */
     .profile-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-top: 30px; }
     .content-column { display: flex; flex-direction: column; gap: 30px; }
     .sidebar-column { display: flex; flex-direction: column; gap: 24px; position: sticky; top: 30px; height: fit-content; }
@@ -261,11 +364,13 @@
     .event-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-bottom: 10px; display: flex; gap: 12px; }
     .date-badge { background: #eff6ff; color: #2563eb; padding: 5px 10px; border-radius: 8px; text-align: center; min-width: 50px; display: flex; flex-direction: column; justify-content: center; }
 
-    /* --- 8. SETTINGS --- */
+    /* =========================================
+       8. SETTINGS
+       ========================================= */
     .settings-wrapper { display: flex; flex-direction: column; gap: 24px; max-width: 850px; }
     .settings-section {
         background: white; border-radius: 20px; border: 1px solid #e2e8f0;
-        overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
     }
     .settings-header {
         padding: 18px 24px; background:rgba(255, 255, 255, 0.8); border-bottom: 1px solid #f1f5f9;
@@ -311,6 +416,80 @@
         .card-thumb { width: 100%; height: 160px; }
         .dash-grid { grid-template-columns: 1fr; }
     }
+    /* --- CUSTOM FIX: Remove Box Borders for specific items --- */
+    body.high-contrast .sidebar-logo,
+    body.high-contrast .bio-section {
+        border: none !important;       /* Removes the yellow box */
+        background: transparent !important; /* blends into the black background */
+        box-shadow: none !important;
+    }
+
+    /* Optional: Keep a subtle line under the logo so it looks neat */
+    body.high-contrast .sidebar-logo {
+        border-bottom: 1px solid #333 !important; 
+    }
+    /* --- FIX: Sidebar Icons (Prevent Solid Circles) --- */
+    body.high-contrast .sidebar-nav svg,
+    body.high-contrast .logo svg {
+        fill: none !important;        /* Makes the inside transparent */
+        stroke: #FFD700 !important;   /* Colors the lines Gold */
+        stroke-width: 2px !important; /* Makes lines visible */
+    }/* Fix the specific Sidebar Divider Line to be Gold */
+    body.high-contrast .sidebar-nav li[style*="border-top"] {
+        border-top-color: #FFD700 !important;
+    }
+    /* --- FIX: EDIT PROFILE BUTTON --- */
+    /* 1. Center the text and icon properly */
+    .btn-action {
+        justify-content: center !important;
+    }
+
+    /* 2. Make the icon inside the button BLACK (so it's visible on Gold) */
+    body.high-contrast .btn-action svg {
+        stroke: #000000 !important;
+    }
+
+    /* --- FIX: SIDEBAR LINE --- */
+    /* 3. Turn the white divider line to Gold */
+    body.high-contrast .sidebar-nav li[style*="border-top"] {
+        border-top-color: #FFD700 !important;
+    }
+    /* --- FIX: TABS & NAVIGATION (Gold) --- */
+    /* 1. Make the row of tabs have a Gold bottom line */
+    body.high-contrast .tabs-nav {
+        border-bottom-color: #FFD700 !important;
+    }
+
+    /* 2. Make inactive tabs White (so they are visible) */
+    body.high-contrast .tab-link {
+        color: #ffffff !important;
+    }
+
+    /* 3. Make the ACTIVE tab text Gold */
+    body.high-contrast .tab-link.active {
+        color: #FFD700 !important;
+    }
+
+    /* 4. Make the little sliding line under the active tab Gold */
+    body.high-contrast .tab-link.active::after {
+        background: #FFD700 !important;
+    }
+    /* --- FIX: Force Round Corners on Settings --- */
+    body.high-contrast .settings-section,
+    body.high-contrast .glass-panel {
+        border-radius: 20px !important;
+    }
+    /* --- FIX: Round Corners for Settings Headers --- */
+    /* Because we removed overflow:hidden, we must manually round the headers */
+    body.high-contrast .settings-header {
+        border-top-left-radius: 20px !important;
+        border-top-right-radius: 20px !important;
+    }
+    /* --- FIX: Round Corners for Settings Header --- */
+   body.high-contrast .settings-header {
+       border-top-left-radius: 20px !important;
+       border-top-right-radius: 20px !important;
+   }
 </style>
 {% endblock %}
 
@@ -323,7 +502,6 @@
 ] %}
 
 <div class="container">
-    
     <aside class="sidebar">
         <div class="sidebar-logo">
             <a href="/" class="logo">
@@ -338,9 +516,7 @@
             <li><a href="{{ url_for('notifications_page') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Notification</span></a></li>
             <li><a href="{{ url_for('messages') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Message</span></a></li>
             <li><a href="{{ url_for('profile') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></a></li>
-            
             <li style="margin-top: 20px; border-top: 1px solid #e5e7eb;"></li>
-            
             <li><a href="{{ url_for('logout') }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Logout</span></a></li>
         </ul>
     </aside>
@@ -547,13 +723,23 @@
 
                                         <div class="setting-row">
                                             <div class="setting-info">
-                                                <div class="setting-title"><i class="fas fa-volume-up" style="font-size:12px; color:#94a3b8;"></i> Screen Reader Friendly</div>
-                                                <div class="setting-desc">Simplifies layout structure for assistive technologies.</div>
+                                                <div class="setting-title"><i class="fas fa-language" style="font-size:12px; color:#94a3b8;"></i> Language</div>
+                                                <div class="setting-desc">Translate the page to English, Chinese, or Tamil.</div>
                                             </div>
-                                            <label class="switch">
-                                                <input type="checkbox" name="screen_reader" {% if user.screen_reader %}checked{% endif %}>
-                                                <span class="slider"></span>
-                                            </label>
+                                            <div class="lang-selector-container">
+                                                <div id="google_translate_element"></div>
+
+                                                <button type="button" class="lang-btn" onclick="toggleLangMenu()">
+                                                    <span id="current-lang-text">Select Language</span>
+                                                    <i class="fas fa-chevron-down" style="font-size: 10px;"></i>
+                                                </button>
+
+                                                <div id="custom-lang-menu" class="lang-dropdown">
+                                                    <div class="lang-option" onclick="changeLanguage('en')">🇺🇸 English</div>
+                                                    <div class="lang-option" onclick="changeLanguage('zh-CN')">🇨🇳 Chinese (Simplified)</div>
+                                                    <div class="lang-option" onclick="changeLanguage('ta')">🇮🇳 Tamil</div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -594,7 +780,7 @@
                                 </div>
                             </form>
                         </div>
-                        </div>
+                    </div>
                 </div>
 
                 <div class="sidebar-column">
@@ -632,81 +818,98 @@
     </main>
 </div>
 
+<script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+          pageLanguage: 'en', 
+          includedLanguages: 'en,zh-CN,ta', 
+          layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+          autoDisplay: false
+      }, 'google_translate_element');
+    }
+</script>
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        // 1. INITIAL SETUP: Apply saved settings immediately when page loads
-        // This prevents the page from "flashing" the wrong style before applying your settings.
-        
-        // Check High Contrast
+        // 1. High Contrast Check
         const contrastCheckbox = document.querySelector('input[name="high_contrast"]');
         if (contrastCheckbox && contrastCheckbox.checked) {
             document.body.classList.add('high-contrast');
         }
 
-        // Check Font Size
+        // 2. Font Size Check
         const fontRadio = document.querySelector('input[name="font_size"]:checked');
         if (fontRadio) {
-            // Remove any default first, just in case
             document.body.classList.remove('fs-Normal', 'fs-Large', 'fs-X-Large');
             document.body.classList.add('fs-' + fontRadio.value);
         } else {
-            document.body.classList.add('fs-Normal'); // Default fallback
+            document.body.classList.add('fs-Normal');
         }
 
-        // 2. URL CHECK: Open Settings tab if URL ends in #settings
+        // 3. Settings Tab Check
         if(window.location.hash === '#settings') {
-            switchTab('Setting', null); // 'Setting' matches your ID "tab-Setting"
+            switchTab('Setting', null);
         }
     });
 
-    // --- TAB SWITCHING LOGIC ---
-    function switchTab(tabName, event) {
-        // 1. Hide ALL tab content areas
-        // We select all elements whose ID starts with "tab-"
-        const allTabs = document.querySelectorAll('[id^="tab-"]');
-        allTabs.forEach(el => el.style.display = 'none');
+    // --- MAIN FUNCTIONS ---
 
-        // 2. Remove 'active' style from ALL tab buttons
+    function switchTab(tabName, event) {
+        document.querySelectorAll('[id^="tab-"]').forEach(el => el.style.display = 'none');
         document.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active'));
 
-        // 3. Show the SPECIFIC target tab
         const targetTab = document.getElementById('tab-' + tabName);
         if(targetTab) {
             targetTab.style.display = 'block';
             targetTab.style.animation = 'fadeIn 0.5s ease';
         }
 
-        // 4. Highlight the correct button
         if (event) {
-            // If the user clicked, we have the event, so use it
             event.currentTarget.classList.add('active');
         } else {
-            // If there is no event (e.g. loaded from URL #settings), find the button manually
-            // We look for the button that calls switchTab with the current tabName
             const targetBtn = document.querySelector(`.tab-link[onclick*="'${tabName}'"]`);
-            if (targetBtn) {
-                targetBtn.classList.add('active');
-            }
+            if (targetBtn) targetBtn.classList.add('active');
         }
     }
 
-    // --- LIVE PREVIEW: FONT SIZE ---
     function updateFont(size) {
-        // Remove all possible font classes so they don't stack up
         document.body.classList.remove('fs-Normal', 'fs-Large', 'fs-X-Large');
-        // Add the new class immediately
         document.body.classList.add('fs-' + size);
     }
 
-    // --- LIVE PREVIEW: HIGH CONTRAST ---
     function toggleContrast(checkbox) {
         if (checkbox.checked) {
-            // If switch is ON, turn page black/yellow
             document.body.classList.add('high-contrast');
         } else {
-            // If switch is OFF, go back to normal
             document.body.classList.remove('high-contrast');
         }
     }
+
+    // --- TRANSLATION FUNCTIONS ---
+
+    function toggleLangMenu() {
+        const menu = document.getElementById('custom-lang-menu');
+        menu.classList.toggle('show');
+    }
+
+    function changeLanguage(langCode) {
+        // Set cookie for Google Translate
+        const cookieValue = `/auto/${langCode}`;
+        document.cookie = `googtrans=${cookieValue}; path=/; domain=${window.location.hostname}`;
+        document.cookie = `googtrans=${cookieValue}; path=/;`; 
+
+        // Reload to apply
+        window.location.reload();
+    }
+
+    // Close dropdown if clicking outside
+    window.addEventListener('click', function(e) {
+        const container = document.querySelector('.lang-selector-container');
+        const menu = document.getElementById('custom-lang-menu');
+        if (container && !container.contains(e.target)) {
+            menu.classList.remove('show');
+        }
+    });
 </script>
 {% endblock %}
