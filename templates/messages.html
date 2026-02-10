@@ -5,9 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Messages - GenConnect</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f5; color: #1e293b; transition: font-size 0.2s; }
+        body { font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f5; color: #1e293b; transition: font-size 0.2s; 
+            /* Added for translation support */
+            top: 0 !important; 
+            position: static !important; 
+        }
         .container { display: flex; height: 100vh; }
         
         /* --- Sidebar Styles --- */
@@ -83,6 +88,7 @@
         .btn-danger { background: #ef4444; color: white; }
         .btn-danger:hover { background: #dc2626; }
         
+        /* UPDATED TOAST STYLES FOR RED/GREEN VALIDATION */
         .notification-toast { 
             position: fixed; top: 20px; right: 20px; 
             background: white; padding: 16px 20px; 
@@ -91,11 +97,17 @@
             animation: slideIn 0.3s ease;
         }
         .notification-toast.active { display: flex; }
+        
+        /* Success = Green */
         .notification-toast.success { border-left: 4px solid #10b981; }
+        /* Error = Red */
         .notification-toast.error { border-left: 4px solid #ef4444; }
+        
         .notification-icon svg { width: 20px; height: 20px; }
+        /* Icon color based on parent class */
         .notification-toast.success .notification-icon svg { color: #10b981; }
         .notification-toast.error .notification-icon svg { color: #ef4444; }
+        
         .notification-content { flex: 1; }
         .notification-title { font-weight: 600; font-size: 14px; color: #111827; margin-bottom: 2px; }
         .notification-message { font-size: 13px; color: #6b7280; }
@@ -133,54 +145,34 @@
             color: #FFD700 !important;
         }
 
-        /* FIX: Remove bottom border from conversations header to merge with search bar */
-        body.high-contrast .conversations-header {
-            border-bottom: none !important;
-        }
-
-        /* FIX: Ensure the Messages Header Text is visible */
-        body.high-contrast .conversations-header h2 {
-            color: #FFD700 !important;
-        }
-
-        /* FIX: Color the header 3-dot icon */
-        body.high-contrast .header-icon {
-            color: #FFD700 !important;
-        }
+        body.high-contrast .conversations-header { border-bottom: none !important; }
+        body.high-contrast .conversations-header h2 { color: #FFD700 !important; }
+        body.high-contrast .header-icon { color: #FFD700 !important; }
 
         /* Sidebar Links */
         body.high-contrast .sidebar-nav a { color: #FFD700 !important; }
         body.high-contrast .sidebar-nav a:hover { background-color: #333 !important; }
         
-        /* FIX: Active Sidebar Link (Gold Background, Black Text, Black Icon) */
         body.high-contrast .sidebar-nav a.active { 
             background-color: #FFD700 !important; 
             color: #000 !important; 
         }
-        /* Important: Make the icon black when active */
-        body.high-contrast .sidebar-nav a.active svg {
-            stroke: #000000 !important;
-        }
+        body.high-contrast .sidebar-nav a.active svg { stroke: #000000 !important; }
 
         body.high-contrast .logo, body.high-contrast .logo span { color: #FFD700 !important; }
         body.high-contrast .sidebar svg { stroke: #FFD700 !important; }
         body.high-contrast .sidebar-nav li[style*="border-top"] { border-top-color: #FFD700 !important; }
 
         /* Conversations List */
-        body.high-contrast .conversation-item { 
-            border-bottom: 1px solid #4b5563 !important; /* Light grey border */
-            color: #fff !important; 
-        }
+        body.high-contrast .conversation-item { border-bottom: 1px solid #4b5563 !important; color: #fff !important; }
         body.high-contrast .conversation-item:hover { background-color: #111 !important; }
         
-        /* FIXED: Active item background is dark with Gold border */
         body.high-contrast .conversation-item.active { 
             background-color: #222 !important; 
             border-left: 3px solid #FFD700 !important; 
             color: #FFD700 !important;
         }
         
-        /* FIXED: Pinned item background is dark (black) */
         body.high-contrast .conversation-item.pinned {
             background-color: #111 !important;
             border-left: 3px solid #FFD700 !important;
@@ -191,14 +183,6 @@
         body.high-contrast .last-message { color: #ccc !important; }
         body.high-contrast .timestamp { color: #888 !important; }
 
-        /* Chat Area (Empty State) */
-        body.high-contrast .chat-area, 
-        body.high-contrast .messages-area,
-        body.high-contrast .message-input-area {
-            background-color: #000 !important;
-        }
-        
-        /* Empty State */
         body.high-contrast .empty-state { background-color: #000 !important; }
         body.high-contrast .empty-text { color: #fff !important; }
 
@@ -223,25 +207,20 @@
             color: #fff !important;
         }
 
-        /* FIX: Search Icon Color */
-        body.high-contrast .conversations-sidebar svg[style*="color:#9ca3af"] {
-            color: #FFD700 !important;
-        }
-
-        /* Buttons in Modals */
+        body.high-contrast .conversations-sidebar svg[style*="color:#9ca3af"] { color: #FFD700 !important; }
         body.high-contrast .btn-submit { background: #FFD700 !important; color: #000 !important; }
         body.high-contrast .btn-cancel { background: #000 !important; border: 1px solid #FFD700 !important; color: #FFD700 !important; }
 
-        /* --- FIXED SEARCH BAR STYLES FOR HIGH CONTRAST --- */
-        body.high-contrast .conversations-sidebar > div:nth-child(2) > div {
-            background-color: #000 !important; /* Black background */
-            border: 1px solid #FFD700 !important; /* Yellow border (around) */
-        }
-        
-        body.high-contrast ::placeholder {
-            color: #FFD700 !important;
-            opacity: 0.7;
-        }
+        body.high-contrast .conversations-sidebar > div:nth-child(2) > div { background-color: #000 !important; border: 1px solid #FFD700 !important; }
+        body.high-contrast ::placeholder { color: #FFD700 !important; opacity: 0.7; }
+
+        /* --- GOOGLE TRANSLATE HACKS --- */
+        .goog-te-banner-frame.skiptranslate { display: none !important; }
+        body > .skiptranslate { display: none !important; }
+        #goog-gt-tt, .goog-te-balloon-frame { display: none !important; }
+        .goog-text-highlight { background: none !important; box-shadow: none !important; }
+        #google_translate_element { visibility: hidden; position: absolute; top: -9999px; left: -9999px; }
+
     </style>
 </head>
 <body>
@@ -249,7 +228,10 @@
 <div id="user-settings" 
      data-contrast="{{ 'true' if current_user.high_contrast else 'false' }}" 
      data-fontsize="{{ current_user.font_size or 'Normal' }}"
+     data-lang="{{ current_user.language if current_user.is_authenticated and current_user.language else 'en' }}"
      style="display: none;"></div>
+
+<div id="google_translate_element"></div>
 
 <div class="container">
     <aside class="sidebar">
@@ -470,6 +452,18 @@
     </div>
 </div>
 
+<script type="text/javascript">
+    function googleTranslateElementInit() {
+        new google.translate.TranslateElement({
+            pageLanguage: 'en',
+            includedLanguages: 'en,zh-CN,ta',
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+            autoDisplay: false
+        }, 'google_translate_element');
+    }
+</script>
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         // 1. Get Settings from the hidden data div
@@ -478,6 +472,7 @@
             // Read attributes safely
             const contrastSetting = settingsDiv.getAttribute('data-contrast').toLowerCase();
             const fontSize = settingsDiv.getAttribute('data-fontsize');
+            const lang = settingsDiv.getAttribute('data-lang'); // ADDED
 
             // Apply High Contrast
             // Check for true, 1, or 'on'
@@ -489,6 +484,18 @@
             if (fontSize) {
                 document.body.classList.remove('fs-Normal', 'fs-Large', 'fs-X-Large');
                 document.body.classList.add('fs-' + fontSize);
+            }
+
+            // ADDED FOR AUTO-TRANSLATE
+            if (lang && lang !== 'en') {
+                const checkGoogle = setInterval(() => {
+                    const combo = document.querySelector('.goog-te-combo');
+                    if (combo) {
+                        combo.value = lang;
+                        combo.dispatchEvent(new Event('change'));
+                        clearInterval(checkGoogle);
+                    }
+                }, 500);
             }
         }
     });
@@ -616,7 +623,7 @@
                                      onclick="event.stopPropagation(); triggerAddContactFromSearch('${user.id}', '${user.username}')"
                                      onmouseover="this.style.backgroundColor='#e0e7ff'"
                                      onmouseout="this.style.backgroundColor='transparent'">
-                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                                 </div>
                             `;
                             searchResults.appendChild(div);
@@ -749,4 +756,3 @@
 </script>
 </body>
 </html>
-
