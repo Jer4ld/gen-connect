@@ -152,7 +152,7 @@
         .reply-close { cursor: pointer; color: #6b7280; font-weight: bold; padding: 5px; }
         .message-input-container { display: flex; gap: 10px; align-items: center; }
         .attachment-button { width: 40px; height: 40px; border-radius: 50%; background: white; border: 1px solid #e5e7eb; color: #6b7280; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .input-wrapper { flex: 1; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 24px; padding: 8px 15px; display: flex; align-items: center; }
+        .input-wrapper { flex: 1; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 24px; padding: 8px 15px; display: flex; align-items: center; position: relative; overflow: hidden; }
         .input-wrapper textarea { width: 100%; border: none; background: transparent; resize: none; font-size: 14px; font-family: inherit; outline: none; max-height: 100px; padding: 4px 0; }
         .send-button { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .file-preview { display: none; align-items: center; justify-content: space-between; padding: 10px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; margin-top: 10px; }
@@ -232,6 +232,38 @@
         .tick-icon.read svg {
             color: #53bdeb; /* Blue when read */
         }
+
+        /* --- Audio Player Styles (Picture 1) --- */
+        .audio-player-container { display: flex; align-items: center; gap: 10px; width: 260px; padding: 5px 0; }
+        .play-btn { width: 32px; height: 32px; background: rgba(0,0,0,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+        .message.sent .play-btn { background: rgba(255,255,255,0.2); }
+        .play-btn svg { width: 14px; height: 14px; fill: currentColor; }
+        .audio-progress-bar { flex: 1; height: 4px; background: rgba(0,0,0,0.1); border-radius: 2px; position: relative; cursor: pointer; }
+        .message.sent .audio-progress-bar { background: rgba(255,255,255,0.3); }
+        .audio-progress-fill { height: 100%; background: #10b981; border-radius: 2px; width: 0%; position: relative; pointer-events: none; }
+        .message.sent .audio-progress-fill { background: white; }
+        .audio-progress-fill::after { content: ''; position: absolute; right: -5px; top: -3px; width: 10px; height: 10px; background: #10b981; border-radius: 50%; display:none; }
+        .audio-progress-bar:hover .audio-progress-fill::after { display: block; }
+        .message.sent .audio-progress-fill::after { background: white; }
+        .audio-duration { font-size: 11px; font-weight: 500; min-width: 35px; text-align: right; opacity: 0.8; }
+
+        /* --- Recording Overlay Styles (Picture 2) --- */
+        .recording-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #1f2937; color: white; align-items: center; justify-content: space-between; padding: 0 10px; border-radius: 24px; z-index: 20; }
+        .rec-left { display: flex; align-items: center; gap: 15px; }
+        .rec-delete-btn { color: #ef4444; cursor: pointer; padding: 5px; display: flex; align-items: center; transition: 0.2s; }
+        .rec-delete-btn:hover { opacity: 0.8; }
+        .rec-timer-area { display: flex; align-items: center; gap: 10px; font-family: monospace; font-size: 15px; font-weight: 500; }
+        .rec-dot { width: 8px; height: 8px; background: #ef4444; border-radius: 50%; animation: pulse 1s infinite; }
+        .rec-wave { display: flex; gap: 2px; align-items: center; height: 20px; margin-left: 10px; }
+        .rec-bar { width: 3px; background: #9ca3af; border-radius: 2px; animation: wave 1s infinite ease-in-out; }
+        .rec-right { display: flex; align-items: center; gap: 15px; }
+        .rec-pause-btn { width: 30px; height: 30px; border: 1px solid #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; }
+        .rec-send-btn { width: 35px; height: 35px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        @keyframes wave { 0%, 100% { height: 4px; } 50% { height: 16px; } }
+        .rec-bar:nth-child(odd) { animation-duration: 0.8s; }
+        .rec-bar:nth-child(even) { animation-duration: 1.2s; }
 
         /* =========================================
            ACCESSIBILITY & HIGH CONTRAST
@@ -523,15 +555,44 @@
                                     <div style="font-size: 11px; color: #6b7280; margin-bottom: 2px; margin-left: 2px;">{{ message.sender.username }}</div>
                                 {% endif %}
                                 <div class="message-bubble">
-                                    <div class="message-text" data-content-id="{{ message.id }}">{{ message.content | safe }}</div>
+                                    {% set is_audio_msg = false %}
                                     {% if message.file_path %}
-                                        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.1);">
-                                            <a href="{{ url_for('static', filename='uploads/' + message.file_path) }}" target="_blank" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 13px;">
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
-                                                <span>View Attachment</span>
-                                            </a>
-                                        </div>
+                                        {% set ext = message.file_path.split('.')[-1].lower() %}
+                                        {% if ext in ['webm', 'ogg', 'wav', 'mp3', 'm4a'] %}
+                                            {% set is_audio_msg = true %}
+                                        {% endif %}
                                     {% endif %}
+
+                                    {% if message.content and (message.content != '[File Attachment]' or not is_audio_msg) %}
+                                        <div class="message-text" data-content-id="{{ message.id }}">{{ message.content | safe }}</div>
+                                    {% endif %}
+                                    
+                                    {% if message.file_path %}
+                                        {% set ext = message.file_path.split('.')[-1].lower() %}
+                                        
+                                        {% if ext in ['webm', 'ogg', 'wav', 'mp3', 'm4a'] %}
+                                            <div class="audio-player-container" id="audio-{{ message.id }}">
+                                                <div class="play-btn" onclick="togglePlay('{{ message.id }}')">
+                                                    <svg id="play-icon-{{ message.id }}" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                                    <svg id="pause-icon-{{ message.id }}" viewBox="0 0 24 24" style="display:none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                                                </div>
+                                                <div class="audio-progress-bar" onclick="seekAudio(event, '{{ message.id }}')">
+                                                    <div class="audio-progress-fill" id="progress-{{ message.id }}"></div>
+                                                </div>
+                                                <div class="audio-duration" id="duration-{{ message.id }}">00:00</div>
+                                                <audio id="audio-el-{{ message.id }}" src="{{ url_for('static', filename='uploads/' + message.file_path) }}" preload="metadata" onloadedmetadata="formatDuration(this, 'duration-{{ message.id }}')" ontimeupdate="updateProgress('{{ message.id }}')" onended="resetPlayer('{{ message.id }}')"></audio>
+                                            </div>
+                                        
+                                        {% else %}
+                                            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.1);">
+                                                <a href="{{ url_for('static', filename='uploads/' + message.file_path) }}" target="_blank" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 13px;">
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+                                                    <span>View Attachment</span>
+                                                </a>
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+                                    
                                     <div class="message-reactions" id="reactions-{{ message.id }}" style="display: none;"></div>
                                     <div class="message-meta">
                                         <span class="msg-time" data-utc="{{ message.created_at.isoformat() }}">{{ message.created_at.strftime('%H:%M') }}</span>
@@ -567,18 +628,49 @@
             <div class="message-input-area">
                 <div id="icebreakerContainer" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 5px;"></div>
                 <div class="reply-preview-bar" id="replyPreview"><div class="reply-preview-content"><span class="reply-preview-name" id="replyTargetUser">Replying to message</span><span class="reply-preview-text" id="replyTargetText"></span></div><div class="reply-close" onclick="cancelReply()">✕</div></div>
+                
                 <form id="messageForm" class="message-input-container" enctype="multipart/form-data">
                     <input type="file" id="fileInput" name="file" style="display: none;">
                     <button type="button" class="attachment-button" onclick="toggleIcebreakers()" title="Get conversation ideas"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2v-1.26C6.19 14.47 5 12.38 5 10a7 7 0 0 1 7-7z"/></svg></button>
                     <button type="button" class="attachment-button" onclick="document.getElementById('fileInput').click()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+                    
                     <div class="input-wrapper">
                         <textarea id="messageInput" name="content" placeholder="Type a message..." rows="1"></textarea>
-                        <div id="voiceInputBtn" style="cursor: pointer; color: #6b7280; padding: 5px;" onclick="toggleVoiceInput()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></div>
+                        
+                        <div id="recordingUI" class="recording-overlay">
+                            <div class="rec-left">
+                                <div class="rec-delete-btn" onclick="deleteRecording()" title="Cancel Recording">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                </div>
+                                <div class="rec-timer-area">
+                                    <div class="rec-dot"></div>
+                                    <span id="recordingTimer">0:00</span>
+                                </div>
+                                <div class="rec-wave">
+                                    <div class="rec-bar"></div><div class="rec-bar"></div><div class="rec-bar"></div><div class="rec-bar"></div><div class="rec-bar"></div><div class="rec-bar"></div>
+                                    <div class="rec-bar"></div><div class="rec-bar"></div><div class="rec-bar"></div><div class="rec-bar"></div><div class="rec-bar"></div><div class="rec-bar"></div>
+                                </div>
+                            </div>
+                            <div class="rec-right">
+                                <div class="rec-pause-btn" onclick="togglePauseRecording()" title="Pause">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                                </div>
+                                <div class="rec-send-btn" onclick="sendRecording()">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 2px;"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="micBtn" style="cursor: pointer; color: #6b7280; padding: 5px;" onclick="startRecording()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                        </div>
                     </div>
+
                     <input type="hidden" name="receiver_id" value="{{ contact.id }}">
                     <input type="hidden" name="is_group" value="{{ 'true' if is_group else 'false' }}">
                     <button type="submit" class="send-button" id="submitBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
                 </form>
+                
                 <div class="file-preview" id="filePreview" style="display: none;"><div class="file-info"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg> <span id="fileName"></span></div><button type="button" class="remove-file" onclick="removeFile()">×</button></div>
             </div>
         </div>
@@ -602,83 +694,30 @@
 
 <div class="modal" id="blockUserModal">
     <div class="modal-content" style="max-width: 500px;">
-        <div class="modal-header">
-            <h3>Block User</h3>
-            <span class="modal-close" onclick="closeModal('blockUserModal')">×</span>
-        </div>
+        <div class="modal-header"><h3>Block User</h3><span class="modal-close" onclick="closeModal('blockUserModal')">×</span></div>
         <form id="blockUserForm">
-            <div class="form-group">
-                <label for="blockReason">Reason for blocking (optional):</label>
-                <textarea id="blockReason" name="details" rows="4" placeholder="Tell us more about it" style="resize: none;"></textarea>
-            </div>
-            <div class="modal-actions">
-                <button type="button" class="btn btn-cancel" onclick="closeModal('blockUserModal')">Cancel</button>
-                <button type="button" class="btn btn-danger" onclick="submitBlockUser()">Block</button>
-            </div>
+            <div class="form-group"><label for="blockReason">Reason for blocking (optional):</label><textarea id="blockReason" name="details" rows="4" placeholder="Tell us more about it" style="resize: none;"></textarea></div>
+            <div class="modal-actions"><button type="button" class="btn btn-cancel" onclick="closeModal('blockUserModal')">Cancel</button><button type="button" class="btn btn-danger" onclick="submitBlockUser()">Block</button></div>
         </form>
     </div>
 </div>
 
 <div class="modal" id="blockListModal">
     <div class="modal-content" style="max-width: 500px;">
-        <div class="modal-header">
-            <h3>Block List</h3>
-            <span class="modal-close" onclick="closeModal('blockListModal')">×</span>
-        </div>
+        <div class="modal-header"><h3>Block List</h3><span class="modal-close" onclick="closeModal('blockListModal')">×</span></div>
         <div id="blockListContainer" class="contact-list" style="max-height: 300px;"></div>
     </div>
 </div>
 
 <div class="modal" id="groupReportModal">
     <div class="modal-content" style="max-width: 500px;">
-        <div class="modal-header">
-            <h3>Report Group Member</h3>
-            <span class="modal-close" onclick="closeModal('groupReportModal')">×</span>
-        </div>
+        <div class="modal-header"><h3>Report Group Member</h3><span class="modal-close" onclick="closeModal('groupReportModal')">×</span></div>
         <form id="groupReportForm">
             <input type="hidden" name="group_id" value="{{ contact.id }}">
-            
-            <div class="form-group">
-                <label>Select Member to Report:</label>
-                <div class="contact-list" style="max-height: 150px; border: 1px solid #e5e7eb; border-radius: 8px;">
-                    {% if group_members %}
-                        {% for m in group_members %}
-                            {% if m.id != current_user.id %}
-                            <label class="contact-item" style="display: flex; align-items: center; gap: 12px; padding: 10px; cursor: pointer; border-bottom: 1px solid #f9fafb;">
-                                <input type="radio" name="reported_user_id" value="{{ m.id }}" style="width: 16px; height: 16px; cursor: pointer;">
-                                <div class="conversation-avatar" style="width: 36px; height: 36px; font-size: 14px;">
-                                    {% if m.user.profile_picture != 'default.jpg' %}
-                                        <img src="/static/uploads/{{ m.user.profile_picture }}" style="width:100%; height:100%; object-fit: cover;">
-                                    {% else %}
-                                        {{ m.username[0].upper() }}
-                                    {% endif %}
-                                </div>
-                                <span style="font-size: 14px; font-weight: 500; color: #374151;">{{ m.username }}</span>
-                            </label>
-                            {% endif %}
-                        {% endfor %}
-                    {% endif %}
-                </div>
-            </div>
-
-            <div class="form-group">
-                <div class="report-grid">
-                    <div class="report-chip" onclick="selectGroupReportReason(this)">Spam</div>
-                    <div class="report-chip" onclick="selectGroupReportReason(this)">Harassment</div>
-                    <div class="report-chip" onclick="selectGroupReportReason(this)">Inappropriate Content</div>
-                    <div class="report-chip" onclick="selectGroupReportReason(this)">Violence</div>
-                    <div class="report-chip" onclick="selectGroupReportReason(this)">Other</div>
-                </div>
-                <input type="hidden" name="reason" id="selectedGroupReason">
-            </div>
-            
-            <div class="form-group">
-                <textarea name="details" rows="3" placeholder="Additional details..." style="resize: none;"></textarea>
-            </div>
-            
-            <div class="modal-actions">
-                <button type="button" class="btn btn-submit" onclick="submitGroupReport()">Send Report to Admin</button>
-            </div>
+            <div class="form-group"><label>Select Member to Report:</label><div class="contact-list" style="max-height: 150px; border: 1px solid #e5e7eb; border-radius: 8px;">{% if group_members %}{% for m in group_members %}{% if m.id != current_user.id %}<label class="contact-item" style="display: flex; align-items: center; gap: 12px; padding: 10px; cursor: pointer; border-bottom: 1px solid #f9fafb;"><input type="radio" name="reported_user_id" value="{{ m.id }}" style="width: 16px; height: 16px; cursor: pointer;"><div class="conversation-avatar" style="width: 36px; height: 36px; font-size: 14px;">{% if m.user.profile_picture != 'default.jpg' %}<img src="/static/uploads/{{ m.user.profile_picture }}" style="width:100%; height:100%; object-fit: cover;">{% else %}{{ m.username[0].upper() }}{% endif %}</div><span style="font-size: 14px; font-weight: 500; color: #374151;">{{ m.username }}</span></label>{% endif %}{% endfor %}{% endif %}</div></div>
+            <div class="form-group"><div class="report-grid"><div class="report-chip" onclick="selectGroupReportReason(this)">Spam</div><div class="report-chip" onclick="selectGroupReportReason(this)">Harassment</div><div class="report-chip" onclick="selectGroupReportReason(this)">Inappropriate Content</div><div class="report-chip" onclick="selectGroupReportReason(this)">Violence</div><div class="report-chip" onclick="selectGroupReportReason(this)">Other</div></div><input type="hidden" name="reason" id="selectedGroupReason"></div>
+            <div class="form-group"><textarea name="details" rows="3" placeholder="Additional details..." style="resize: none;"></textarea></div>
+            <div class="modal-actions"><button type="button" class="btn btn-submit" onclick="submitGroupReport()">Send Report to Admin</button></div>
         </form>
     </div>
 </div>
@@ -687,14 +726,7 @@
     <div class="modal-content">
         <div class="modal-header"><h3>Change Wallpaper</h3><span class="modal-close" onclick="closeModal('wallpaperModal')">×</span></div>
         <div style="margin-bottom:15px; font-weight:500;">Solid Colors</div>
-        <div class="wallpaper-grid">
-            <div class="color-circle" style="background:#e5e7eb" onclick="setWallpaper('color', '#f9fafb')"></div>
-            <div class="color-circle" style="background:#fee2e2" onclick="setWallpaper('color', '#fee2e2')"></div>
-            <div class="color-circle" style="background:#dbeafe" onclick="setWallpaper('color', '#dbeafe')"></div>
-            <div class="color-circle" style="background:#dcfce7" onclick="setWallpaper('color', '#dcfce7')"></div>
-            <div class="color-circle" style="background:#fef3c7" onclick="setWallpaper('color', '#fef3c7')"></div>
-            <div class="color-circle" style="background:#f3e8ff" onclick="setWallpaper('color', '#f3e8ff')"></div>
-        </div>
+        <div class="wallpaper-grid"><div class="color-circle" style="background:#e5e7eb" onclick="setWallpaper('color', '#f9fafb')"></div><div class="color-circle" style="background:#fee2e2" onclick="setWallpaper('color', '#fee2e2')"></div><div class="color-circle" style="background:#dbeafe" onclick="setWallpaper('color', '#dbeafe')"></div><div class="color-circle" style="background:#dcfce7" onclick="setWallpaper('color', '#dcfce7')"></div><div class="color-circle" style="background:#fef3c7" onclick="setWallpaper('color', '#fef3c7')"></div><div class="color-circle" style="background:#f3e8ff" onclick="setWallpaper('color', '#f3e8ff')"></div></div>
         <div style="margin:15px 0; font-weight:500;">Custom Image</div>
         <label for="wallpaperInput" class="btn btn-submit" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; cursor:pointer; margin-bottom:15px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Choose Photos</label>
         <input type="file" id="wallpaperInput" accept="image/*" style="display:none;">
@@ -706,20 +738,7 @@
     <div class="modal-content">
         <div class="modal-header"><h3>Group Info</h3><span class="modal-close" onclick="closeModal('groupInfoModal')">×</span></div>
         <div style="margin-bottom: 15px; font-size: 14px; color: #6b7280;">Total Members: {{ member_count }}</div>
-        <div class="contact-list">
-            {% for member in group_members %}
-                <div class="member-row" style="padding: 10px;">
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        {% if member.is_admin %}<div class="badge-admin">ADMIN</div>{% else %}<div class="badge-member">MEMBER</div>{% endif %}
-                        <span style="font-size:14px;">{{ member.username }}</span>
-                    </div>
-                    {% if user_is_admin and member.id != current_user.id %}
-                        {% if not member.is_admin %}<span class="promote-link" onclick="triggerPromote('{{ member.id }}', '{{ member.username }}')">Promote Admin</span>
-                        {% else %}<span class="promote-link" style="color: #ef4444;" onclick="triggerDismiss('{{ member.id }}', '{{ member.username }}')">Dismiss Admin</span>{% endif %}
-                    {% endif %}
-                </div>
-            {% endfor %}
-        </div>
+        <div class="contact-list">{% for member in group_members %}<div class="member-row" style="padding: 10px;"><div style="display:flex; align-items:center; gap:10px;">{% if member.is_admin %}<div class="badge-admin">ADMIN</div>{% else %}<div class="badge-member">MEMBER</div>{% endif %}<span style="font-size:14px;">{{ member.username }}</span></div>{% if user_is_admin and member.id != current_user.id %}{% if not member.is_admin %}<span class="promote-link" onclick="triggerPromote('{{ member.id }}', '{{ member.username }}')">Promote Admin</span>{% else %}<span class="promote-link" style="color: #ef4444;" onclick="triggerDismiss('{{ member.id }}', '{{ member.username }}')">Dismiss Admin</span>{% endif %}{% endif %}</div>{% endfor %}</div>
     </div>
 </div>
 
@@ -739,42 +758,10 @@
 
 <div class="modal" id="pinChatModal">
     <div class="modal-content">
-        <div class="modal-header">
-            <h3>Pin Chats</h3>
-            <span class="modal-close" onclick="closeModal('pinChatModal')">×</span>
-        </div>
+        <div class="modal-header"><h3>Pin Chats</h3><span class="modal-close" onclick="closeModal('pinChatModal')">×</span></div>
         <form id="pinChatForm">
-            <div class="form-group">
-                <label>Select chats to pin to top:</label>
-                <div class="contact-list">
-                    {% for conv in conversations %}
-                    <label class="contact-item" style="display: flex; align-items: center; gap: 12px; padding: 10px; cursor: pointer; border-bottom: 1px solid #f9fafb;">
-                        <input type="checkbox" name="pinned_items" value="{{ conv.type_key }}" 
-                               {% if conv.is_pinned %}checked{% endif %} 
-                               style="width: 16px; height: 16px; cursor: pointer;">
-                        
-                        <div class="conversation-avatar" style="width: 36px; height: 36px; font-size: 14px;">
-                            {{ conv.name[0].upper() }}
-                        </div>
-                        
-                        <div style="flex:1;">
-                            <span style="font-size: 14px; font-weight: 500; color: #374151;">{{ conv.name }}</span>
-                            {% if conv.is_group %}<span style="font-size:10px; color:#9ca3af; margin-left:5px;">(Group)</span>{% endif %}
-                        </div>
-                        
-                        {% if conv.is_pinned %}
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="color: #2563eb;">
-                                <path d="M16 12V4H8v8l-2 2v2h5v6l1 1 1-1v-6h5v-2l-2-2z"/> 
-                            </svg>
-                        {% endif %}
-                    </label>
-                    {% endfor %}
-                </div>
-            </div>
-            <div class="modal-actions">
-                <button type="button" class="btn btn-cancel" onclick="closeModal('pinChatModal')">Cancel</button>
-                <button type="submit" class="btn btn-submit">Save Pins</button>
-            </div>
+            <div class="form-group"><label>Select chats to pin to top:</label><div class="contact-list">{% for conv in conversations %}<label class="contact-item" style="display: flex; align-items: center; gap: 12px; padding: 10px; cursor: pointer; border-bottom: 1px solid #f9fafb;"><input type="checkbox" name="pinned_items" value="{{ conv.type_key }}" {% if conv.is_pinned %}checked{% endif %} style="width: 16px; height: 16px; cursor: pointer;"><div class="conversation-avatar" style="width: 36px; height: 36px; font-size: 14px;">{{ conv.name[0].upper() }}</div><div style="flex:1;"><span style="font-size: 14px; font-weight: 500; color: #374151;">{{ conv.name }}</span>{% if conv.is_group %}<span style="font-size:10px; color:#9ca3af; margin-left:5px;">(Group)</span>{% endif %}</div>{% if conv.is_pinned %}<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="color: #2563eb;"><path d="M16 12V4H8v8l-2 2v2h5v6l1 1 1-1v-6h5v-2l-2-2z"/></svg>{% endif %}</label>{% endfor %}</div></div>
+            <div class="modal-actions"><button type="button" class="btn btn-cancel" onclick="closeModal('pinChatModal')">Cancel</button><button type="submit" class="btn btn-submit">Save Pins</button></div>
         </form>
     </div>
 </div>
@@ -792,172 +779,222 @@
     let pendingMessageId = null; 
     let pendingInviteeNames = [];
 
-    // --- TIMEZONE FIX START ---
+    // --- VARIABLES ---
+    let mediaRecorder;
+    let audioChunks = [];
+    let recordingStartTime;
+    let recordingInterval;
+    let isPaused = false;
+    let totalPausedTime = 0;
+    let pauseStartTime = 0;
+
+    // --- AUDIO RECORDING FUNCTIONS ---
+    async function startRecording() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            alert("Audio recording not supported."); return;
+        }
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+            
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+            
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(audioChunks, { type: 'audio/webm' });
+                // Only send if the user clicked send (flag check)
+                if (window.pendingSend) {
+                    submitAudioMessage(blob);
+                    window.pendingSend = false;
+                }
+                stream.getTracks().forEach(track => track.stop());
+            };
+
+            mediaRecorder.start();
+            document.getElementById('recordingUI').style.display = 'flex';
+            
+            // Timer Logic
+            recordingStartTime = Date.now();
+            isPaused = false;
+            totalPausedTime = 0;
+            
+            clearInterval(recordingInterval);
+            recordingInterval = setInterval(() => {
+                if (!isPaused) {
+                    const elapsed = Math.floor((Date.now() - recordingStartTime - totalPausedTime) / 1000);
+                    const m = Math.floor(elapsed / 60);
+                    const s = (elapsed % 60).toString().padStart(2, '0');
+                    document.getElementById('recordingTimer').innerText = `${m}:${s}`;
+                }
+            }, 1000);
+            
+        } catch (err) {
+            console.error(err);
+            alert("Could not access microphone.");
+        }
+    }
+
+    function togglePauseRecording() {
+        if (!mediaRecorder) return;
+        
+        if (mediaRecorder.state === "recording") {
+            mediaRecorder.pause();
+            isPaused = true;
+            pauseStartTime = Date.now();
+            // Change icon to Play
+            document.querySelector('.rec-pause-btn').innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
+            document.querySelector('.rec-dot').style.animation = 'none';
+            document.querySelector('.rec-dot').style.opacity = '0.5';
+        } else if (mediaRecorder.state === "paused") {
+            mediaRecorder.resume();
+            isPaused = false;
+            totalPausedTime += (Date.now() - pauseStartTime);
+            // Change icon back to Pause
+            document.querySelector('.rec-pause-btn').innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>';
+            document.querySelector('.rec-dot').style.animation = 'pulse 1s infinite';
+        }
+    }
+
+    function deleteRecording() {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            window.pendingSend = false;
+            mediaRecorder.stop();
+        }
+        clearInterval(recordingInterval);
+        document.getElementById('recordingUI').style.display = 'none';
+        document.getElementById('recordingTimer').innerText = "0:00";
+        audioChunks = [];
+        
+        // Reset UI
+        document.querySelector('.rec-pause-btn').innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>';
+        document.querySelector('.rec-dot').style.animation = 'pulse 1s infinite';
+        document.querySelector('.rec-dot').style.opacity = '1';
+    }
+
+    function sendRecording() {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            window.pendingSend = true;
+            mediaRecorder.stop();
+        }
+        clearInterval(recordingInterval);
+        document.getElementById('recordingUI').style.display = 'none';
+    }
+
+    async function submitAudioMessage(blob) {
+        const formData = new FormData();
+        formData.append('file', blob, `voice_message_${Date.now()}.webm`);
+        formData.append('receiver_id', '{{ contact.id }}');
+        formData.append('is_group', '{{ "true" if is_group else "false" }}');
+        formData.append('content', ''); // Backend handles empty content as valid if file exists
+
+        try {
+            const res = await fetch('/send_message', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.success) window.location.reload();
+        } catch (err) { console.error(err); }
+    }
+
+    // --- AUDIO PLAYER FUNCTIONS ---
+    function togglePlay(id) {
+        const audio = document.getElementById(`audio-el-${id}`);
+        const playIcon = document.getElementById(`play-icon-${id}`);
+        const pauseIcon = document.getElementById(`pause-icon-${id}`);
+        
+        document.querySelectorAll('audio').forEach(el => {
+            if (el.id !== `audio-el-${id}`) {
+                el.pause();
+                const otherId = el.id.replace('audio-el-', '');
+                const otherPlay = document.getElementById(`play-icon-${otherId}`);
+                const otherPause = document.getElementById(`pause-icon-${otherId}`);
+                if(otherPlay) otherPlay.style.display = 'block';
+                if(otherPause) otherPause.style.display = 'none';
+            }
+        });
+
+        if (audio.paused) {
+            audio.play();
+            playIcon.style.display = 'none';
+            pauseIcon.style.display = 'block';
+        } else {
+            audio.pause();
+            playIcon.style.display = 'block';
+            pauseIcon.style.display = 'none';
+        }
+    }
+
+    function updateProgress(id) {
+        const audio = document.getElementById(`audio-el-${id}`);
+        const progressBar = document.getElementById(`progress-${id}`);
+        const durationText = document.getElementById(`duration-${id}`);
+        
+        const percent = (audio.currentTime / audio.duration) * 100;
+        progressBar.style.width = `${percent}%`;
+        
+        const cur = audio.currentTime;
+        const m = Math.floor(cur / 60);
+        const s = Math.floor(cur % 60).toString().padStart(2, '0');
+        if (!isNaN(cur)) durationText.innerText = `${m}:${s}`;
+    }
+
+    function seekAudio(e, id) {
+        const audio = document.getElementById(`audio-el-${id}`);
+        const progressBarContainer = e.currentTarget;
+        const clickX = e.offsetX;
+        const width = progressBarContainer.clientWidth;
+        const duration = audio.duration;
+        audio.currentTime = (clickX / width) * duration;
+    }
+
+    function resetPlayer(id) {
+        document.getElementById(`play-icon-${id}`).style.display = 'block';
+        document.getElementById(`pause-icon-${id}`).style.display = 'none';
+        document.getElementById(`progress-${id}`).style.width = '0%';
+        const audio = document.getElementById(`audio-el-${id}`);
+        formatDuration(audio, `duration-${id}`);
+    }
+
+    function formatDuration(audio, elementId) {
+        const dur = audio.duration;
+        const m = Math.floor(dur / 60);
+        const s = Math.floor(dur % 60).toString().padStart(2, '0');
+        if(!isNaN(dur)) document.getElementById(elementId).innerText = `${m}:${s}`;
+    }
+
+    // --- TIMEZONE FIX ---
     document.addEventListener("DOMContentLoaded", function() {
-        // 1. Get Settings
         const settingsDiv = document.getElementById('user-settings');
         if (settingsDiv) {
             const contrastSetting = settingsDiv.getAttribute('data-contrast').toLowerCase();
             const fontSize = settingsDiv.getAttribute('data-fontsize');
-
-            // Apply High Contrast
-            if (contrastSetting === 'true' || contrastSetting === '1' || contrastSetting === 'on') {
-                document.body.classList.add('high-contrast');
-            }
-
-            // Apply Font Size
-            if (fontSize) {
-                document.body.classList.remove('fs-Normal', 'fs-Large', 'fs-X-Large');
-                document.body.classList.add('fs-' + fontSize);
-            }
+            if (contrastSetting === 'true' || contrastSetting === '1' || contrastSetting === 'on') document.body.classList.add('high-contrast');
+            if (fontSize) { document.body.classList.remove('fs-Normal', 'fs-Large', 'fs-X-Large'); document.body.classList.add('fs-' + fontSize); }
         }
-
-        // 2. Adjust Timezones
-        const timeElements = document.querySelectorAll('.msg-time');
-        timeElements.forEach(el => {
+        document.querySelectorAll('.msg-time').forEach(el => {
             const utcStr = el.getAttribute('data-utc');
             if(utcStr) {
-                // Force interpretation as UTC by adding 'Z' if missing
                 const date = new Date(utcStr.endsWith('Z') ? utcStr : utcStr + 'Z');
-                
-                // Convert to Singapore Time
-                const sgTime = date.toLocaleTimeString('en-SG', {
-                    timeZone: 'Asia/Singapore',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: false
-                });
-                
-                el.innerText = sgTime;
+                el.innerText = date.toLocaleTimeString('en-SG', { timeZone: 'Asia/Singapore', hour: '2-digit', minute: '2-digit', hour12: false });
             }
         });
     });
-    // --- TIMEZONE FIX END ---
 
-    function toggleDropdown(id) {
-        document.querySelectorAll('.dropdown-menu').forEach(m => { if(m.id !== id) m.classList.remove('active'); });
-        document.getElementById(id).classList.toggle('active');
-    }
-    
-    // ... (Report Modal Functions) ...
-    function openBlockUserModal() {
-        document.getElementById('blockUserForm').reset();
-        toggleDropdown('optionsMenu');
-        document.getElementById('blockUserModal').classList.add('active');
-    }
-
+    function toggleDropdown(id) { document.getElementById(id).classList.toggle('active'); }
+    function openBlockUserModal() { document.getElementById('blockUserForm').reset(); toggleDropdown('optionsMenu'); document.getElementById('blockUserModal').classList.add('active'); }
     async function submitBlockUser() {
         const details = document.querySelector('#blockUserForm textarea[name="details"]').value;
-        const formData = new FormData();
-        formData.append('details', details);
-
-        try {
-            // Uses the new /block_user endpoint
-            const res = await fetch(`/block_user/{{ contact.id }}`, { method: 'POST', body: formData });
-            const data = await res.json();
-            closeModal('blockUserModal');
-            if (data.success) { 
-                showNotification('success', 'User Blocked', data.message); 
-                setTimeout(() => window.location.href = '/messages', 1500); 
-            } else { 
-                showNotification('error', 'Error', data.message); 
-            }
-        } catch (e) { showNotification('error', 'Error', 'Something went wrong'); }
+        const formData = new FormData(); formData.append('details', details);
+        try { const res = await fetch(`/block_user/{{ contact.id }}`, { method: 'POST', body: formData }); const data = await res.json(); closeModal('blockUserModal'); if (data.success) { showNotification('success', 'User Blocked', data.message); setTimeout(() => window.location.href = '/messages', 1500); } else { showNotification('error', 'Error', data.message); } } catch (e) { showNotification('error', 'Error', 'Something went wrong'); }
     }
-
-    // --- NEW: BLOCK LIST FUNCTIONS ---
     async function openBlockListModal() {
-        toggleDropdown('conversationMenu');
-        const container = document.getElementById('blockListContainer');
-        container.innerHTML = '<div style="padding:20px; text-align:center; color:#9ca3af;">Loading...</div>';
-        document.getElementById('blockListModal').classList.add('active');
-
-        try {
-            const res = await fetch('/get_block_list');
-            const data = await res.json();
-            
-            if (data.success && data.blocked_users.length > 0) {
-                container.innerHTML = '';
-                data.blocked_users.forEach(user => {
-                    const avatarHtml = user.profile_picture && user.profile_picture !== 'default.jpg' 
-                        ? `<img src="/static/uploads/${user.profile_picture}" style="width:100%; height:100%; object-fit: cover;">`
-                        : user.username[0].toUpperCase();
-
-                    const item = document.createElement('div');
-                    item.className = 'contact-item';
-                    item.style.cssText = 'display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid #f3f4f6;';
-                    item.innerHTML = `
-                        <div class="conversation-avatar" style="width: 40px; height: 40px; font-size: 16px;">
-                            ${avatarHtml}
-                        </div>
-                        <div style="flex: 1;">
-                            <div style="font-weight: 600; color: #1f2937;">${user.username}</div>
-                            <div style="font-size: 12px; color: #6b7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Reason: ${user.reason}</div>
-                        </div>
-                        <button type="button" class="btn btn-cancel" style="padding: 6px 12px; font-size: 13px;" onclick="unblockUser(${user.user_id})">Unblock</button>
-                    `;
-                    container.appendChild(item);
-                });
-            } else {
-                container.innerHTML = '<div style="padding:20px; text-align:center; color:#9ca3af;">Your block list is empty.</div>';
-            }
-        } catch (e) {
-            container.innerHTML = '<div style="padding:20px; text-align:center; color:#ef4444;">Failed to load block list.</div>';
-        }
+        toggleDropdown('conversationMenu'); const container = document.getElementById('blockListContainer'); container.innerHTML = '<div style="padding:20px; text-align:center; color:#9ca3af;">Loading...</div>'; document.getElementById('blockListModal').classList.add('active');
+        try { const res = await fetch('/get_block_list'); const data = await res.json(); if (data.success && data.blocked_users.length > 0) { container.innerHTML = ''; data.blocked_users.forEach(user => { const avatarHtml = user.profile_picture && user.profile_picture !== 'default.jpg' ? `<img src="/static/uploads/${user.profile_picture}" style="width:100%; height:100%; object-fit: cover;">` : user.username[0].toUpperCase(); const item = document.createElement('div'); item.className = 'contact-item'; item.style.cssText = 'display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid #f3f4f6;'; item.innerHTML = `<div class="conversation-avatar" style="width: 40px; height: 40px; font-size: 16px;">${avatarHtml}</div><div style="flex: 1;"><div style="font-weight: 600; color: #1f2937;">${user.username}</div><div style="font-size: 12px; color: #6b7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Reason: ${user.reason}</div></div><button type="button" class="btn btn-cancel" style="padding: 6px 12px; font-size: 13px;" onclick="unblockUser(${user.user_id})">Unblock</button>`; container.appendChild(item); }); } else { container.innerHTML = '<div style="padding:20px; text-align:center; color:#9ca3af;">Your block list is empty.</div>'; } } catch (e) { container.innerHTML = '<div style="padding:20px; text-align:center; color:#ef4444;">Failed to load block list.</div>'; }
     }
-
-    async function unblockUser(userId) {
-        try {
-            const res = await fetch(`/unblock_user/${userId}`, { method: 'POST' });
-            const data = await res.json();
-            if (data.success) {
-                showNotification('success', 'User Unblocked', data.message);
-                // Refresh the list
-                openBlockListModal();
-            } else {
-                showNotification('error', 'Error', data.message);
-            }
-        } catch (e) {
-            showNotification('error', 'Error', 'Failed to unblock user.');
-        }
-    }
-
-
-    function openGroupReportModal() {
-        toggleDropdown('optionsMenu');
-        document.getElementById('groupReportModal').classList.add('active');
-    }
-
-    function selectGroupReportReason(el) {
-        document.querySelectorAll('#groupReportModal .report-chip').forEach(c => c.classList.remove('selected'));
-        el.classList.add('selected');
-        document.getElementById('selectedGroupReason').value = el.innerText;
-    }
-
-    async function submitGroupReport() {
-        const form = document.getElementById('groupReportForm');
-        const formData = new FormData(form);
-        if (!formData.get('reported_user_id')) { alert("Please select a user."); return; }
-        if (!formData.get('reason')) { alert("Please select a reason."); return; }
-        try {
-            const res = await fetch('/report_group_member', { method: 'POST', body: formData });
-            const data = await res.json();
-            closeModal('groupReportModal');
-            if (data.success) { showNotification('success', 'Report Sent', 'The group admin has been notified.'); } 
-            else { showNotification('error', 'Error', data.message); }
-        } catch (e) { showNotification('error', 'Error', 'Something went wrong'); }
-    }
-
-    const btnRemove = document.getElementById('btn-remove-contact');
-    if (btnRemove) { btnRemove.onclick = () => removeContact(btnRemove.dataset.id); }
-    
-    document.addEventListener('click', (e) => { 
-        if (!e.target.closest('.header-icon') && !e.target.closest('.action-icon') && !e.target.closest('.message-options-btn')) {
-            document.querySelectorAll('.message-dropdown, .dropdown-menu').forEach(m => m.classList.remove('active')); 
-        }
-        document.querySelectorAll('.reaction-bar').forEach(r => r.classList.remove('active')); 
-    });
-
+    async function unblockUser(userId) { try { const res = await fetch(`/unblock_user/${userId}`, { method: 'POST' }); const data = await res.json(); if (data.success) { showNotification('success', 'User Unblocked', data.message); openBlockListModal(); } else { showNotification('error', 'Error', data.message); } } catch (e) { showNotification('error', 'Error', 'Failed to unblock user.'); } }
+    function openGroupReportModal() { toggleDropdown('optionsMenu'); document.getElementById('groupReportModal').classList.add('active'); }
+    function selectGroupReportReason(el) { document.querySelectorAll('#groupReportModal .report-chip').forEach(c => c.classList.remove('selected')); el.classList.add('selected'); document.getElementById('selectedGroupReason').value = el.innerText; }
+    async function submitGroupReport() { const form = document.getElementById('groupReportForm'); const formData = new FormData(form); if (!formData.get('reported_user_id')) { alert("Please select a user."); return; } if (!formData.get('reason')) { alert("Please select a reason."); return; } try { const res = await fetch('/report_group_member', { method: 'POST', body: formData }); const data = await res.json(); closeModal('groupReportModal'); if (data.success) { showNotification('success', 'Report Sent', 'The group admin has been notified.'); } else { showNotification('error', 'Error', data.message); } } catch (e) { showNotification('error', 'Error', 'Something went wrong'); } }
+    const btnRemove = document.getElementById('btn-remove-contact'); if (btnRemove) { btnRemove.onclick = () => removeContact(btnRemove.dataset.id); }
+    document.addEventListener('click', (e) => { if (!e.target.closest('.header-icon') && !e.target.closest('.action-icon') && !e.target.closest('.message-options-btn')) { document.querySelectorAll('.message-dropdown, .dropdown-menu').forEach(m => m.classList.remove('active')); } document.querySelectorAll('.reaction-bar').forEach(r => r.classList.remove('active')); });
     function openGroupInfo() { document.getElementById('groupInfoModal').classList.add('active'); }
     function openEditName() { document.getElementById('editNameModal').classList.add('active'); }
     function openWallpaperModal() { document.getElementById('wallpaperModal').classList.add('active'); toggleDropdown('optionsMenu'); }
@@ -968,113 +1005,25 @@
     function closeAddContactModal() { document.getElementById('addContactModal').classList.remove('active'); }
     function openNewGroupModal() { document.getElementById('newGroupModal').classList.add('active'); document.getElementById('conversationMenu').classList.remove('active'); }
     function closeNewGroupModal() { document.getElementById('newGroupModal').classList.remove('active'); }
-    
-    // ADDED: Open Pin Chat Modal
-    function openPinChatModal() { 
-        document.getElementById('pinChatModal').classList.add('active'); 
-        document.getElementById('conversationMenu').classList.remove('active');
-    }
-
+    function openPinChatModal() { document.getElementById('pinChatModal').classList.add('active'); document.getElementById('conversationMenu').classList.remove('active'); }
     function triggerBulkRemove() { const checkboxes = document.querySelectorAll('.remove-checkbox:checked'); if (checkboxes.length === 0) { showNotification('error', 'Selection', 'Select a user.'); return; } pendingAction = 'bulk_remove'; document.getElementById('confirmTitle').innerText = "Remove Users"; document.getElementById('confirmMessage').innerText = "Remove selected users?"; const btn = document.getElementById('confirmActionBtn'); btn.className = 'btn btn-danger'; btn.innerText = "Remove"; closeModal('removeMembersModal'); document.getElementById('confirmationModal').classList.add('active'); }
-    
-    function triggerAddMembers() { 
-        const checkboxes = document.querySelectorAll('.add-checkbox:checked'); 
-        if (checkboxes.length === 0) { showNotification('error', 'Selection', 'Select a user.'); return; }
-        pendingInviteeNames = [];
-        checkboxes.forEach(cb => { const name = cb.closest('.contact-item').querySelector('span').innerText; pendingInviteeNames.push(name); });
-        pendingAction = 'add_members'; 
-        document.getElementById('confirmTitle').innerText = "Add Users"; 
-        document.getElementById('confirmMessage').innerText = "Add selected users?"; 
-        const btn = document.getElementById('confirmActionBtn'); 
-        btn.className = 'btn btn-submit'; btn.innerText = "Add"; 
-        closeModal('addMembersModal'); 
-        document.getElementById('confirmationModal').classList.add('active'); 
-    }
-
+    function triggerAddMembers() { const checkboxes = document.querySelectorAll('.add-checkbox:checked'); if (checkboxes.length === 0) { showNotification('error', 'Selection', 'Select a user.'); return; } pendingInviteeNames = []; checkboxes.forEach(cb => { const name = cb.closest('.contact-item').querySelector('span').innerText; pendingInviteeNames.push(name); }); pendingAction = 'add_members'; document.getElementById('confirmTitle').innerText = "Add Users"; document.getElementById('confirmMessage').innerText = "Add selected users?"; const btn = document.getElementById('confirmActionBtn'); btn.className = 'btn btn-submit'; btn.innerText = "Add"; closeModal('addMembersModal'); document.getElementById('confirmationModal').classList.add('active'); }
     function triggerPromote(userId, username) { pendingAction = 'promote'; pendingUserId = userId; document.getElementById('confirmTitle').innerText = "Promote"; document.getElementById('confirmMessage').innerText = `Promote ${username}?`; const btn = document.getElementById('confirmActionBtn'); btn.className = 'btn btn-submit'; btn.innerText = "Promote"; closeModal('groupInfoModal'); document.getElementById('confirmationModal').classList.add('active'); }
     function triggerDismiss(userId, username) { pendingAction = 'dismiss'; pendingUserId = userId; document.getElementById('confirmTitle').innerText = "Dismiss"; document.getElementById('confirmMessage').innerText = `Dismiss ${username}?`; const btn = document.getElementById('confirmActionBtn'); btn.className = 'btn btn-danger'; btn.innerText = "Dismiss"; closeModal('groupInfoModal'); document.getElementById('confirmationModal').classList.add('active'); }
     function triggerAddContactFromSearch(userId, username) { pendingAction = 'add_contact_search'; pendingUserId = userId; pendingUsername = username; document.getElementById('confirmTitle').innerText = "Add Contact"; document.getElementById('confirmMessage').innerText = `Add ${username}?`; const btn = document.getElementById('confirmActionBtn'); btn.className = 'btn btn-submit'; btn.innerText = "Send"; document.getElementById('confirmationModal').classList.add('active'); document.getElementById('searchResults').style.display = 'none'; }
     function removeContact(id) { pendingAction = 'remove_individual_contact'; pendingUserId = id; document.getElementById('confirmTitle').innerText = "Remove Contact"; document.getElementById('confirmMessage').innerText = "Remove contact? History will be deleted."; const btn = document.getElementById('confirmActionBtn'); btn.className = 'btn btn-danger'; btn.innerText = "Remove"; const menu = document.getElementById('optionsMenu'); if(menu) menu.classList.remove('active'); document.getElementById('confirmationModal').classList.add('active'); }
-
-    function triggerDeleteGroup() {
-        pendingAction = 'delete_group_admin';
-        document.getElementById('confirmTitle').innerText = "Delete Group";
-        document.getElementById('confirmMessage').innerHTML = "<b>Warning:</b> This will permanently delete all data in the group chat and all members will be kicked out.<br><br>Are you sure?";
-        const btn = document.getElementById('confirmActionBtn');
-        btn.className = 'btn btn-danger';
-        btn.innerText = "Delete Forever";
-        document.getElementById('confirmationModal').classList.add('active');
-        toggleDropdown('optionsMenu'); 
-    }
-
-    function confirmLeaveGroup() {
-        pendingAction = 'leave_group';
-        document.getElementById('confirmTitle').innerText = "Exit Group";
-        document.getElementById('confirmMessage').innerText = "Are you sure you want to exit this group?";
-        const btn = document.getElementById('confirmActionBtn');
-        btn.className = 'btn btn-danger';
-        btn.innerText = "Exit Group";
-        document.getElementById('confirmationModal').classList.add('active');
-        toggleDropdown('optionsMenu');
-    }
-
+    function triggerDeleteGroup() { pendingAction = 'delete_group_admin'; document.getElementById('confirmTitle').innerText = "Delete Group"; document.getElementById('confirmMessage').innerHTML = "<b>Warning:</b> This will permanently delete all data in the group chat and all members will be kicked out.<br><br>Are you sure?"; const btn = document.getElementById('confirmActionBtn'); btn.className = 'btn btn-danger'; btn.innerText = "Delete Forever"; document.getElementById('confirmationModal').classList.add('active'); toggleDropdown('optionsMenu'); }
+    function confirmLeaveGroup() { pendingAction = 'leave_group'; document.getElementById('confirmTitle').innerText = "Exit Group"; document.getElementById('confirmMessage').innerText = "Are you sure you want to exit this group?"; const btn = document.getElementById('confirmActionBtn'); btn.className = 'btn btn-danger'; btn.innerText = "Exit Group"; document.getElementById('confirmationModal').classList.add('active'); toggleDropdown('optionsMenu'); }
+    
     document.getElementById('confirmActionBtn').addEventListener('click', async function() {
-        if (pendingAction === 'delete_message') {
-            closeModal('confirmationModal');
-            try {
-                const res = await fetch('/delete_message/' + pendingMessageId, {method: 'POST'});
-                const data = await res.json();
-                if(data.success) {
-                    const msgEl = document.getElementById('msg-' + pendingMessageId);
-                    if (msgEl) msgEl.remove();
-                    if(pinnedMessageId === pendingMessageId) unpinMessage();
-                    showNotification("success", "Success", "Message deleted");
-                } else { showNotification("error", "Error", data.message || "Could not delete message"); }
-            } catch (e) { showNotification("error", "Error", "Failed to delete message"); }
-            pendingAction = null; pendingMessageId = null; return;
-        }
-
+        if (pendingAction === 'delete_message') { closeModal('confirmationModal'); try { const res = await fetch('/delete_message/' + pendingMessageId, {method: 'POST'}); const data = await res.json(); if(data.success) { const msgEl = document.getElementById('msg-' + pendingMessageId); if (msgEl) msgEl.remove(); if(pinnedMessageId === pendingMessageId) unpinMessage(); showNotification("success", "Success", "Message deleted"); } else { showNotification("error", "Error", data.message || "Could not delete message"); } } catch (e) { showNotification("error", "Error", "Failed to delete message"); } pendingAction = null; pendingMessageId = null; return; }
         let url = ''; let body = null; let isFormData = false;
-        if (pendingAction === 'promote') { url = '/promote_admin/{{ contact.id }}/' + pendingUserId; } 
-        else if (pendingAction === 'dismiss') { url = '/dismiss_admin/{{ contact.id }}/' + pendingUserId; } 
-        else if (pendingAction === 'bulk_remove') { url = '/remove_members'; body = new FormData(document.getElementById('removeMembersForm')); isFormData = true; } 
-        else if (pendingAction === 'add_members') { url = '/add_group_members'; body = new FormData(document.getElementById('addMembersForm')); isFormData = true; } 
-        else if (pendingAction === 'add_contact_search') { url = '/add_contact'; body = new FormData(); body.append('username', pendingUsername); isFormData = true; } 
-        else if (pendingAction === 'remove_individual_contact') { url = '/remove_contact/' + pendingUserId; }
-        else if (pendingAction === 'delete_group_admin') { url = '/delete_group/{{ contact.id }}'; }
-        else if (pendingAction === 'leave_group') { url = '/leave_group/{{ contact.id }}'; }
-
+        if (pendingAction === 'promote') { url = '/promote_admin/{{ contact.id }}/' + pendingUserId; } else if (pendingAction === 'dismiss') { url = '/dismiss_admin/{{ contact.id }}/' + pendingUserId; } else if (pendingAction === 'bulk_remove') { url = '/remove_members'; body = new FormData(document.getElementById('removeMembersForm')); isFormData = true; } else if (pendingAction === 'add_members') { url = '/add_group_members'; body = new FormData(document.getElementById('addMembersForm')); isFormData = true; } else if (pendingAction === 'add_contact_search') { url = '/add_contact'; body = new FormData(); body.append('username', pendingUsername); isFormData = true; } else if (pendingAction === 'remove_individual_contact') { url = '/remove_contact/' + pendingUserId; } else if (pendingAction === 'delete_group_admin') { url = '/delete_group/{{ contact.id }}'; } else if (pendingAction === 'leave_group') { url = '/leave_group/{{ contact.id }}'; }
         if (!url) return;
-        try {
-            const options = { method: 'POST' }; if (isFormData) options.body = body;
-            const res = await fetch(url, options); const data = await res.json();
-            closeModal('confirmationModal');
-            if (data.success) {
-                if (pendingAction === 'add_members' && pendingInviteeNames.length > 0) {
-                    try {
-                        const inviteList = pendingInviteeNames.join(', ');
-                        const msgContent = `🕒 **Pending Invitation**\nWaiting for: ${inviteList} to accept and enter the group.`;
-                        const msgData = new FormData();
-                        msgData.append('content', msgContent);
-                        msgData.append('receiver_id', '{{ contact.id }}');
-                        msgData.append('is_group', 'true');
-                        await fetch('/send_message', { method: 'POST', body: msgData });
-                    } catch (err) { console.error("Failed to send pending message", err); }
-                }
-                showNotification('success', 'Success', data.message || 'Done');
-                if (pendingAction === 'remove_individual_contact' || pendingAction === 'delete_group_admin' || pendingAction === 'leave_group') {
-                    setTimeout(() => window.location.href = '/messages', 1000);
-                }
-                else if (pendingAction !== 'add_contact_search') {
-                    setTimeout(() => window.location.reload(), 1000);
-                }
-            } else { showNotification('error', 'Error', data.message); }
-        } catch (e) { showNotification('error', 'Error', 'Failed'); }
+        try { const options = { method: 'POST' }; if (isFormData) options.body = body; const res = await fetch(url, options); const data = await res.json(); closeModal('confirmationModal'); if (data.success) { if (pendingAction === 'add_members' && pendingInviteeNames.length > 0) { try { const inviteList = pendingInviteeNames.join(', '); const msgContent = `🕒 **Pending Invitation**\nWaiting for: ${inviteList} to accept and enter the group.`; const msgData = new FormData(); msgData.append('content', msgContent); msgData.append('receiver_id', '{{ contact.id }}'); msgData.append('is_group', 'true'); await fetch('/send_message', { method: 'POST', body: msgData }); } catch (err) { console.error("Failed to send pending message", err); } } showNotification('success', 'Success', data.message || 'Done'); if (pendingAction === 'remove_individual_contact' || pendingAction === 'delete_group_admin' || pendingAction === 'leave_group') { setTimeout(() => window.location.href = '/messages', 1000); } else if (pendingAction !== 'add_contact_search') { setTimeout(() => window.location.reload(), 1000); } } else { showNotification('error', 'Error', data.message); } } catch (e) { showNotification('error', 'Error', 'Failed'); }
     });
 
-    const chatArea = document.getElementById('messagesArea');
-    const currentChatId = "{{ contact.id }}";
-    const wpKey = `wallpaper_${currentChatId}`;
+    const chatArea = document.getElementById('messagesArea'); const currentChatId = "{{ contact.id }}"; const wpKey = `wallpaper_${currentChatId}`;
     function loadWallpaper() { const saved = localStorage.getItem(wpKey); if(saved) { if(saved.startsWith('data:image') || saved.startsWith('http')) { chatArea.style.backgroundImage = `url("${saved}")`; chatArea.style.backgroundSize = 'cover'; chatArea.style.backgroundPosition = 'center'; chatArea.style.backgroundAttachment = 'fixed'; chatArea.style.backgroundColor = 'transparent'; } else { chatArea.style.backgroundImage = 'none'; chatArea.style.backgroundColor = saved; } } }
     function setWallpaper(type, value) { if(type === 'color') { chatArea.style.backgroundImage = 'none'; chatArea.style.backgroundColor = value; localStorage.setItem(wpKey, value); showNotification('success', 'Wallpaper Updated', 'Color set.'); } }
     document.getElementById('wallpaperInput').addEventListener('change', function(e) { const file = e.target.files[0]; if(file) { const reader = new FileReader(); reader.onload = function(evt) { const res = evt.target.result; chatArea.style.backgroundImage = `url("${res}")`; chatArea.style.backgroundSize = 'cover'; chatArea.style.backgroundPosition = 'center'; chatArea.style.backgroundAttachment = 'fixed'; chatArea.style.backgroundColor = 'transparent'; try { localStorage.setItem(wpKey, res); showNotification('success', 'Wallpaper Updated', 'Image set.'); } catch(e) { alert("Image too large."); } }; reader.readAsDataURL(file); e.target.value = ''; } });
@@ -1084,28 +1033,8 @@
     const icebreakers = ["What was your favorite toy growing up?", "What was the first music concert you ever went to?", "How much did a movie ticket cost when you were a teenager?", "What was your first job, and did you like it?", "Did you have a nickname growing up?", "What is the biggest change in the world you've witnessed?", "Tell me about your best friend from primary school.", "What was your favorite subject in school?", "Did you ever get into trouble as a kid?", "What was your favorite home-cooked meal?"];
     function toggleIcebreakers() { const container = document.getElementById('icebreakerContainer'); if (container.innerHTML !== '') { container.innerHTML = ''; return; } const shuffled = icebreakers.sort(() => 0.5 - Math.random()); const selected = shuffled.slice(0, 3); selected.forEach(text => { const chip = document.createElement('div'); chip.innerText = text; chip.style.cssText = "background: #eff6ff; color: #2563eb; padding: 6px 12px; border-radius: 20px; font-size: 13px; cursor: pointer; white-space: nowrap; border: 1px solid #dbeafe; transition: background 0.2s;"; chip.onmouseover = () => chip.style.background = "#dbeafe"; chip.onmouseout = () => chip.style.background = "#eff6ff"; chip.onclick = () => { document.getElementById('messageInput').value = text; container.innerHTML = ''; document.getElementById('messageInput').focus(); }; container.appendChild(chip); }); }
 
-    // FIXED: Updated Class Names to match CSS
-    const fontSizes = ['', 'fs-Large', 'fs-X-Large']; 
-    let currentFontIndex = 0;
-    
-    function cycleTextSize() { 
-        const body = document.body; 
-        
-        // Remove current class if it exists
-        if (fontSizes[currentFontIndex]) { 
-            body.classList.remove(fontSizes[currentFontIndex]); 
-        } 
-        
-        // Advance Index
-        currentFontIndex = (currentFontIndex + 1) % fontSizes.length; 
-        
-        // Add new class if it's not the default empty string
-        if (fontSizes[currentFontIndex]) { 
-            body.classList.add(fontSizes[currentFontIndex]); 
-        } 
-    }
-
-    function toggleVoiceInput() { if (!('webkitSpeechRecognition' in window)) { alert("Voice input is not supported in this browser. Try Chrome."); return; } const recognition = new webkitSpeechRecognition(); recognition.lang = 'en-US'; recognition.start(); const icon = document.getElementById('voiceInputBtn'); icon.style.color = '#ef4444'; recognition.onresult = function(event) { const transcript = event.results[0][0].transcript; const input = document.getElementById('messageInput'); input.value += (input.value ? ' ' : '') + transcript; icon.style.color = '#6b7280'; }; recognition.onerror = function(event) { icon.style.color = '#6b7280'; }; }
+    const fontSizes = ['', 'fs-Large', 'fs-X-Large']; let currentFontIndex = 0;
+    function cycleTextSize() { const body = document.body; if (fontSizes[currentFontIndex]) { body.classList.remove(fontSizes[currentFontIndex]); } currentFontIndex = (currentFontIndex + 1) % fontSizes.length; if (fontSizes[currentFontIndex]) { body.classList.add(fontSizes[currentFontIndex]); } }
 
     const searchInput = document.getElementById('userSearchInput'); const searchResults = document.getElementById('searchResults'); let searchTimeout = null;
     if(searchInput) { searchInput.addEventListener('input', function(e) { const query = e.target.value.trim(); if (searchTimeout) clearTimeout(searchTimeout); if (query.length === 0) { searchResults.style.display = 'none'; searchResults.innerHTML = ''; return; } searchTimeout = setTimeout(async () => { try { const res = await fetch(`/search_users?q=${encodeURIComponent(query)}`); const data = await res.json(); searchResults.innerHTML = ''; if (data.results.length > 0) { searchResults.style.display = 'block'; data.results.forEach(user => { const div = document.createElement('div'); div.style.cssText = 'padding:10px; display:flex; align-items:center; gap:10px; cursor:pointer; border-bottom:1px solid #f3f4f6;'; div.onmouseover = () => div.style.backgroundColor = '#f9fafb'; div.onmouseout = () => div.style.backgroundColor = 'white'; div.onclick = () => window.location.href = `/profile/${user.username}`; div.innerHTML = `<div style="width:30px; height:30px; border-radius:50%; background:#e5e7eb; display:flex; align-items:center; justify-content:center; overflow:hidden;"><img src="/static/uploads/${user.profile_picture}" onerror="this.style.display='none'" style="width:100%; height:100%; object-fit:cover;"><span style="font-size:12px; font-weight:bold; color:#6b7280; display:${user.profile_picture !== 'default.jpg' ? 'none' : 'block'}">${user.username[0].toUpperCase()}</span></div><div style="flex:1;"><div style="font-size:13px; font-weight:600; color:#1f2937;">${user.username}</div><div style="font-size:11px; color:#6b7280;">${user.fullname}</div></div><div class="add-user-btn" style="padding: 8px; cursor:pointer; color:#6366f1; border-radius:50%; display:flex; align-items:center; justify-content:center; transition:background 0.2s;" onclick="event.stopPropagation(); triggerAddContactFromSearch('${user.id}', '${user.username}')" onmouseover="this.style.backgroundColor='#e0e7ff'" onmouseout="this.style.backgroundColor='transparent'"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>`; searchResults.appendChild(div); }); } else { searchResults.style.display = 'block'; searchResults.innerHTML = '<div style="padding:15px; text-align:center; color:#9ca3af; font-size:13px;">No users found</div>'; } } catch (err) { console.error("Search failed", err); } }, 300); }); document.addEventListener('click', function(e) { if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) { searchResults.style.display = 'none'; } }); }
@@ -1168,7 +1097,41 @@
         document.getElementById('confirmationModal').classList.add('active');
     }
 
-    document.getElementById('messageForm').addEventListener('submit', async function(e) { e.preventDefault(); const input = document.getElementById('messageInput'); const content = input.value.trim(); const file = document.getElementById('fileInput').files[0]; if (!content && !file) return; const formData = new FormData(this); if (isEditing) { let finalContent = content; if (currentQuoteHtml) finalContent = currentQuoteHtml + finalContent; finalContent += ' <span class="edited-label">(edited)</span>'; formData.set('content', finalContent); const res = await fetch('/edit_message/' + editingId, { method: 'POST', body: formData }); if((await res.json()).success) window.location.reload(); return; } if (isReplying) { const quoteHtml = `<div class="reply-quote-bubble"><span class="reply-quote-sender">Replying to message</span><span>${replyText}</span></div>${content}`; formData.set('content', quoteHtml); } else if (file && !content) { formData.set('content', '[File Attachment]'); } try { const res = await fetch('/send_message', { method: 'POST', body: formData }); if ((await res.json()).success) window.location.reload(); } catch (err) {} });
+    document.getElementById('messageForm').addEventListener('submit', async function(e) { 
+        e.preventDefault(); 
+        const input = document.getElementById('messageInput'); 
+        const content = input.value.trim(); 
+        const file = document.getElementById('fileInput').files[0]; 
+        
+        // Validation: If no text, no file, and no recording -> stop
+        if (!content && !file && !window.pendingSend) return; 
+        
+        const formData = new FormData(this); 
+        
+        if (isEditing) { 
+            let finalContent = content; 
+            if (currentQuoteHtml) finalContent = currentQuoteHtml + finalContent; 
+            finalContent += ' <span class="edited-label">(edited)</span>'; 
+            formData.set('content', finalContent); 
+            const res = await fetch('/edit_message/' + editingId, { method: 'POST', body: formData }); 
+            if((await res.json()).success) window.location.reload(); 
+            return; 
+        } 
+        
+        if (isReplying) { 
+            const quoteHtml = `<div class="reply-quote-bubble"><span class="reply-quote-sender">Replying to message</span><span>${replyText}</span></div>${content}`; 
+            formData.set('content', quoteHtml); 
+        } 
+        else if (file && !content) { 
+            formData.set('content', '[File Attachment]'); 
+        } 
+        
+        try { 
+            const res = await fetch('/send_message', { method: 'POST', body: formData }); 
+            if ((await res.json()).success) window.location.reload(); 
+        } catch (err) {} 
+    });
+
     function showNotification(type, title, message) { const toast = document.getElementById('notificationToast'); document.getElementById('notificationTitle').textContent = title; document.getElementById('notificationMessage').textContent = message; toast.classList.remove('success', 'error'); toast.classList.add(type, 'active'); setTimeout(() => toast.classList.remove('active'), 3000); }
     const fileInput = document.getElementById('fileInput'); fileInput.addEventListener('change', (e) => { if (e.target.files[0]) { document.getElementById('fileName').textContent = e.target.files[0].name; document.getElementById('filePreview').style.display = 'flex'; } }); function removeFile() { fileInput.value = ''; document.getElementById('filePreview').style.display = 'none'; }
     const area = document.getElementById('messagesArea'); if(area) area.scrollTop = area.scrollHeight;
@@ -1202,4 +1165,3 @@
 </script>
 </body>
 </html>
-
