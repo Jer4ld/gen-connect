@@ -985,6 +985,32 @@
     }
 
     window.onload = function () {
+        // --- AUTO-JOIN LOGIC FOR DEMO ---
+        const newVolunteerAct = {
+            title: "Community Park Cleanup",
+            cat: "Volunteer",
+            date: "12 Feb 2026",
+            time: "9:00 AM – 12:00 PM",
+            loc: "Central Park",
+            desc: "Help us keep our community green and clean.",
+            quota: 50
+        };
+
+        let joined = JSON.parse(localStorage.getItem('joinedActivities')) || [];
+        // Check if exists
+        if (!joined.some(a => a.title === newVolunteerAct.title && a.date === newVolunteerAct.date)) {
+            joined.push(newVolunteerAct);
+            localStorage.setItem('joinedActivities', JSON.stringify(joined));
+
+            // Also update quota status for consistency
+            const activityStatus = JSON.parse(localStorage.getItem('activityStatus')) || {};
+            const key = `${newVolunteerAct.title}-${newVolunteerAct.date}`;
+            if (!activityStatus[key]) {
+                activityStatus[key] = { participants: 12, quota: 50 };
+                localStorage.setItem('activityStatus', JSON.stringify(activityStatus));
+            }
+        }
+
         renderActivities();
         checkUpcomingActivities();
     };
