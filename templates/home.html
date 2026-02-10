@@ -559,12 +559,20 @@
         modal.show();
     }
 
+    // 1. Open Report Modal
     function openReportModal(reportUrl) {
         let modal = new bootstrap.Modal(document.getElementById('reportModal'));
         document.getElementById('reportForm').action = reportUrl;
+        
+        // Clear previous selections so the user must choose again
+        document.getElementById('reportCategory').value = ""; 
+        document.querySelectorAll('.report-chip').forEach(chip => chip.classList.remove('active'));
+        document.querySelector('.report-textarea').value = ""; 
+        
         modal.show();
     }
 
+    // 2. EXISTING: Toggle Chip Selection
     function toggleReportChip(element) {
         document.querySelectorAll('.report-chip').forEach(chip => {
             chip.classList.remove('active');
@@ -572,6 +580,20 @@
         element.classList.add('active');
         document.getElementById('reportCategory').value = element.innerText;
     }
+
+    // 3. NEW: Prevent form submission if no category is selected
+    document.addEventListener("DOMContentLoaded", function() {
+        const reportForm = document.getElementById('reportForm');
+        if (reportForm) {
+            reportForm.addEventListener('submit', function(e) {
+                const category = document.getElementById('reportCategory').value;
+                if (!category) {
+                    e.preventDefault(); // Stop the form
+                    alert("Please select a reporting reason."); // Show error
+                }
+            });
+        }
+    });
 
     async function toggleLike(btn, postId) {
         try {

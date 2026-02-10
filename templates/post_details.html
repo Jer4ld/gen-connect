@@ -618,15 +618,45 @@
         modal.show();
     }
 
+    // ... (Keep other functions like toggleEdit, toggleHidePost, etc.) ...
+
+    // 1. Open Report Modal (Clears previous selection)
     function openReportModal(reportUrl) {
         let modal = new bootstrap.Modal(document.getElementById('reportModal'));
         document.getElementById('reportForm').action = reportUrl;
+        
+        // Clear previous selections
+        document.getElementById('reportCategory').value = ""; 
+        document.querySelectorAll('.report-chip').forEach(chip => chip.classList.remove('active'));
+        document.querySelector('.report-textarea').value = ""; 
+
         modal.show();
     }
 
+    // 2. EXISTING: Toggle Chip
     function toggleReportChip(element) {
-        element.classList.toggle('active');
+        element.classList.toggle('active'); // Note: Your post_details used toggle, but single select is better
+        // Let's force single select behavior to match Home page
+        document.querySelectorAll('.report-chip').forEach(chip => {
+            chip.classList.remove('active');
+        });
+        element.classList.add('active');
+        document.getElementById('reportCategory').value = element.innerText;
     }
+
+    // 3. NEW: Form Validation Listener
+    document.addEventListener("DOMContentLoaded", function() {
+        const reportForm = document.getElementById('reportForm');
+        if (reportForm) {
+            reportForm.addEventListener('submit', function(e) {
+                const category = document.getElementById('reportCategory').value;
+                if (!category) {
+                    e.preventDefault();
+                    alert("Please select a reporting reason.");
+                }
+            });
+        }
+    });
 
     function toggleReply(id) {
         let form = document.getElementById(id);

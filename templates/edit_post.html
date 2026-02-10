@@ -11,12 +11,11 @@
         background-color: #f9fafb;
         font-family: 'Outfit', -apple-system, sans-serif;
         color: #1e293b;
-        /* Added for translation support */
         top: 0 !important; 
         position: static !important; 
     }
 
-    /* --- GOOGLE TRANSLATE HACKS (Hides the ugly bar) --- */
+    /* --- GOOGLE TRANSLATE HACKS --- */
     .goog-te-banner-frame.skiptranslate { display: none !important; }
     body > .skiptranslate { display: none !important; }
     #goog-gt-tt, .goog-te-balloon-frame { display: none !important; }
@@ -216,16 +215,6 @@
         background-color: #dc2626;
     }
 
-    #file-selected-msg {
-        color: #2563eb; 
-        font-weight: 500; 
-        display: none; 
-        margin-bottom: 20px;
-        background-color: #eff6ff;
-        padding: 10px;
-        border-radius: 8px;
-    }
-
     .action-buttons {
         display: flex;
         justify-content: flex-end;
@@ -274,7 +263,7 @@
     }
 
     /* =========================================
-       NEW ACCESSIBILITY STYLES (Added)
+       ACCESSIBILITY & HIGH CONTRAST (Added)
        ========================================= */
 
     /* --- Font Sizing --- */
@@ -336,6 +325,11 @@
     body.high-contrast .btn-post {
         background-color: #FFD700 !important;
         color: #000 !important;
+        border: 1px solid #FFD700 !important;
+    }
+
+    body.high-contrast .media-preview-container {
+        background-color: #222 !important;
         border: 1px solid #FFD700 !important;
     }
 
@@ -418,8 +412,10 @@
                 </div>
                 {% endif %}
 
-                <div id="file-selected-msg">
-                    <i class="fas fa-check-circle"></i> <span id="filename-text"></span>
+                <div id="new-media-preview-container" class="media-preview-container" style="display: none; margin-top: 20px;">
+                    <button type="button" class="btn-delete-media" onclick="removeNewMedia()" title="Remove media">×</button>
+                    <img id="new-image-preview" src="" alt="Preview" style="display: none;">
+                    <video id="new-video-preview" src="" controls style="display: none;"></video>
                 </div>
 
                 <div class="action-buttons">
@@ -444,7 +440,7 @@
 <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
 <script>
-    // --- New Settings Application Logic ---
+    // --- Application of Accessibility Settings ---
     document.addEventListener("DOMContentLoaded", function() {
         const settingsDiv = document.getElementById('user-settings');
         if (settingsDiv) {
@@ -472,22 +468,68 @@
         }
     });
 
-    // --- Original Logic (Preserved) ---
+    // --- Media Handling Logic ---
+
+    // 1. Delete Existing Media
     function markMediaForDeletion() {
         const section = document.getElementById('current-media-section');
         if(section) section.style.display = 'none';
         document.getElementById('delete-media-flag').value = 'true';
     }
 
+    // 2. Handle New File Selection
     function handleNewFile(input) {
-        if (input.files && input.files[0]) {
+        const file = input.files[0];
+        if (file) {
+            // Hide current media if it exists (visually replaced)
             const oldSection = document.getElementById('current-media-section');
             if(oldSection) oldSection.style.display = 'none';
-            document.getElementById('filename-text').textContent = "Selected: " + input.files[0].name;
-            document.getElementById('file-selected-msg').style.display = 'block';
+
+            // Prepare preview
+            const container = document.getElementById('new-media-preview-container');
+            const img = document.getElementById('new-image-preview');
+            const vid = document.getElementById('new-video-preview');
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                container.style.display = 'flex';
+
+                if (file.type.startsWith('image/')) {
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                    vid.style.display = 'none';
+                    vid.src = "";
+                } else if (file.type.startsWith('video/')) {
+                    vid.src = e.target.result;
+                    vid.style.display = 'block';
+                    img.style.display = 'none';
+                    img.src = "";
+                }
+            };
+            reader.readAsDataURL(file);
         }
     }
 
+    // 3. Remove New Media
+    function removeNewMedia() {
+        // Clear all file inputs
+        const inputs = document.querySelectorAll('input[type="file"]');
+        inputs.forEach(input => input.value = '');
+
+        // Hide new preview container
+        document.getElementById('new-media-preview-container').style.display = 'none';
+        document.getElementById('new-image-preview').src = '';
+        document.getElementById('new-video-preview').src = '';
+
+        // If old media was NOT explicitly deleted, show it again
+        const deleteFlag = document.getElementById('delete-media-flag').value;
+        const oldSection = document.getElementById('current-media-section');
+        if (oldSection && deleteFlag === 'false') {
+            oldSection.style.display = 'block';
+        }
+    }
+
+    // --- Auto-Resize Textarea ---
     const textarea = document.getElementById('autoResizeContent');
     function autoResize() {
         this.style.height = 'auto';
