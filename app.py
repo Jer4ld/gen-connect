@@ -1461,6 +1461,10 @@ def report_post(post_id):
     # Get form data
     category = request.form.get('category')
     reason = request.form.get('reason')
+
+    if not category:
+        flash('You must select a reason for the report.', 'error')
+        return redirect(request.referrer or url_for('home'))
     
     # Create new Report record
     new_report = Report(

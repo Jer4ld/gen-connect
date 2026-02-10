@@ -350,9 +350,24 @@
                                             <i class="fas fa-link me-2"></i> Copy Link
                                         </a>
                                     </li>
-                                    <li><a class="dropdown-item" href="#"><i class="fab fa-twitter me-2"></i> Share to Twitter</a></li>
-                                    <li><a class="dropdown-item" href="#"><i class="fab fa-facebook me-2"></i> Share to Facebook</a></li>
-                                    <li><a class="dropdown-item" href="#"><i class="fab fa-whatsapp me-2"></i> Share to WhatsApp</a></li>
+                                    <li>
+                                        <a class="dropdown-item" target="_blank" 
+                                        href="https://twitter.com/intent/tweet?text={{ post.title if post.title else 'Check this out on GenConnect!' }}&url={{ url_for('post_details', post_id=post.id, _external=True) }}">
+                                            <i class="fab fa-twitter me-2"></i> Share to Twitter
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" target="_blank" 
+                                        href="https://www.facebook.com/sharer/sharer.php?u={{ url_for('post_details', post_id=post.id, _external=True) }}">
+                                            <i class="fab fa-facebook me-2"></i> Share to Facebook
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" target="_blank" 
+                                        href="https://wa.me/?text={{ post.title if post.title else 'Check this post out!' }} {{ url_for('post_details', post_id=post.id, _external=True) }}">
+                                            <i class="fab fa-whatsapp me-2"></i> Share to WhatsApp
+                                        </a>
+                                    </li>
                                 </ul>
                             </div>
                         </div>
@@ -618,8 +633,6 @@
         modal.show();
     }
 
-    // ... (Keep other functions like toggleEdit, toggleHidePost, etc.) ...
-
     // 1. Open Report Modal (Clears previous selection)
     function openReportModal(reportUrl) {
         let modal = new bootstrap.Modal(document.getElementById('reportModal'));
@@ -635,8 +648,7 @@
 
     // 2. EXISTING: Toggle Chip
     function toggleReportChip(element) {
-        element.classList.toggle('active'); // Note: Your post_details used toggle, but single select is better
-        // Let's force single select behavior to match Home page
+        element.classList.toggle('active');
         document.querySelectorAll('.report-chip').forEach(chip => {
             chip.classList.remove('active');
         });
