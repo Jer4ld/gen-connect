@@ -425,7 +425,7 @@
 {% endblock %}
 
 {% block extra_js %}
-{% raw %}
+
 <script>
   const urlParams = new URLSearchParams(window.location.search);
   const title = urlParams.get('title');
@@ -473,9 +473,18 @@
     `;
 
     const isAlreadyJoined = joinedActivities.some(act => act.title === title && act.date === date);
+    const createdActivities = JSON.parse(localStorage.getItem('myCreatedActivities')) || [];
+    const isOwner = createdActivities.some(act => (act.title === title || act.title.replace('&', '%26') === title) && act.date.trim() === date);
     const isFull = status.participants >= status.quota;
 
-    if (isAlreadyJoined) {
+    if (isOwner) {
+      joinBtn.innerText = "Managed by You";
+      joinBtn.classList.add('btn-joined-locked');
+      joinBtn.style.background = "#4b5563"; // Specific color for managed
+      joinBtn.onclick = null;
+      // Replace button with a span to be semantically correct or just disable it entirely
+      return true;
+    } else if (isAlreadyJoined) {
       joinBtn.innerText = "Already Joined";
       joinBtn.classList.add('btn-joined-locked');
       joinBtn.onclick = null;
@@ -511,10 +520,10 @@
           return;
         }
         location.href =
-          `join/confirmation?title=${encodeURIComponent(title)}&time=${encodeURIComponent(time)}&loc=${encodeURIComponent(loc)}&date=${encodeURIComponent(date)}&cat=${encodeURIComponent(cat || 'General')}&desc=${encodeURIComponent(desc || '')}`;
+          "{{ url_for('join_confirmation', activity_id=activity_id) }}?title=" + encodeURIComponent(title) + "&time=" + encodeURIComponent(time) + "&loc=" + encodeURIComponent(loc) + "&date=" + encodeURIComponent(date) + "&cat=" + encodeURIComponent(cat || 'General') + "&desc=" + encodeURIComponent(desc || '');
       };
     }
   }
 </script>
-{% endraw %}
+
 {% endblock %}

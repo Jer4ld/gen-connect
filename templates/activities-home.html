@@ -443,6 +443,42 @@
             transform: translateY(0);
         }
     }
+
+    .btn-joined-locked {
+        background-color: #94a3b8 !important;
+        /* Disabled color */
+        color: white !important;
+        cursor: not-allowed !important;
+        pointer-events: none;
+    }
+
+    .reminder-bar {
+        background-color: #fff3cd;
+        color: #856404;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+        border: 1px solid #ffeeba;
+        border-radius: 12px;
+        display: none;
+        /* Hidden by default */
+        align-items: center;
+        gap: 15px;
+        font-weight: 600;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        animation: slideDown 0.5s ease-out;
+    }
+
+    @keyframes slideDown {
+        from {
+            transform: translateY(-20px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -505,6 +541,20 @@
 
 
     <main class="content" id="activities-container">
+
+        <!-- Reminder Bar -->
+        <div id="reminder-bar" class="reminder-bar">
+            <i class="fas fa-bell" style="font-size: 20px; color: #d97706;"></i>
+            <div style="flex: 1;">
+                Reminder: You have <span id="reminder-activity-name"
+                    style="color: #d97706; text-decoration: underline;">an activity</span> scheduled for tomorrow!
+            </div>
+            <button onclick="this.parentElement.style.display='none'"
+                style="background:none; border:none; cursor:pointer; font-size: 18px; color: #856404;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
         <div class="page-header" style="margin-bottom: 20px;">
             <h2 style="font-size: 28px; color: #1f2937; margin-bottom: 5px;">Explore Opportunities</h2>
             <p style="color: #6b7280; font-size: 16px; margin-top: 0;">Find your next passion, make a difference in your
@@ -620,10 +670,12 @@
                     <div class="description">"Express your creativity with guided craft projects."</div>
                 </div>
                 <div class="actions">
-                    <a href="{{ url_for('join_confirmation', activity_id=3) }}?title=Arts %26 Crafts Workshop&cat=Hobbies&date=30 Dec 2025&time=2:00 PM – 4:00 PM&loc=Community Hall Room&desc=Express your creativity with guided craft projects.&instructions=All materials are included. Wear clothes you don't mind getting dirty!"
-                        class="join-btn" style="text-decoration:none; text-align:center;">Join</a>
-                    <a href="{{ url_for('activity_details', activity_id=3, title='Arts %26 Crafts Workshop', cat='Hobbies', date='30 Dec 2025', time='2:00 PM – 4:00 PM', loc='Community Hall Room', img='https://loremflickr.com/800/400/art', desc='Express your creativity with guided craft projects.') }}&instructions=All materials are included. Wear clothes you don't mind getting dirty!"
-                        class="details-btn">View Details</a>
+                    <div class="actions">
+                        <a href="{{ url_for('join_confirmation', activity_id=3) }}?title=Arts %26 Crafts Workshop&cat=Hobbies&date=30 Dec 2025&time=2:00 PM – 4:00 PM&loc=Community Hall Room&desc=Express your creativity with guided craft projects.&instructions=All materials are included. Wear clothes you don't mind getting dirty!"
+                            class="join-btn" style="text-decoration:none; text-align:center;">Join</a>
+                        <a href="{{ url_for('activity_details', activity_id=3) }}?title=Arts %26 Crafts Workshop&cat=Hobbies&date=30 Dec 2025&time=2:00 PM – 4:00 PM&loc=Community Hall Room&img=https://loremflickr.com/800/400/art&desc=Express your creativity with guided craft projects.&instructions=All materials are included. Wear clothes you don't mind getting dirty!"
+                            class="details-btn">View Details</a>
+                    </div>
                 </div>
             </div>
 
@@ -787,6 +839,15 @@
                 statusLabel = '<span class="status-label label-trending">Popular Choice!</span>';
             }
 
+            // Check if user has already joined this custom activity
+            let joinBtnHtml = `<a href="${fullJoinUrl}" class="join-btn" style="text-decoration:none; text-align:center;">Join</a>`;
+            const joinedActivities = JSON.parse(localStorage.getItem('joinedActivities')) || [];
+            const isJoined = joinedActivities.some(a => a.title === act.title && a.date === act.date);
+
+            if (isJoined) {
+                joinBtnHtml = `<a href="#" class="join-btn btn-joined-locked" style="text-decoration:none; text-align:center;">Already Joined</a>`;
+            }
+
             card.innerHTML = `
             <div class="activity-details">
                 <div class="category">${catName}</div>
@@ -812,7 +873,7 @@
                 <div class="managed-tag">Managed by You</div>
                 <a href="${fullDetailsUrl}" class="details-btn">View Details</a>
             </div>
-        `;
+            `;
             parkingSpot.appendChild(card);
         });
         // Re-run filter after loading custom activities to ensure correct initial state
@@ -1069,9 +1130,200 @@
         localStorage.setItem('activityStatus', JSON.stringify(activityStatus));
     }
 
+    // Function to check and update "Already Joined" status for pre-loaded cards
+    function updateJoinedStatus() {
+        const joinedActivities = JSON.parse(localStorage.getItem('joinedActivities')) || [];
+        const cards = document.getElementsByClassName('activity-card');
+
+        for (let i = 0; i < cards.length; i++) {
+            const h5 = cards[i].getElementsByTagName('h5')[0];
+            const dateElem = cards[i].querySelector('.meta-item:first-child');
+
+            if (h5 && dateElem) {
+                let title = h5.textContent.trim();
+                let dateText = dateElem.textContent.trim();
+
+                // Check if this is a Created Activity (Managed by You)
+                const isCreated = createdActivities.some(a => {
+                    return (a.title === title || a.title.replace('&', '%26') === title) &&
+                        (a.date.trim() === dateText);
+                });
+
+                const joinBtn = cards[i].querySelector('.join-btn');
+
+                if (isCreated) {
+                    if (joinBtn) {
+                        const managedTag = document.createElement('div');
+                        managedTag.className = 'managed-tag';
+                        managedTag.textContent = 'Managed by You';
+                        joinBtn.replaceWith(managedTag);
+                        continue;
+                    } else if (cards[i].querySelector('.managed-tag')) {
+                        continue;
+                    }
+                }
+
+                // Improve Match: Check if this title/date combo exists in joinedActivities
+                const works = joinedActivities.some(a => {
+                    // Simple normalization to handle potential encoding differences
+                    return (a.title === title || a.title.replace('&', '%26') === title) &&
+                        (a.date.trim() === dateText);
+                });
+
+                if (works) {
+                    const joinBtn = cards[i].querySelector('.join-btn');
+                    if (joinBtn) {
+                        joinBtn.textContent = 'Already Joined';
+                        joinBtn.classList.add('btn-joined-locked');
+                        joinBtn.href = 'javascript:void(0)'; // Disable link
+                    }
+                }
+            }
+        }
+    }
+
+    // Function to render quota for static HTML cards
+    function renderStaticQuotas() {
+        const cards = document.querySelectorAll('.activity-card:not(#custom-activities-parking .activity-card)');
+        const activityStatus = JSON.parse(localStorage.getItem('activityStatus')) || {};
+        let updated = false;
+
+        // Specific Hardcode for Advanced Origami to be FULL as requested
+        const origamiKey = "Advanced Origami-25 Feb 2026";
+        if (!activityStatus[origamiKey]) {
+            activityStatus[origamiKey] = { participants: 20, quota: 20 }; // Full!
+            updated = true;
+        } else if (activityStatus[origamiKey].participants < 20) {
+            // Force full if it exists but isn't full (optional, but ensures user sees what they asked for)
+            activityStatus[origamiKey].participants = 20;
+            activityStatus[origamiKey].quota = 20;
+            updated = true;
+        }
+
+        if (updated) {
+            localStorage.setItem('activityStatus', JSON.stringify(activityStatus));
+        }
+
+        cards.forEach(card => {
+            const detailsDiv = card.querySelector('.activity-details');
+            if (!detailsDiv || detailsDiv.querySelector('.quota-info')) return; // Skip if already has quota
+
+            const h5 = detailsDiv.querySelector('h5');
+            const dateElem = detailsDiv.querySelector('.meta-item');
+            if (!h5 || !dateElem) return;
+
+            const title = h5.textContent.trim();
+            const date = dateElem.textContent.trim();
+            const key = `${title}-${date}`;
+
+            // Initialize status if missing
+            if (!activityStatus[key]) {
+                // Default quotas for static items
+                let defaultQuota = 20;
+                let defaultParticipants = Math.floor(Math.random() * 15); // Random start
+
+                // specific logic for demo purposes
+                if (title === "Advanced Origami") { defaultQuota = 20; defaultParticipants = 20; }
+
+                activityStatus[key] = { participants: defaultParticipants, quota: defaultQuota };
+                updated = true;
+            }
+
+            const status = activityStatus[key];
+            const ratio = (status.participants / status.quota) * 100;
+
+            let barColor = 'progress-green';
+            let statusLabel = '';
+
+            if (ratio >= 100) {
+                barColor = 'progress-red';
+                statusLabel = '<span class="status-label label-almost">Full!</span>';
+            } else if (ratio >= 90) {
+                barColor = 'progress-red';
+                statusLabel = '<span class="status-label label-almost">Almost Full!</span>';
+            } else if (ratio >= 60) {
+                barColor = 'progress-yellow';
+                statusLabel = '<span class="status-label label-fast">Filling Fast!</span>';
+            } else if (status.participants > 0) {
+                statusLabel = '<span class="status-label label-trending">Popular Choice!</span>';
+            }
+
+            const quotaHtml = `
+                <div class="quota-info">
+                    <div class="quota-text">
+                        <span><i class="bi bi-people-fill"></i> Slots Available</span>
+                        <span class="social-proof">${status.participants} / ${status.quota} Joined</span>
+                    </div>
+                    ${statusLabel}
+                    <div class="quota-progress-container">
+                        <div class="quota-progress-bar ${barColor}" style="width: ${ratio}%"></div>
+                    </div>
+                </div>
+            `;
+
+            // Insert before description
+            const desc = detailsDiv.querySelector('.description');
+            if (desc) {
+                desc.insertAdjacentHTML('beforebegin', quotaHtml);
+            } else {
+                detailsDiv.insertAdjacentHTML('beforeend', quotaHtml);
+            }
+
+            // Update button if Full
+            if (ratio >= 100) {
+                const joinBtn = card.querySelector('.join-btn');
+                if (joinBtn && !joinBtn.classList.contains('btn-joined-locked')) { // Don't override joined status
+                    joinBtn.textContent = 'Quota Full';
+                    joinBtn.href = 'javascript:void(0)';
+                    joinBtn.classList.add('btn-joined-locked');
+                    joinBtn.style.backgroundColor = '#ef4444';
+                }
+            }
+        });
+
+        if (updated) {
+            localStorage.setItem('activityStatus', JSON.stringify(activityStatus));
+        }
+    }
+
     window.onload = function () {
+        // --- REMINDER LOGIC ---
+        // 1. Auto-join "Tablet Basics" (11 Feb 2026) for demo purposes if not already joined
+        const demoActivity = {
+            title: "Tablet Basics",
+            date: "11 Feb 2026", // Tomorrow relative to 10 Feb
+            time: "2:00 PM – 4:00 PM",
+            loc: "Learning Center"
+        };
+
+        let joinedActivities = JSON.parse(localStorage.getItem('joinedActivities')) || [];
+        const alreadyHas = joinedActivities.some(a => a.title === demoActivity.title && a.date === demoActivity.date);
+
+        if (!alreadyHas) {
+            joinedActivities.push(demoActivity);
+            localStorage.setItem('joinedActivities', JSON.stringify(joinedActivities));
+        }
+
+        // 2. Check for "Tomorrow" activities to trigger reminder
+        // Assuming "Today" is 10 Feb 2026 based on prompt
+        const tomorrowStr = "11 Feb 2026";
+
+        const upcoming = joinedActivities.find(a => a.date.trim() === tomorrowStr);
+
+        if (upcoming) {
+            const bar = document.getElementById('reminder-bar');
+            const nameSpan = document.getElementById('reminder-activity-name');
+            if (bar && nameSpan) {
+                nameSpan.textContent = upcoming.title;
+                bar.style.display = 'flex';
+                // Optional: Scroll to top to make sure they see it
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
         loadCustomActivities();
-        updateJoinButtons();
+        renderStaticQuotas();
+        updateJoinedStatus(); // Run last to ensure it overrides 'Quota Full' if already joined
     };
 </script>
 {% endblock %}
