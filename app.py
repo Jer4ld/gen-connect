@@ -235,6 +235,15 @@ class Post(db.Model):
         return Like.query.filter_by(user_id=user_id, post_id=self.id).first() is not None
     def user_has_saved(self, user_id):
         return SavedPost.query.filter_by(user_id=user_id, post_id=self.id).first() is not None
+    def user_has_hidden(self, user_id):
+        return HiddenPost.query.filter_by(user_id=user_id, post_id=self.id).first() is not None
+    
+class HiddenPost(db.Model):
+    __tablename__ = 'hidden_posts'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Comment(db.Model):
     __tablename__ = 'comments'
@@ -1483,6 +1492,31 @@ def report_post(post_id):
         flash('Error submitting report.', 'error')
         
     return redirect(request.referrer or url_for('home'))
+
+@app.route('/hide_post/<int:post_id>', methods=['POST'])
+def hide_post(post_id):
+    if 'user_id' not in session: 
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    user_id = session['user_id']
+    existing = HiddenPost.query.filter_by(user_id=user_id, post_id=post_id).first()
+
+    hidden = False
+    if existing:
+        # If already hidden, unhide it (delete record)
+        db.session.delete(existing)
+        hidden = False
+    else:
+        # Hide it (create record)
+        new_hidden = HiddenPost(user_id=user_id, post_id=post_id)
+        db.session.add(new_hidden)
+        hidden = True
+    
+    db.session.commit()
+
+    return jsonify({
+        "hidden": hidden
+    })
 
 # Updated Like Functionality (Works instantly without page reload)
 @app.route('/like_post/<int:post_id>', methods=['POST'])

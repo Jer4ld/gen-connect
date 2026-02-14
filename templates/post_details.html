@@ -261,7 +261,10 @@
         <div class="content-wrapper">
             
             <div id="post-container-{{ post.id }}">
-                <div id="post-visible-{{ post.id }}" class="post-card">
+                
+                {% set is_hidden = current_user.is_authenticated and post.user_has_hidden(current_user.id) %}
+
+                <div id="post-visible-{{ post.id }}" class="post-card" {% if is_hidden %}style="display: none;"{% endif %}>
                     <div class="post-header">
                         <div class="d-flex align-items-center gap-2">
                             <div class="rounded-circle bg-secondary text-white d-flex justify-content-center align-items-center" style="width: 45px; height: 45px; font-weight: bold;">
@@ -350,31 +353,16 @@
                                             <i class="fas fa-link me-2"></i> Copy Link
                                         </a>
                                     </li>
-                                    <li>
-                                        <a class="dropdown-item" target="_blank" 
-                                        href="https://twitter.com/intent/tweet?text={{ post.title if post.title else 'Check this out on GenConnect!' }}&url={{ url_for('post_details', post_id=post.id, _external=True) }}">
-                                            <i class="fab fa-twitter me-2"></i> Share to Twitter
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" target="_blank" 
-                                        href="https://www.facebook.com/sharer/sharer.php?u={{ url_for('post_details', post_id=post.id, _external=True) }}">
-                                            <i class="fab fa-facebook me-2"></i> Share to Facebook
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" target="_blank" 
-                                        href="https://wa.me/?text={{ post.title if post.title else 'Check this post out!' }} {{ url_for('post_details', post_id=post.id, _external=True) }}">
-                                            <i class="fab fa-whatsapp me-2"></i> Share to WhatsApp
-                                        </a>
-                                    </li>
+                                    <li><a class="dropdown-item" href="#"><i class="fab fa-twitter me-2"></i> Share to Twitter</a></li>
+                                    <li><a class="dropdown-item" href="#"><i class="fab fa-facebook me-2"></i> Share to Facebook</a></li>
+                                    <li><a class="dropdown-item" href="#"><i class="fab fa-whatsapp me-2"></i> Share to WhatsApp</a></li>
                                 </ul>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div id="post-hidden-{{ post.id }}" class="post-hidden-state" style="display: none;">
+                <div id="post-hidden-{{ post.id }}" class="post-hidden-state" {% if not is_hidden %}style="display: none;"{% else %}style="display: flex;"{% endif %}>
                     <div><i class="far fa-eye-slash me-2"></i> Post hidden</div>
                     <button class="btn-undo" onclick="toggleHidePost('{{ post.id }}')">Undo</button>
                 </div>
@@ -609,15 +597,35 @@
         }
     }
 
-    function toggleHidePost(postId) {
-        let visiblePart = document.getElementById('post-visible-' + postId);
-        let hiddenPart = document.getElementById('post-hidden-' + postId);
-        if (visiblePart.style.display === "none") {
-            visiblePart.style.display = "block";
-            hiddenPart.style.display = "none";
-        } else {
-            visiblePart.style.display = "none";
-            hiddenPart.style.display = "flex";
+    // Updated: Async Toggle Hide Post Logic (Matches Home)
+    async function toggleHidePost(postId) {
+        try {
+            // 1. Send request to server to save preference
+            const response = await fetch(`/hide_post/${postId}`, { 
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            
+            if (response.status === 401) {
+                window.location.href = "{{ url_for('login') }}";
+                return;
+            }
+
+            // 2. Toggle UI immediately for responsiveness
+            let visiblePart = document.getElementById('post-visible-' + postId);
+            let hiddenPart = document.getElementById('post-hidden-' + postId);
+
+            if (visiblePart.style.display === "none") {
+                visiblePart.style.display = "block";
+                hiddenPart.style.display = "none";
+            } else {
+                visiblePart.style.display = "none";
+                hiddenPart.style.display = "flex";
+            }
+
+        } catch (error) {
+            console.error('Error hiding post:', error);
+            alert("Failed to hide post. Please try again.");
         }
     }
 
@@ -633,30 +641,17 @@
         modal.show();
     }
 
-    // 1. Open Report Modal (Clears previous selection)
     function openReportModal(reportUrl) {
         let modal = new bootstrap.Modal(document.getElementById('reportModal'));
         document.getElementById('reportForm').action = reportUrl;
-        
-        // Clear previous selections
-        document.getElementById('reportCategory').value = ""; 
-        document.querySelectorAll('.report-chip').forEach(chip => chip.classList.remove('active'));
-        document.querySelector('.report-textarea').value = ""; 
-
         modal.show();
     }
 
-    // 2. EXISTING: Toggle Chip
     function toggleReportChip(element) {
         element.classList.toggle('active');
-        document.querySelectorAll('.report-chip').forEach(chip => {
-            chip.classList.remove('active');
-        });
-        element.classList.add('active');
-        document.getElementById('reportCategory').value = element.innerText;
     }
 
-    // 3. NEW: Form Validation Listener
+    // Form Validation Listener
     document.addEventListener("DOMContentLoaded", function() {
         const reportForm = document.getElementById('reportForm');
         if (reportForm) {

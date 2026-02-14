@@ -11,12 +11,11 @@
         background-color: #f9fafb;
         font-family: 'Outfit', -apple-system, sans-serif;
         color: #1e293b;
-        /* Support for Google Translate top offset */
         top: 0 !important; 
         position: static !important; 
     }
 
-    /* --- GOOGLE TRANSLATE HACKS (Hides the ugly bar) --- */
+    /* --- GOOGLE TRANSLATE HACKS --- */
     .goog-te-banner-frame.skiptranslate { display: none !important; }
     body > .skiptranslate { display: none !important; }
     #goog-gt-tt, .goog-te-balloon-frame { display: none !important; }
@@ -192,7 +191,7 @@
     .btn-modal-submit:hover { background-color: #1d4ed8; }
 
     /* =========================================
-       ACCESSIBILITY & HIGH CONTRAST (Added)
+       ACCESSIBILITY & HIGH CONTRAST
        ========================================= */
 
     /* --- Font Sizing --- */
@@ -316,7 +315,9 @@
                 {% for post in posts %}
                 <div class="post" id="post-container-{{ post.id }}">
                     
-                    <div id="post-visible-{{ post.id }}">
+                    {% set is_hidden = current_user.is_authenticated and post.user_has_hidden(current_user.id) %}
+
+                    <div id="post-visible-{{ post.id }}" {% if is_hidden %}style="display: none;"{% endif %}>
                         <div class="post-header">
                             <div class="d-flex align-items-center gap-2">
                                 <div class="rounded-circle bg-secondary text-white d-flex justify-content-center align-items-center" style="width: 40px; height: 40px; font-weight: bold;">
@@ -444,7 +445,7 @@
                         </div>
                     </div>
 
-                    <div id="post-hidden-{{ post.id }}" class="post-hidden-state" style="display: none;">
+                    <div id="post-hidden-{{ post.id }}" class="post-hidden-state" {% if not is_hidden %}style="display: none;"{% else %}style="display: flex;"{% endif %}>
                         <div><i class="far fa-eye-slash me-2"></i> Post hidden</div>
                         <button class="btn-undo" onclick="toggleHidePost('{{ post.id }}')">Undo</button>
                     </div>
@@ -555,16 +556,36 @@
     });
 
     // --- Original Logic (Preserved) ---
-    function toggleHidePost(postId) {
-        let visiblePart = document.getElementById('post-visible-' + postId);
-        let hiddenPart = document.getElementById('post-hidden-' + postId);
+    
+    // Updated: Async Toggle Hide Post
+    async function toggleHidePost(postId) {
+        try {
+            // 1. Send request to server to save preference
+            const response = await fetch(`/hide_post/${postId}`, { 
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            
+            if (response.status === 401) {
+                window.location.href = "{{ url_for('login') }}";
+                return;
+            }
 
-        if (visiblePart.style.display === "none") {
-            visiblePart.style.display = "block";
-            hiddenPart.style.display = "none";
-        } else {
-            visiblePart.style.display = "none";
-            hiddenPart.style.display = "flex";
+            // 2. Toggle UI immediately for responsiveness
+            let visiblePart = document.getElementById('post-visible-' + postId);
+            let hiddenPart = document.getElementById('post-hidden-' + postId);
+
+            if (visiblePart.style.display === "none") {
+                visiblePart.style.display = "block";
+                hiddenPart.style.display = "none";
+            } else {
+                visiblePart.style.display = "none";
+                hiddenPart.style.display = "flex";
+            }
+
+        } catch (error) {
+            console.error('Error hiding post:', error);
+            alert("Failed to hide post. Please try again.");
         }
     }
 
