@@ -1,0 +1,1077 @@
+{
+    "users": [
+        {
+            "id": 1,
+            "username": "johntan@username",
+            "email": "john123@gmail.com"
+        },
+        {
+            "id": 2,
+            "username": "user1",
+            "email": "u1@example.com"
+        },
+        {
+            "id": 3,
+            "username": "user2",
+            "email": "u2@example.com"
+        },
+        {
+            "id": 4,
+            "username": "user_1771134230_1",
+            "email": "user_1771134230_1@example.com"
+        },
+        {
+            "id": 5,
+            "username": "user_1771134230_2",
+            "email": "user_1771134230_2@example.com"
+        },
+        {
+            "id": 6,
+            "username": "user_1771134258_1",
+            "email": "user_1771134258_1@example.com"
+        },
+        {
+            "id": 7,
+            "username": "user_1771134258_2",
+            "email": "user_1771134258_2@example.com"
+        },
+        {
+            "id": 8,
+            "username": "user_1771134401_1",
+            "email": "user_1771134401_1@example.com"
+        },
+        {
+            "id": 9,
+            "username": "user_1771134401_2",
+            "email": "user_1771134401_2@example.com"
+        },
+        {
+            "id": 10,
+            "username": "del_user_1771134845",
+            "email": "del_1771134845@example.com"
+        },
+        {
+            "id": 11,
+            "username": "del_user_1771134863",
+            "email": "del_1771134863@example.com"
+        },
+        {
+            "id": 12,
+            "username": "del_user_1771134912",
+            "email": "del_1771134912@example.com"
+        },
+        {
+            "id": 13,
+            "username": "alvintan@username",
+            "email": "alvin123@gmail.com"
+        },
+        {
+            "id": 14,
+            "username": "dummy_user_1",
+            "email": "dummy1@example.com"
+        },
+        {
+            "id": 15,
+            "username": "dummy_user_2",
+            "email": "dummy2@example.com"
+        },
+        {
+            "id": 16,
+            "username": "dummy_user_3",
+            "email": "dummy3@example.com"
+        },
+        {
+            "id": 17,
+            "username": "dummy_user_4",
+            "email": "dummy4@example.com"
+        },
+        {
+            "id": 18,
+            "username": "dummy_user_5",
+            "email": "dummy5@example.com"
+        },
+        {
+            "id": 19,
+            "username": "dummy_user_6",
+            "email": "dummy6@example.com"
+        },
+        {
+            "id": 20,
+            "username": "dummy_user_7",
+            "email": "dummy7@example.com"
+        },
+        {
+            "id": 21,
+            "username": "dummy_user_8",
+            "email": "dummy8@example.com"
+        },
+        {
+            "id": 22,
+            "username": "dummy_user_9",
+            "email": "dummy9@example.com"
+        },
+        {
+            "id": 23,
+            "username": "dummy_user_10",
+            "email": "dummy10@example.com"
+        },
+        {
+            "id": 24,
+            "username": "dummy_user_11",
+            "email": "dummy11@example.com"
+        },
+        {
+            "id": 25,
+            "username": "dummy_user_12",
+            "email": "dummy12@example.com"
+        },
+        {
+            "id": 26,
+            "username": "dummy_user_13",
+            "email": "dummy13@example.com"
+        },
+        {
+            "id": 27,
+            "username": "dummy_user_14",
+            "email": "dummy14@example.com"
+        },
+        {
+            "id": 28,
+            "username": "dummy_user_15",
+            "email": "dummy15@example.com"
+        },
+        {
+            "id": 29,
+            "username": "dummy_user_16",
+            "email": "dummy16@example.com"
+        },
+        {
+            "id": 30,
+            "username": "dummy_user_17",
+            "email": "dummy17@example.com"
+        },
+        {
+            "id": 31,
+            "username": "dummy_user_18",
+            "email": "dummy18@example.com"
+        },
+        {
+            "id": 32,
+            "username": "dummy_user_19",
+            "email": "dummy19@example.com"
+        },
+        {
+            "id": 33,
+            "username": "dummy_user_20",
+            "email": "dummy20@example.com"
+        }
+    ],
+    "activities": [
+        {
+            "id": 1,
+            "title": "Football",
+            "creator_id": 1,
+            "date": "2026-02-25"
+        },
+        {
+            "id": 2,
+            "title": "Netball",
+            "creator_id": 13,
+            "date": "2026-02-28"
+        },
+        {
+            "id": 3,
+            "title": "Abstract Painting Workshop",
+            "creator_id": 33,
+            "date": "15 Mar 2026"
+        },
+        {
+            "id": 4,
+            "title": "Knitting Circle for Beginners",
+            "creator_id": 33,
+            "date": "20 Mar 2026"
+        },
+        {
+            "id": 5,
+            "title": "Gourmet Cooking Class: Italian",
+            "creator_id": 33,
+            "date": "22 Mar 2026"
+        },
+        {
+            "id": 6,
+            "title": "Computer Basics: Email & Web",
+            "creator_id": 33,
+            "date": "10 Mar 2026"
+        },
+        {
+            "id": 7,
+            "title": "Smartphone Security 101",
+            "creator_id": 33,
+            "date": "18 Mar 2026"
+        },
+        {
+            "id": 8,
+            "title": "Video Calling with Family",
+            "creator_id": 33,
+            "date": "25 Mar 2026"
+        },
+        {
+            "id": 9,
+            "title": "Morning Tai Chi in the Park",
+            "creator_id": 33,
+            "date": "12 Mar 2026"
+        },
+        {
+            "id": 10,
+            "title": "Nature Photography Walk",
+            "creator_id": 33,
+            "date": "28 Mar 2026"
+        },
+        {
+            "id": 11,
+            "title": "Community Gardening Day",
+            "creator_id": 33,
+            "date": "05 Apr 2026"
+        },
+        {
+            "id": 12,
+            "title": "Food Bank Sorting",
+            "creator_id": 33,
+            "date": "14 Mar 2026"
+        },
+        {
+            "id": 13,
+            "title": "Reading Buddies at Primary School",
+            "creator_id": 33,
+            "date": "24 Mar 2026"
+        },
+        {
+            "id": 14,
+            "title": "Hospital Visitor Program",
+            "creator_id": 33,
+            "date": "30 Mar 2026"
+        },
+        {
+            "id": 15,
+            "title": "Pottery for Beginners",
+            "creator_id": 33,
+            "date": "10 Apr 2026"
+        },
+        {
+            "id": 16,
+            "title": "Chess Club Meetup",
+            "creator_id": 33,
+            "date": "12 Apr 2026"
+        },
+        {
+            "id": 17,
+            "title": "Setting up Smart Home Devices",
+            "creator_id": 33,
+            "date": "15 Apr 2026"
+        },
+        {
+            "id": 18,
+            "title": "Identifying Phishing Emails",
+            "creator_id": 33,
+            "date": "18 Apr 2026"
+        },
+        {
+            "id": 19,
+            "title": "Sunset Yoga by the Lake",
+            "creator_id": 33,
+            "date": "20 Apr 2026"
+        },
+        {
+            "id": 20,
+            "title": "Bird Watching Tour",
+            "creator_id": 33,
+            "date": "22 Apr 2026"
+        },
+        {
+            "id": 21,
+            "title": "Soup Kitchen Service",
+            "creator_id": 33,
+            "date": "25 Apr 2026"
+        },
+        {
+            "id": 22,
+            "title": "Beach Cleanup Drive",
+            "creator_id": 33,
+            "date": "01 May 2026"
+        },
+        {
+            "id": 23,
+            "title": "Cooking ",
+            "creator_id": 13,
+            "date": "2026-02-27"
+        },
+        {
+            "id": 24,
+            "title": "Artistic Reminder Test",
+            "creator_id": 999,
+            "date": "17 Feb 2026"
+        }
+    ],
+    "participants": [
+        {
+            "user_id": 14,
+            "activity_id": 3
+        },
+        {
+            "user_id": 15,
+            "activity_id": 3
+        },
+        {
+            "user_id": 16,
+            "activity_id": 3
+        },
+        {
+            "user_id": 17,
+            "activity_id": 3
+        },
+        {
+            "user_id": 18,
+            "activity_id": 3
+        },
+        {
+            "user_id": 19,
+            "activity_id": 3
+        },
+        {
+            "user_id": 20,
+            "activity_id": 3
+        },
+        {
+            "user_id": 21,
+            "activity_id": 3
+        },
+        {
+            "user_id": 22,
+            "activity_id": 3
+        },
+        {
+            "user_id": 23,
+            "activity_id": 3
+        },
+        {
+            "user_id": 14,
+            "activity_id": 4
+        },
+        {
+            "user_id": 15,
+            "activity_id": 4
+        },
+        {
+            "user_id": 16,
+            "activity_id": 4
+        },
+        {
+            "user_id": 17,
+            "activity_id": 4
+        },
+        {
+            "user_id": 14,
+            "activity_id": 5
+        },
+        {
+            "user_id": 15,
+            "activity_id": 5
+        },
+        {
+            "user_id": 16,
+            "activity_id": 5
+        },
+        {
+            "user_id": 17,
+            "activity_id": 5
+        },
+        {
+            "user_id": 18,
+            "activity_id": 5
+        },
+        {
+            "user_id": 19,
+            "activity_id": 5
+        },
+        {
+            "user_id": 20,
+            "activity_id": 5
+        },
+        {
+            "user_id": 21,
+            "activity_id": 5
+        },
+        {
+            "user_id": 14,
+            "activity_id": 6
+        },
+        {
+            "user_id": 15,
+            "activity_id": 6
+        },
+        {
+            "user_id": 16,
+            "activity_id": 6
+        },
+        {
+            "user_id": 17,
+            "activity_id": 6
+        },
+        {
+            "user_id": 14,
+            "activity_id": 7
+        },
+        {
+            "user_id": 15,
+            "activity_id": 7
+        },
+        {
+            "user_id": 16,
+            "activity_id": 7
+        },
+        {
+            "user_id": 17,
+            "activity_id": 7
+        },
+        {
+            "user_id": 18,
+            "activity_id": 7
+        },
+        {
+            "user_id": 19,
+            "activity_id": 7
+        },
+        {
+            "user_id": 20,
+            "activity_id": 7
+        },
+        {
+            "user_id": 21,
+            "activity_id": 7
+        },
+        {
+            "user_id": 22,
+            "activity_id": 7
+        },
+        {
+            "user_id": 23,
+            "activity_id": 7
+        },
+        {
+            "user_id": 24,
+            "activity_id": 7
+        },
+        {
+            "user_id": 25,
+            "activity_id": 7
+        },
+        {
+            "user_id": 26,
+            "activity_id": 7
+        },
+        {
+            "user_id": 27,
+            "activity_id": 7
+        },
+        {
+            "user_id": 28,
+            "activity_id": 7
+        },
+        {
+            "user_id": 29,
+            "activity_id": 7
+        },
+        {
+            "user_id": 30,
+            "activity_id": 7
+        },
+        {
+            "user_id": 31,
+            "activity_id": 7
+        },
+        {
+            "user_id": 32,
+            "activity_id": 7
+        },
+        {
+            "user_id": 33,
+            "activity_id": 7
+        },
+        {
+            "user_id": 14,
+            "activity_id": 8
+        },
+        {
+            "user_id": 15,
+            "activity_id": 8
+        },
+        {
+            "user_id": 14,
+            "activity_id": 9
+        },
+        {
+            "user_id": 15,
+            "activity_id": 9
+        },
+        {
+            "user_id": 16,
+            "activity_id": 9
+        },
+        {
+            "user_id": 17,
+            "activity_id": 9
+        },
+        {
+            "user_id": 14,
+            "activity_id": 10
+        },
+        {
+            "user_id": 15,
+            "activity_id": 10
+        },
+        {
+            "user_id": 16,
+            "activity_id": 10
+        },
+        {
+            "user_id": 17,
+            "activity_id": 10
+        },
+        {
+            "user_id": 18,
+            "activity_id": 10
+        },
+        {
+            "user_id": 19,
+            "activity_id": 10
+        },
+        {
+            "user_id": 20,
+            "activity_id": 10
+        },
+        {
+            "user_id": 21,
+            "activity_id": 10
+        },
+        {
+            "user_id": 22,
+            "activity_id": 10
+        },
+        {
+            "user_id": 23,
+            "activity_id": 10
+        },
+        {
+            "user_id": 24,
+            "activity_id": 10
+        },
+        {
+            "user_id": 25,
+            "activity_id": 10
+        },
+        {
+            "user_id": 14,
+            "activity_id": 11
+        },
+        {
+            "user_id": 15,
+            "activity_id": 11
+        },
+        {
+            "user_id": 16,
+            "activity_id": 11
+        },
+        {
+            "user_id": 17,
+            "activity_id": 11
+        },
+        {
+            "user_id": 14,
+            "activity_id": 12
+        },
+        {
+            "user_id": 15,
+            "activity_id": 12
+        },
+        {
+            "user_id": 16,
+            "activity_id": 12
+        },
+        {
+            "user_id": 17,
+            "activity_id": 12
+        },
+        {
+            "user_id": 18,
+            "activity_id": 12
+        },
+        {
+            "user_id": 19,
+            "activity_id": 12
+        },
+        {
+            "user_id": 20,
+            "activity_id": 12
+        },
+        {
+            "user_id": 21,
+            "activity_id": 12
+        },
+        {
+            "user_id": 22,
+            "activity_id": 12
+        },
+        {
+            "user_id": 23,
+            "activity_id": 12
+        },
+        {
+            "user_id": 24,
+            "activity_id": 12
+        },
+        {
+            "user_id": 25,
+            "activity_id": 12
+        },
+        {
+            "user_id": 26,
+            "activity_id": 12
+        },
+        {
+            "user_id": 27,
+            "activity_id": 12
+        },
+        {
+            "user_id": 28,
+            "activity_id": 12
+        },
+        {
+            "user_id": 14,
+            "activity_id": 13
+        },
+        {
+            "user_id": 15,
+            "activity_id": 13
+        },
+        {
+            "user_id": 14,
+            "activity_id": 14
+        },
+        {
+            "user_id": 15,
+            "activity_id": 14
+        },
+        {
+            "user_id": 16,
+            "activity_id": 14
+        },
+        {
+            "user_id": 17,
+            "activity_id": 14
+        },
+        {
+            "user_id": 18,
+            "activity_id": 14
+        },
+        {
+            "user_id": 19,
+            "activity_id": 14
+        },
+        {
+            "user_id": 20,
+            "activity_id": 14
+        },
+        {
+            "user_id": 21,
+            "activity_id": 14
+        },
+        {
+            "user_id": 14,
+            "activity_id": 15
+        },
+        {
+            "user_id": 15,
+            "activity_id": 15
+        },
+        {
+            "user_id": 16,
+            "activity_id": 15
+        },
+        {
+            "user_id": 17,
+            "activity_id": 15
+        },
+        {
+            "user_id": 18,
+            "activity_id": 15
+        },
+        {
+            "user_id": 19,
+            "activity_id": 15
+        },
+        {
+            "user_id": 20,
+            "activity_id": 15
+        },
+        {
+            "user_id": 21,
+            "activity_id": 15
+        },
+        {
+            "user_id": 14,
+            "activity_id": 16
+        },
+        {
+            "user_id": 15,
+            "activity_id": 16
+        },
+        {
+            "user_id": 16,
+            "activity_id": 16
+        },
+        {
+            "user_id": 17,
+            "activity_id": 16
+        },
+        {
+            "user_id": 18,
+            "activity_id": 16
+        },
+        {
+            "user_id": 19,
+            "activity_id": 16
+        },
+        {
+            "user_id": 20,
+            "activity_id": 16
+        },
+        {
+            "user_id": 21,
+            "activity_id": 16
+        },
+        {
+            "user_id": 22,
+            "activity_id": 16
+        },
+        {
+            "user_id": 23,
+            "activity_id": 16
+        },
+        {
+            "user_id": 24,
+            "activity_id": 16
+        },
+        {
+            "user_id": 25,
+            "activity_id": 16
+        },
+        {
+            "user_id": 26,
+            "activity_id": 16
+        },
+        {
+            "user_id": 27,
+            "activity_id": 16
+        },
+        {
+            "user_id": 28,
+            "activity_id": 16
+        },
+        {
+            "user_id": 29,
+            "activity_id": 16
+        },
+        {
+            "user_id": 30,
+            "activity_id": 16
+        },
+        {
+            "user_id": 31,
+            "activity_id": 16
+        },
+        {
+            "user_id": 32,
+            "activity_id": 16
+        },
+        {
+            "user_id": 33,
+            "activity_id": 16
+        },
+        {
+            "user_id": 14,
+            "activity_id": 17
+        },
+        {
+            "user_id": 15,
+            "activity_id": 17
+        },
+        {
+            "user_id": 16,
+            "activity_id": 17
+        },
+        {
+            "user_id": 17,
+            "activity_id": 17
+        },
+        {
+            "user_id": 18,
+            "activity_id": 17
+        },
+        {
+            "user_id": 19,
+            "activity_id": 17
+        },
+        {
+            "user_id": 20,
+            "activity_id": 17
+        },
+        {
+            "user_id": 21,
+            "activity_id": 17
+        },
+        {
+            "user_id": 14,
+            "activity_id": 18
+        },
+        {
+            "user_id": 15,
+            "activity_id": 18
+        },
+        {
+            "user_id": 16,
+            "activity_id": 18
+        },
+        {
+            "user_id": 17,
+            "activity_id": 18
+        },
+        {
+            "user_id": 18,
+            "activity_id": 18
+        },
+        {
+            "user_id": 19,
+            "activity_id": 18
+        },
+        {
+            "user_id": 20,
+            "activity_id": 18
+        },
+        {
+            "user_id": 21,
+            "activity_id": 18
+        },
+        {
+            "user_id": 22,
+            "activity_id": 18
+        },
+        {
+            "user_id": 23,
+            "activity_id": 18
+        },
+        {
+            "user_id": 24,
+            "activity_id": 18
+        },
+        {
+            "user_id": 25,
+            "activity_id": 18
+        },
+        {
+            "user_id": 26,
+            "activity_id": 18
+        },
+        {
+            "user_id": 27,
+            "activity_id": 18
+        },
+        {
+            "user_id": 28,
+            "activity_id": 18
+        },
+        {
+            "user_id": 29,
+            "activity_id": 18
+        },
+        {
+            "user_id": 30,
+            "activity_id": 18
+        },
+        {
+            "user_id": 31,
+            "activity_id": 18
+        },
+        {
+            "user_id": 32,
+            "activity_id": 18
+        },
+        {
+            "user_id": 33,
+            "activity_id": 18
+        },
+        {
+            "user_id": 14,
+            "activity_id": 19
+        },
+        {
+            "user_id": 15,
+            "activity_id": 19
+        },
+        {
+            "user_id": 16,
+            "activity_id": 19
+        },
+        {
+            "user_id": 17,
+            "activity_id": 19
+        },
+        {
+            "user_id": 18,
+            "activity_id": 19
+        },
+        {
+            "user_id": 14,
+            "activity_id": 20
+        },
+        {
+            "user_id": 15,
+            "activity_id": 20
+        },
+        {
+            "user_id": 16,
+            "activity_id": 20
+        },
+        {
+            "user_id": 17,
+            "activity_id": 20
+        },
+        {
+            "user_id": 18,
+            "activity_id": 20
+        },
+        {
+            "user_id": 19,
+            "activity_id": 20
+        },
+        {
+            "user_id": 20,
+            "activity_id": 20
+        },
+        {
+            "user_id": 21,
+            "activity_id": 20
+        },
+        {
+            "user_id": 22,
+            "activity_id": 20
+        },
+        {
+            "user_id": 23,
+            "activity_id": 20
+        },
+        {
+            "user_id": 24,
+            "activity_id": 20
+        },
+        {
+            "user_id": 25,
+            "activity_id": 20
+        },
+        {
+            "user_id": 26,
+            "activity_id": 20
+        },
+        {
+            "user_id": 27,
+            "activity_id": 20
+        },
+        {
+            "user_id": 28,
+            "activity_id": 20
+        },
+        {
+            "user_id": 14,
+            "activity_id": 21
+        },
+        {
+            "user_id": 15,
+            "activity_id": 21
+        },
+        {
+            "user_id": 16,
+            "activity_id": 21
+        },
+        {
+            "user_id": 17,
+            "activity_id": 21
+        },
+        {
+            "user_id": 18,
+            "activity_id": 21
+        },
+        {
+            "user_id": 19,
+            "activity_id": 21
+        },
+        {
+            "user_id": 20,
+            "activity_id": 21
+        },
+        {
+            "user_id": 21,
+            "activity_id": 21
+        },
+        {
+            "user_id": 22,
+            "activity_id": 21
+        },
+        {
+            "user_id": 23,
+            "activity_id": 21
+        },
+        {
+            "user_id": 24,
+            "activity_id": 21
+        },
+        {
+            "user_id": 25,
+            "activity_id": 21
+        },
+        {
+            "user_id": 14,
+            "activity_id": 22
+        },
+        {
+            "user_id": 15,
+            "activity_id": 22
+        },
+        {
+            "user_id": 16,
+            "activity_id": 22
+        },
+        {
+            "user_id": 17,
+            "activity_id": 22
+        },
+        {
+            "user_id": 18,
+            "activity_id": 22
+        },
+        {
+            "user_id": 19,
+            "activity_id": 22
+        },
+        {
+            "user_id": 20,
+            "activity_id": 22
+        },
+        {
+            "user_id": 21,
+            "activity_id": 22
+        },
+        {
+            "user_id": 1,
+            "activity_id": 24
+        }
+    ]
+}

@@ -284,9 +284,12 @@
 
         <h2>Create Activity</h2>
 
-        <form id="activityForm">
+        <form id="activityForm" method="POST" action="{{ url_for('create_activity') }}">
+            <!-- Hidden Fields for Composite Data -->
+            <input type="hidden" name="time" id="hiddenTime">
+            <input type="hidden" name="category" id="hiddenCategory">
             <label>Activity Title:</label>
-            <input type="text" id="title" placeholder="Enter activity title" required>
+            <input type="text" id="title" name="title" placeholder="Enter activity title" required>
 
             <label>Category:</label>
             <select id="categorySelect" required>
@@ -298,7 +301,7 @@
             </select>
 
             <label>Date:</label>
-            <input type="date" id="date" required>
+            <input type="date" id="date" name="date" required>
 
             <label>Timing (Start to End):</label>
             <div class="time-row">
@@ -342,17 +345,19 @@
             </div>
 
             <label>Quota Limit (Max Participants):</label>
-            <input type="number" id="activityQuota" placeholder="Enter maximum number of participants" min="1" required>
+            <input type="number" id="activityQuota" name="quota" placeholder="Enter maximum number of participants"
+                min="1" required>
 
             <label>Location:</label>
-            <input type="text" id="location" placeholder="Enter location" required>
+            <input type="text" id="location" name="location" placeholder="Enter location" required>
 
             <label>Description (Optional):</label>
-            <textarea rows="4" id="description" placeholder="Briefly describe the activity" maxlength="250"></textarea>
+            <textarea rows="4" id="description" name="description" placeholder="Briefly describe the activity"
+                maxlength="250"></textarea>
             <div class="char-count" id="char-count">0 / 250 characters</div>
 
             <label>Special Instructions / Things to Note:</label>
-            <textarea rows="3" id="special-instructions"
+            <textarea rows="3" id="special-instructions" name="instructions"
                 placeholder="E.g., Bring your own mat, heavy rain cancels, etc."></textarea>
 
             <button type="submit" class="submit-btn">Create Activity</button>
@@ -371,42 +376,30 @@
     document.getElementById('activityForm').addEventListener('submit', function (e) {
         e.preventDefault();
 
-        const title = document.getElementById('title').value.trim();
-        const categorySelect = document.getElementById('categorySelect');
-        const selectedCategory = categorySelect.value;
-        const date = document.getElementById('date').value;
+        // 1. Combine Time
         const startHour = document.getElementById('startHour').value;
         const startMinute = document.getElementById('startMinute').value;
         const startAmpm = document.getElementById('startAmpm').value;
         const endHour = document.getElementById('endHour').value;
         const endMinute = document.getElementById('endMinute').value;
         const endAmpm = document.getElementById('endAmpm').value;
-        const location = document.getElementById('location').value.trim();
-        const desc = document.getElementById('description').value.trim();
-        const instructions = document.getElementById('special-instructions').value.trim();
 
-        if (!title || !selectedCategory || !date || !startHour || !startMinute || !startAmpm || !endHour || !endMinute || !endAmpm || !location) {
-            alert("Please fill in all required fields.");
+        if (!startHour || !startMinute || !startAmpm || !endHour || !endMinute || !endAmpm) {
+            alert("Please complete the timing fields.");
             return;
         }
 
-        const emojiMap = { "Hobbies": "🎨", "Tech Help": "💻", "Outdoor": "🏞️", "Volunteer": "🤝" };
-        const categoryWithEmoji = `${emojiMap[selectedCategory]} ${selectedCategory}`;
         const startTime = `${startHour}:${startMinute} ${startAmpm}`;
         const endTime = `${endHour}:${endMinute} ${endAmpm}`;
         const displayTime = `${startTime} – ${endTime}`;
+        document.getElementById('hiddenTime').value = displayTime;
 
-        const quota = parseInt(document.getElementById('activityQuota').value) || 20;
+        // 2. Prepare Category (send raw value, but JS was adding emoji before, app.py handles it now)
+        const categorySelect = document.getElementById('categorySelect');
+        document.getElementById('hiddenCategory').value = categorySelect.value;
 
-        const activityData = { title, cat: categoryWithEmoji, date, time: displayTime, loc: location, desc, quota, instructions };
-
-        let myActivities = JSON.parse(localStorage.getItem('myCreatedActivities')) || [];
-        myActivities.push(activityData);
-        localStorage.setItem('myCreatedActivities', JSON.stringify(myActivities));
-
-        // Use standard redirection for Flask
-        const query = new URLSearchParams(activityData).toString();
-        window.location.href = `{{ url_for('create_confirmation') }}?${query}`;
+        // 3. Submit
+        this.submit();
     });
 </script>
 {% endblock %}

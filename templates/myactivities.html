@@ -525,17 +525,69 @@
         box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
     }
 
-    /* Page-level Reminder Banner */
+    /* Page-level Reminder Banner - Premium Upgrade */
     #upcoming-reminders-container {
         display: none;
-        /* Hidden by default */
-        margin-top: 20px;
-        margin-bottom: 30px;
-        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-        border: 1px solid #60a5fa;
-        border-radius: 16px;
-        padding: 24px;
-        box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.1);
+        margin-bottom: 40px;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 28px;
+        padding: 4px;
+        /* Space for the gradient border */
+        background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
+        box-shadow: 0 20px 50px rgba(99, 102, 241, 0.2);
+        position: relative;
+        overflow: hidden;
+        animation: bannerGlow 6s infinite alternate;
+    }
+
+    @keyframes bannerGlow {
+        0% {
+            box-shadow: 0 20px 50px rgba(99, 102, 241, 0.2);
+            transform: scale(1);
+        }
+
+        100% {
+            box-shadow: 0 25px 60px rgba(236, 72, 153, 0.3);
+            transform: scale(1.01);
+        }
+    }
+
+    .banner-content-inner {
+        background: white;
+        border-radius: 24px;
+        padding: 24px 30px;
+        height: 100%;
+        width: 100%;
+    }
+
+    .pulse-dot {
+        width: 12px;
+        height: 12px;
+        background-color: #f43f5e;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 12px;
+        box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7);
+        animation: pulseRed 2s infinite;
+    }
+
+    @keyframes pulseRed {
+        0% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7);
+        }
+
+        70% {
+            transform: scale(1);
+            box-shadow: 0 0 0 10px rgba(244, 63, 94, 0);
+        }
+
+        100% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(244, 63, 94, 0);
+        }
     }
 
     .reminder-header {
@@ -613,10 +665,20 @@
         padding-top: 15px;
         border-top: 1px dashed #93c5fd;
         text-align: center;
-        font-size: 15px;
+        font-size: 16px;
         color: #1e3a8a;
-        font-weight: 700;
-        font-style: italic;
+        font-weight: 800;
+    }
+
+    .countdown-pill {
+        background: #fdf2f8;
+        color: #db2777;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 800;
+        margin-left: auto;
+        border: 1px solid #fbcfe8;
     }
 </style>
 {% endblock %}
@@ -683,17 +745,19 @@
             <h1>My Activities</h1>
         </div>
 
-        <!-- Upcoming Reminders Banner -->
+        <!-- Upcoming Reminders Banner - Premium Upgrade (72h Window) -->
         <div id="upcoming-reminders-container">
-            <div class="reminder-header">
-                <i class="bi bi-bell-fill"></i>
-                <h4>Upcoming Reminders</h4>
-            </div>
-            <div id="reminder-list" class="reminder-list">
-                <!-- Reminders populated via JS -->
-            </div>
-            <div class="reminder-invitation">
-                Your neighbors are looking forward to seeing you!
+            <div class="banner-content-inner">
+                <div class="reminder-header">
+                    <i class="bi bi-stars"></i>
+                    <h4>Something to look forward to!</h4>
+                </div>
+                <div id="reminder-list" class="reminder-list">
+                    <!-- Reminders populated via JS -->
+                </div>
+                <div class="reminder-invitation">
+                    Your neighbors are looking forward to seeing you soon!
+                </div>
             </div>
         </div>
 
@@ -734,65 +798,54 @@
 {% block extra_js %}
 <script>
     let currentView = 'created';
-    let withdrawIndex = null;
+    let withdrawId = null;
     let lastSearch = '';
 
-    // Use client-side edit/delete pages (they read `index` from query string)
-    const editUrlBase = "{{ url_for('edit_activity_page') }}";
-    const deleteUrlBase = "{{ url_for('delete_confirmation_page') }}";
+    // Server Data Hydration
+    const serverCreated = [
+        {% for act in created_activities %}
+    {
+        id: {{ act.id }},
+        title: {{ act.title | tojson }},
+        cat: {{ act.category | tojson }},
+        date: {{ act.date | tojson }},
+        time: {{ act.time | tojson }},
+        loc: {{ act.location | tojson }},
+        desc: {{ act.description | tojson }},
+        quota: {{ act.quota }},
+        participants: {{ act.get_participant_count() }},
+        _origin: 'created'
+    },
+    {% endfor %}
+    ];
+
+    const serverJoined = [
+        {% for act in joined_activities %}
+    {
+        id: {{ act.id }},
+        title: {{ act.title | tojson }},
+        cat: {{ act.category | tojson }},
+        date: {{ act.date | tojson }},
+        time: {{ act.time | tojson }},
+        loc: {{ act.location | tojson }},
+        desc: {{ act.description | tojson }},
+        quota: {{ act.quota }},
+        participants: {{ act.get_participant_count() }},
+        _origin: 'joined'
+    },
+    {% endfor %}
+    ];
+
+    console.log("Server Data Loaded:");
+    console.log("- Created Activities:", serverCreated.length);
+    console.log("- Joined Activities:", serverJoined.length);
+
+    // Updated Edit/Delete links to use backend ID directly
+    const editUrlBase = "/activities/";
+    const deleteUrlBase = "/activities/";
 
     function getActivities() {
-        const created = JSON.parse(localStorage.getItem('myCreatedActivities')) || [];
-        const joined = JSON.parse(localStorage.getItem('joinedActivities')) || [];
-
-        // Map to preserve original indices and origin
-        const createdMapped = created.map((act, index) => ({ ...act, _origin: 'created', _index: index }));
-        const joinedMapped = joined.map((act, index) => ({ ...act, _origin: 'joined', _index: index }));
-
-        // One-time demo initialization
-        if (!localStorage.getItem('demoInitialized_v2')) {
-            const demoActs = [
-                {
-                    title: "Community Gardening",
-                    cat: "Outdoor",
-                    date: "10 Feb 2026",
-                    time: "10:00 AM – 12:00 PM",
-                    loc: "Community Garden",
-                    desc: "Join your neighbors for a community gardening session.",
-                    quota: 20
-                },
-                {
-                    title: "Tablet Basics",
-                    cat: "Tech Help",
-                    date: "11 Feb 2026",
-                    time: "2:00 PM – 4:00 PM",
-                    loc: "Learning Center",
-                    desc: "Learn how to use your tablet for video calls and entertainment.",
-                    quota: 15
-                },
-                {
-                    title: "Verification Neighborhood Breakfast (Tomorrow)",
-                    cat: "Social",
-                    date: "10 Feb 2026",
-                    time: "9:00 AM – 10:30 AM",
-                    loc: "Central Clubhouse",
-                    desc: "Join your neighbors for a friendly breakfast and chat.",
-                    quota: 30
-                }
-            ];
-            // Merge avoiding duplicates
-            demoActs.forEach(act => {
-                if (!joined.some(j => j.title === act.title)) {
-                    joined.push(act);
-                }
-            });
-            localStorage.setItem('joinedActivities', JSON.stringify(joined));
-            localStorage.setItem('demoInitialized_v2', 'true');
-        }
-
-        // If searching, we still only return the checking view list to keep them separate.
-        // The filter will be applied in renderActivities.
-        return currentView === 'created' ? createdMapped : joinedMapped;
+        return currentView === 'created' ? serverCreated : serverJoined;
     }
 
     function renderActivities() {
@@ -810,15 +863,12 @@
             return title.includes(term) || desc.includes(term) || loc.includes(term) || cat.includes(term);
         });
 
-        // Toggle button visual state -- Removed because search is now per-tab
-        // We always want the correct tab to be active
         document.getElementById('createdBtn').className = currentView === 'created' ? 'toggle-active' : 'toggle-inactive';
         document.getElementById('joinedBtn').className = currentView === 'joined' ? 'toggle-active' : 'toggle-inactive';
 
         if (!filteredData.length) {
             list.style.display = 'none';
             document.getElementById('noResultsMessage').style.display = 'flex';
-            // Update message based on context
             const msgTitle = document.getElementById('noResultsMessage').querySelector('h4');
             msgTitle.textContent = lastSearch.length > 0 ? `No matches for "${lastSearch}"` : "No personal activities found";
             return;
@@ -835,19 +885,13 @@
             const loc = act.loc || "Location TBD";
             const desc = act.desc || "No description provided.";
             const isCreated = act._origin === 'created';
-            const realIndex = act._index;
 
-            // Quota Calculation Logic
-            const activityStatus = JSON.parse(localStorage.getItem('activityStatus')) || {};
-            const activityKey = `${title}-${date}`;
+            const editLink = `${editUrlBase}${act.id}/edit`;
+            const deleteLink = `${editUrlBase}${act.id}/delete/confirmation`;
 
-            // Default values if status missing
-            let status = activityStatus[activityKey];
-            if (!status) {
-                status = { participants: 0, quota: act.quota || 20 };
-            }
-
-            const ratio = (status.participants / status.quota) * 100;
+            const participants = act.participants || 0;
+            const quota = act.quota || 20;
+            const ratio = (participants / quota) * 100;
             let barColor = 'progress-green';
             let statusLabel = '';
 
@@ -857,7 +901,7 @@
             } else if (ratio >= 60) {
                 barColor = 'progress-yellow';
                 statusLabel = '<span class="status-label label-fast">Filling Fast!</span>';
-            } else if (status.participants > 0) {
+            } else if (participants > 0) {
                 statusLabel = '<span class="status-label label-trending">Popular Choice!</span>';
             }
 
@@ -869,25 +913,23 @@
                     <p><i class="bi bi-calendar3"></i> ${date}</p>
                     <p><i class="bi bi-clock"></i> ${time}</p>
                     <p><i class="bi bi-geo-alt"></i> ${loc}</p>
-                    
                     <div class="quota-info">
                         <div class="quota-text">
                             <span><i class="bi bi-people-fill"></i> Slots Available</span>
-                            <span class="social-proof">${status.participants} / ${status.quota} Joined</span>
+                            <span class="social-proof">${participants} / ${quota} Joined</span>
                         </div>
                         ${statusLabel}
                         <div class="quota-progress-container">
                             <div class="quota-progress-bar ${barColor}" style="width: ${ratio}%"></div>
                         </div>
                     </div>
-
                     <div class="card-desc">${desc}</div>
                 </div>
                 <div class="card-actions">
                     ${isCreated
-                    ? `<a href="${editUrlBase}?index=${realIndex}" class="btn-action btn-edit">Edit</a>
-                           <a href="${deleteUrlBase}?index=${realIndex}" class="btn-action btn-delete">Delete</a>`
-                    : `<button class="btn-action btn-delete" onclick="withdrawActivity(${realIndex})">Withdraw</button>`}
+                    ? `<a href="${editLink}" class="btn-action btn-edit">Edit</a>
+                       <a href="${deleteLink}" class="btn-action btn-delete">Delete</a>`
+                    : `<button class="btn-action btn-delete" onclick="withdrawActivity(${act.id})">Withdraw</button>`}
                 </div>
             </div>
         `;
@@ -896,9 +938,6 @@
 
     function toggleActivities(view) {
         currentView = view;
-        // Optionally clear search when switching tabs to avoid confusion
-        // or keep it to allow searching the same term in the other tab.
-        // User request implies "search works separately", so clearing it feels cleaner.
         lastSearch = '';
         document.getElementById('searchInput').value = '';
         renderActivities();
@@ -909,55 +948,67 @@
         renderActivities();
     }
 
-    function withdrawActivity(index) {
-        withdrawIndex = index;
+    function withdrawActivity(id) {
+        withdrawId = id;
         document.getElementById('confirmModal').style.display = 'flex';
     }
 
     document.getElementById('confirmYes').addEventListener('click', () => {
-        const joined = JSON.parse(localStorage.getItem('joinedActivities')) || [];
-        if (withdrawIndex !== null) {
-            joined.splice(withdrawIndex, 1);
-            localStorage.setItem('joinedActivities', JSON.stringify(joined));
-            renderActivities();
-            withdrawIndex = null;
+        if (withdrawId !== null) {
+            const btn = document.getElementById('confirmYes');
+            const originalText = btn.textContent;
+            btn.textContent = 'Processing...';
+            fetch(`/activities/leave/${withdrawId}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        alert(data.message || "Failed to withdraw.");
+                        btn.textContent = originalText;
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("An error occurred.");
+                    btn.textContent = originalText;
+                });
         }
-        document.getElementById('confirmModal').style.display = 'none';
     });
 
     document.getElementById('confirmNo').addEventListener('click', () => {
-        withdrawIndex = null;
+        withdrawId = null;
         document.getElementById('confirmModal').style.display = 'none';
     });
 
     function checkUpcomingActivities() {
-        const joinedActivities = JSON.parse(localStorage.getItem('joinedActivities')) || [];
         const now = new Date();
         const upcoming = [];
-
-        joinedActivities.forEach(act => {
+        [...serverCreated, ...serverJoined].forEach(act => {
+            if (!act.date) return;
             const actDateParts = act.date.split(' ');
             if (actDateParts.length === 3) {
                 const day = parseInt(actDateParts[0]);
                 const monthName = actDateParts[1];
                 const year = parseInt(actDateParts[2]);
-
                 const months = {
                     'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
                     'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
                 };
-
                 const actDateTime = new Date(year, months[monthName], day);
                 const diffTime = actDateTime - now;
-                const diffDays = diffTime / (1000 * 60 * 60 * 24);
+                const diffHours = diffTime / (1000 * 60 * 60);
 
-                if (diffDays >= -0.5 && diffDays <= 2.5) {
+                // Reminder logic: Within 72 hours (3 days)
+                if (diffHours > -24 && diffHours <= 72) {
+                    hasUrgent = true;
+                    // Urgent if within 24 hours
+                    if (diffHours <= 24) urgentCount++;
+                    act._hoursLeft = Math.round(diffHours);
                     upcoming.push(act);
                 }
             }
         });
-
-
 
         const container = document.getElementById('upcoming-reminders-container');
         const list = document.getElementById('reminder-list');
@@ -965,17 +1016,22 @@
         if (upcoming.length > 0) {
             container.style.display = 'block';
             list.innerHTML = '';
-            upcoming.forEach(act => {
+            const uniqueUpcoming = Array.from(new Set(upcoming.map(a => a.id)))
+                .map(id => upcoming.find(a => a.id === id));
+
+            uniqueUpcoming.forEach(act => {
                 const card = document.createElement('div');
                 card.className = 'reminder-card';
+                const label = act._hoursLeft < 0 ? "Started" : (act._hoursLeft === 0 ? "Starting soon" : `${act._hoursLeft}h left`);
                 card.innerHTML = `
                     <div class="reminder-main-info">
-                        <h5>${act.title}</h5>
+                        <h5><span class="pulse-dot"></span>${act.title}</h5>
                         <div class="reminder-sub-info">
                             <span><i class="bi bi-clock-fill"></i> ${act.time}</span>
                             <span><i class="bi bi-geo-alt-fill"></i> ${act.loc}</span>
                         </div>
                     </div>
+                    <div class="countdown-pill">${label}</div>
                 `;
                 list.appendChild(card);
             });
@@ -985,32 +1041,6 @@
     }
 
     window.onload = function () {
-        // --- AUTO-JOIN LOGIC FOR DEMO ---
-        const newVolunteerAct = {
-            title: "Community Park Cleanup",
-            cat: "Volunteer",
-            date: "12 Feb 2026",
-            time: "9:00 AM – 12:00 PM",
-            loc: "Central Park",
-            desc: "Help us keep our community green and clean.",
-            quota: 50
-        };
-
-        let joined = JSON.parse(localStorage.getItem('joinedActivities')) || [];
-        // Check if exists
-        if (!joined.some(a => a.title === newVolunteerAct.title && a.date === newVolunteerAct.date)) {
-            joined.push(newVolunteerAct);
-            localStorage.setItem('joinedActivities', JSON.stringify(joined));
-
-            // Also update quota status for consistency
-            const activityStatus = JSON.parse(localStorage.getItem('activityStatus')) || {};
-            const key = `${newVolunteerAct.title}-${newVolunteerAct.date}`;
-            if (!activityStatus[key]) {
-                activityStatus[key] = { participants: 12, quota: 50 };
-                localStorage.setItem('activityStatus', JSON.stringify(activityStatus));
-            }
-        }
-
         renderActivities();
         checkUpcomingActivities();
     };

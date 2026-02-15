@@ -246,11 +246,14 @@
             <div class="success-icon"><i class="bi bi-check-circle-fill"></i></div>
             <h2>You're In!</h2>
             <p style="color: #64748b; font-size: 22px;">You have successfully joined:</p>
-            <span id="display-title" class="activity-name">Loading...</span>
+            <span id="display-title" class="activity-name">{{ activity.title }}</span>
             <div class="details-box">
-                <p><i class="bi bi-calendar3"></i> <strong>Date:</strong> <span id="display-date">Loading...</span></p>
-                <p><i class="bi bi-geo-alt"></i> <strong>Location:</strong> <span id="display-loc">Loading...</span></p>
-                <p><i class="bi bi-clock"></i> <strong>Time:</strong> <span id="display-time">Loading...</span></p>
+                <p><i class="bi bi-calendar3"></i> <strong>Date:</strong> <span id="display-date">{{ activity.date
+                        }}</span></p>
+                <p><i class="bi bi-geo-alt"></i> <strong>Location:</strong> <span id="display-loc">{{ activity.location
+                        }}</span></p>
+                <p><i class="bi bi-clock"></i> <strong>Time:</strong> <span id="display-time">{{ activity.time }}</span>
+                </p>
             </div>
             <a href="{{ url_for('my_activities') }}" class="view-btn">View My Activities</a>
         </div>
@@ -259,40 +262,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-    const params = new URLSearchParams(window.location.search);
-    const title = params.get('title') || "Activity";
-    const date = params.get('date') || "TBD";
-    const loc = params.get('loc') || "Location";
-    const time = params.get('time') || "TBD";
-    const cat = params.get('cat') || "General";
-    const desc = params.get('desc') || "No description provided.";
-
-    document.getElementById('display-title').innerText = title;
-    document.getElementById('display-date').innerText = date;
-    document.getElementById('display-loc').innerText = loc;
-    document.getElementById('display-time').innerText = time;
-
-    function saveToJoined() {
-        const activityData = { title, date, loc, time, cat, desc };
-        let joined = JSON.parse(localStorage.getItem('joinedActivities')) || [];
-
-        // Check if already in list to avoid duplicates
-        const exists = joined.some(a => a.title === title && a.date === date);
-
-        if (!exists) {
-            joined.push(activityData);
-            localStorage.setItem('joinedActivities', JSON.stringify(joined));
-
-            // Increment participant count in activityStatus
-            let status = JSON.parse(localStorage.getItem('activityStatus')) || {};
-            const key = `${title}-${date}`;
-            if (status[key]) {
-                status[key].participants += 1;
-                localStorage.setItem('activityStatus', JSON.stringify(status));
-            }
-        }
-    }
-    window.onload = saveToJoined;
-</script>
+<!-- No extra JS needed, data is server-side rendered -->
 {% endblock %}

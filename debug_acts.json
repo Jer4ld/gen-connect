@@ -1,0 +1,170 @@
+[
+    {
+        "id": 1,
+        "title": "Football",
+        "creator_id": 1,
+        "created_at": "2026-02-15T07:48:43.193461",
+        "category": "Outdoor"
+    },
+    {
+        "id": 2,
+        "title": "Netball",
+        "creator_id": 13,
+        "created_at": "2026-02-15T07:51:02.128977",
+        "category": "Outdoor"
+    },
+    {
+        "id": 3,
+        "title": "Abstract Painting Workshop",
+        "creator_id": 26,
+        "created_at": "2026-02-15T08:54:45.240631",
+        "category": "Hobbies"
+    },
+    {
+        "id": 4,
+        "title": "Knitting Circle for Beginners",
+        "creator_id": 29,
+        "created_at": "2026-02-15T08:54:45.366711",
+        "category": "Hobbies"
+    },
+    {
+        "id": 5,
+        "title": "Gourmet Cooking Class: Italian",
+        "creator_id": 19,
+        "created_at": "2026-02-15T08:54:45.465124",
+        "category": "Hobbies"
+    },
+    {
+        "id": 6,
+        "title": "Computer Basics: Email & Web",
+        "creator_id": 31,
+        "created_at": "2026-02-15T08:54:45.574026",
+        "category": "Tech Help"
+    },
+    {
+        "id": 7,
+        "title": "Smartphone Security 101",
+        "creator_id": 21,
+        "created_at": "2026-02-15T08:54:45.685181",
+        "category": "Tech Help"
+    },
+    {
+        "id": 8,
+        "title": "Video Calling with Family",
+        "creator_id": 15,
+        "created_at": "2026-02-15T08:54:45.759580",
+        "category": "Tech Help"
+    },
+    {
+        "id": 9,
+        "title": "Morning Tai Chi in the Park",
+        "creator_id": 21,
+        "created_at": "2026-02-15T08:54:45.825918",
+        "category": "Outdoor"
+    },
+    {
+        "id": 10,
+        "title": "Nature Photography Walk",
+        "creator_id": 26,
+        "created_at": "2026-02-15T08:54:45.890182",
+        "category": "Outdoor"
+    },
+    {
+        "id": 11,
+        "title": "Community Gardening Day",
+        "creator_id": 16,
+        "created_at": "2026-02-15T08:54:45.958141",
+        "category": "Outdoor"
+    },
+    {
+        "id": 12,
+        "title": "Food Bank Sorting",
+        "creator_id": 32,
+        "created_at": "2026-02-15T08:54:46.024902",
+        "category": "Volunteer"
+    },
+    {
+        "id": 13,
+        "title": "Reading Buddies at Primary School",
+        "creator_id": 16,
+        "created_at": "2026-02-15T08:54:46.102753",
+        "category": "Volunteer"
+    },
+    {
+        "id": 14,
+        "title": "Hospital Visitor Program",
+        "creator_id": 18,
+        "created_at": "2026-02-15T08:54:46.213701",
+        "category": "Volunteer"
+    },
+    {
+        "id": 15,
+        "title": "Pottery for Beginners",
+        "creator_id": 31,
+        "created_at": "2026-02-15T09:01:01.564827",
+        "category": "Hobbies"
+    },
+    {
+        "id": 16,
+        "title": "Chess Club Meetup",
+        "creator_id": 23,
+        "created_at": "2026-02-15T09:01:01.630332",
+        "category": "Hobbies"
+    },
+    {
+        "id": 17,
+        "title": "Setting up Smart Home Devices",
+        "creator_id": 31,
+        "created_at": "2026-02-15T09:01:01.686879",
+        "category": "Tech Help"
+    },
+    {
+        "id": 18,
+        "title": "Identifying Phishing Emails",
+        "creator_id": 29,
+        "created_at": "2026-02-15T09:01:01.744840",
+        "category": "Tech Help"
+    },
+    {
+        "id": 19,
+        "title": "Sunset Yoga by the Lake",
+        "creator_id": 28,
+        "created_at": "2026-02-15T09:01:01.801705",
+        "category": "Outdoor"
+    },
+    {
+        "id": 20,
+        "title": "Bird Watching Tour",
+        "creator_id": 14,
+        "created_at": "2026-02-15T09:01:01.852633",
+        "category": "Outdoor"
+    },
+    {
+        "id": 21,
+        "title": "Soup Kitchen Service",
+        "creator_id": 24,
+        "created_at": "2026-02-15T09:01:01.923919",
+        "category": "Volunteer"
+    },
+    {
+        "id": 22,
+        "title": "Beach Cleanup Drive",
+        "creator_id": 20,
+        "created_at": "2026-02-15T09:01:01.982971",
+        "category": "Volunteer"
+    },
+    {
+        "id": 23,
+        "title": "Cooking ",
+        "creator_id": 13,
+        "created_at": "2026-02-15T09:05:36.469191",
+        "category": "Hobbies"
+    },
+    {
+        "id": 24,
+        "title": "Community Heritage Tour",
+        "creator_id": 29,
+        "created_at": "2026-02-15T10:06:30.162763",
+        "category": "Culture"
+    }
+]

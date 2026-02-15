@@ -1,0 +1,212 @@
+{
+    "users": [
+        "johntan@username",
+        "user1",
+        "user2",
+        "user_1771134230_1",
+        "user_1771134230_2",
+        "user_1771134258_1",
+        "user_1771134258_2",
+        "user_1771134401_1",
+        "user_1771134401_2",
+        "del_user_1771134845",
+        "del_user_1771134863",
+        "del_user_1771134912",
+        "alvintan@username",
+        "dummy_user_1",
+        "dummy_user_2",
+        "dummy_user_3",
+        "dummy_user_4",
+        "dummy_user_5",
+        "dummy_user_6",
+        "dummy_user_7",
+        "dummy_user_8",
+        "dummy_user_9",
+        "dummy_user_10",
+        "dummy_user_11",
+        "dummy_user_12",
+        "dummy_user_13",
+        "dummy_user_14",
+        "dummy_user_15",
+        "dummy_user_16",
+        "dummy_user_17",
+        "dummy_user_18",
+        "dummy_user_19",
+        "dummy_user_20"
+    ],
+    "user_ids": {
+        "johntan@username": 1,
+        "user1": 2,
+        "user2": 3,
+        "user_1771134230_1": 4,
+        "user_1771134230_2": 5,
+        "user_1771134258_1": 6,
+        "user_1771134258_2": 7,
+        "user_1771134401_1": 8,
+        "user_1771134401_2": 9,
+        "del_user_1771134845": 10,
+        "del_user_1771134863": 11,
+        "del_user_1771134912": 12,
+        "alvintan@username": 13,
+        "dummy_user_1": 14,
+        "dummy_user_2": 15,
+        "dummy_user_3": 16,
+        "dummy_user_4": 17,
+        "dummy_user_5": 18,
+        "dummy_user_6": 19,
+        "dummy_user_7": 20,
+        "dummy_user_8": 21,
+        "dummy_user_9": 22,
+        "dummy_user_10": 23,
+        "dummy_user_11": 24,
+        "dummy_user_12": 25,
+        "dummy_user_13": 26,
+        "dummy_user_14": 27,
+        "dummy_user_15": 28,
+        "dummy_user_16": 29,
+        "dummy_user_17": 30,
+        "dummy_user_18": 31,
+        "dummy_user_19": 32,
+        "dummy_user_20": 33
+    },
+    "activities": [
+        {
+            "id": 1,
+            "title": "Football",
+            "creator_id": 1,
+            "creator_username": "johntan@username"
+        },
+        {
+            "id": 2,
+            "title": "Netball",
+            "creator_id": 13,
+            "creator_username": "alvintan@username"
+        },
+        {
+            "id": 3,
+            "title": "Abstract Painting Workshop",
+            "creator_id": 26,
+            "creator_username": "dummy_user_13"
+        },
+        {
+            "id": 4,
+            "title": "Knitting Circle for Beginners",
+            "creator_id": 29,
+            "creator_username": "dummy_user_16"
+        },
+        {
+            "id": 5,
+            "title": "Gourmet Cooking Class: Italian",
+            "creator_id": 19,
+            "creator_username": "dummy_user_6"
+        },
+        {
+            "id": 6,
+            "title": "Computer Basics: Email & Web",
+            "creator_id": 31,
+            "creator_username": "dummy_user_18"
+        },
+        {
+            "id": 7,
+            "title": "Smartphone Security 101",
+            "creator_id": 21,
+            "creator_username": "dummy_user_8"
+        },
+        {
+            "id": 8,
+            "title": "Video Calling with Family",
+            "creator_id": 15,
+            "creator_username": "dummy_user_2"
+        },
+        {
+            "id": 9,
+            "title": "Morning Tai Chi in the Park",
+            "creator_id": 21,
+            "creator_username": "dummy_user_8"
+        },
+        {
+            "id": 10,
+            "title": "Nature Photography Walk",
+            "creator_id": 26,
+            "creator_username": "dummy_user_13"
+        },
+        {
+            "id": 11,
+            "title": "Community Gardening Day",
+            "creator_id": 16,
+            "creator_username": "dummy_user_3"
+        },
+        {
+            "id": 12,
+            "title": "Food Bank Sorting",
+            "creator_id": 32,
+            "creator_username": "dummy_user_19"
+        },
+        {
+            "id": 13,
+            "title": "Reading Buddies at Primary School",
+            "creator_id": 16,
+            "creator_username": "dummy_user_3"
+        },
+        {
+            "id": 14,
+            "title": "Hospital Visitor Program",
+            "creator_id": 18,
+            "creator_username": "dummy_user_5"
+        },
+        {
+            "id": 15,
+            "title": "Pottery for Beginners",
+            "creator_id": 31,
+            "creator_username": "dummy_user_18"
+        },
+        {
+            "id": 16,
+            "title": "Chess Club Meetup",
+            "creator_id": 23,
+            "creator_username": "dummy_user_10"
+        },
+        {
+            "id": 17,
+            "title": "Setting up Smart Home Devices",
+            "creator_id": 31,
+            "creator_username": "dummy_user_18"
+        },
+        {
+            "id": 18,
+            "title": "Identifying Phishing Emails",
+            "creator_id": 29,
+            "creator_username": "dummy_user_16"
+        },
+        {
+            "id": 19,
+            "title": "Sunset Yoga by the Lake",
+            "creator_id": 28,
+            "creator_username": "dummy_user_15"
+        },
+        {
+            "id": 20,
+            "title": "Bird Watching Tour",
+            "creator_id": 14,
+            "creator_username": "dummy_user_1"
+        },
+        {
+            "id": 21,
+            "title": "Soup Kitchen Service",
+            "creator_id": 24,
+            "creator_username": "dummy_user_11"
+        },
+        {
+            "id": 22,
+            "title": "Beach Cleanup Drive",
+            "creator_id": 20,
+            "creator_username": "dummy_user_7"
+        },
+        {
+            "id": 23,
+            "title": "Cooking ",
+            "creator_id": 13,
+            "creator_username": "alvintan@username"
+        }
+    ]
+}

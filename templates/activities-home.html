@@ -580,183 +580,69 @@
         </div>
 
         <div id="activities-list-wrapper">
-            <div id="custom-activities-parking"></div>
+            <!-- DB Activities Loop -->
+            {% for activity in activities %}
+            {# Clean category for filter data attribute #}
+            {% set clean_cat = activity.category.replace('🎨 ', '').replace('💻 ', '').replace('🏞️ ', '').replace('🤝
+            ', '') %}
 
-            <div class="activity-card" data-category="Outdoor">
+            <div class="activity-card" data-category="{{ clean_cat }}">
                 <div class="activity-details">
-                    <div class="category">Outdoor</div>
-                    <h5>Community Gardening</h5>
+                    <div class="category">{{ activity.category or clean_cat }}</div>
+                    <h5>{{ activity.title }}</h5>
                     <div class="meta">
-                        <div class="meta-item"><i class="bi bi-calendar3"></i> 10 Feb 2026</div>
-                        <div class="meta-item"><i class="bi bi-clock"></i> 10:00 AM – 12:00 PM</div>
-                        <div class="meta-item"><i class="bi bi-geo-alt"></i> Community Garden</div>
+                        <div class="meta-item"><i class="bi bi-calendar3"></i> {{ activity.date }}</div>
+                        <div class="meta-item"><i class="bi bi-clock"></i> {{ activity.time }}</div>
+                        <div class="meta-item"><i class="bi bi-geo-alt"></i> {{ activity.location }}</div>
                     </div>
-                    <div class="description">"Join your neighbors for a community gardening session."</div>
+
+                    <!-- Quota Info -->
+                    {% set joined_count = activity.get_participant_count() %}
+                    {% set ratio = (joined_count / activity.quota) * 100 if activity.quota > 0 else 100 %}
+                    <div class="quota-info">
+                        <div class="quota-text">
+                            <span><i class="bi bi-people-fill"></i> Slots Available</span>
+                            <span class="social-proof">{{ joined_count }} / {{ activity.quota }} Joined</span>
+                        </div>
+                        <div class="quota-progress-container">
+                            <div class="quota-progress-bar {% if ratio >= 90 %}progress-red{% elif ratio >= 60 %}progress-yellow{% else %}progress-green{% endif %}"
+                                style="width: {{ ratio }}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="description" style="margin-top: 10px;">"{{ activity.description }}"</div>
                 </div>
                 <div class="actions">
-                    <a href="{{ url_for('join_confirmation', activity_id=10) }}?title=Community Gardening&cat=Outdoor&date=10 Feb 2026&time=10:00 AM – 12:00 PM&loc=Community Garden&desc=Join your neighbors for a community gardening session.&instructions=Bring your own gloves if you have them."
-                        class="join-btn" style="text-decoration:none; text-align:center;">Join</a>
-                    <a href="{{ url_for('activity_details', activity_id=10, title='Community Gardening', cat='Outdoor', date='10 Feb 2026', time='10:00 AM – 12:00 PM', loc='Community Garden', img='https://loremflickr.com/800/400/garden', desc='Join your neighbors for a community gardening session.') }}&instructions=Bring your own gloves if you have them."
-                        class="details-btn">View Details</a>
+                    {% if activity.creator_id == current_user.id %}
+                    <!-- Case 1: Creator -->
+                    <div class="managed-tag">Managed by You</div>
+
+
+                    {% elif activity.has_user_joined(current_user.id) %}
+                    <!-- Case 2: Already Joined -->
+                    <div class="managed-tag"
+                        style="background-color: #ecfdf5; color: #059669; border: 1px solid #10b981;">Already Joined
+                    </div>
+                    {% elif joined_count >= activity.quota %}
+                    <!-- Case 3: Full -->
+                    <div class="managed-tag"
+                        style="background-color: #fee2e2; color: #991b1b; border: 1px solid #f87171;">Quota Full</div>
+                    {% else %}
+                    <!-- Case 4: Join -->
+                    <button type="button" onclick="joinActivity({{ activity.id }}, this)" class="join-btn"
+                        style="text-decoration:none; text-align:center; width:100%; border:none; font-family:inherit; font-size:inherit;">Join</button>
+                    {% endif %}
+
+                    <a href="{{ url_for('activity_details', activity_id=activity.id) }}" class="details-btn">View
+                        Details</a>
                 </div>
             </div>
+            {% endfor %}
+            <div id="custom-activities-parking" style="display:none;"></div>
 
-            <div class="activity-card" data-category="Tech Help">
-                <div class="activity-details">
-                    <div class="category">Tech Help</div>
-                    <h5>Tablet Basics</h5>
-                    <div class="meta">
-                        <div class="meta-item"><i class="bi bi-calendar3"></i> 11 Feb 2026</div>
-                        <div class="meta-item"><i class="bi bi-clock"></i> 2:00 PM – 4:00 PM</div>
-                        <div class="meta-item"><i class="bi bi-geo-alt"></i> Learning Center</div>
-                    </div>
-                    <div class="description">"Learn how to use your tablet for video calls and entertainment."</div>
-                </div>
-                <div class="actions">
-                    <a href="{{ url_for('join_confirmation', activity_id=11) }}?title=Tablet Basics&cat=Tech Help&date=11 Feb 2026&time=2:00 PM – 4:00 PM&loc=Learning Center&desc=Learn how to use your tablet for video calls and entertainment.&instructions=Bring your own tablet fully charged."
-                        class="join-btn" style="text-decoration:none; text-align:center;">Join</a>
-                    <a href="{{ url_for('activity_details', activity_id=11, title='Tablet Basics', cat='Tech Help', date='11 Feb 2026', time='2:00 PM – 4:00 PM', loc='Learning Center', img='https://loremflickr.com/800/400/tablet', desc='Learn how to use your tablet for video calls and entertainment.') }}&instructions=Bring your own tablet fully charged."
-                        class="details-btn">View Details</a>
-                </div>
-            </div>
+            <!-- Static cards removed to rely on DB -->
 
-            <div class="activity-card" data-category="Outdoor">
-                <div class="activity-details">
-                    <div class="category">Outdoor</div>
-                    <h5>Morning Yoga</h5>
-                    <div class="meta">
-                        <div class="meta-item"><i class="bi bi-calendar3"></i> 17 Dec 2025</div>
-                        <div class="meta-item"><i class="bi bi-clock"></i> 7:30 AM – 9:00 AM</div>
-                        <div class="meta-item"><i class="bi bi-geo-alt"></i> Studio 1, Community Hall</div>
-                    </div>
-                    <div class="description">"Start your day with gentle stretches and mindfulness."</div>
-                </div>
-                <div class="actions">
-                    <a href="{{ url_for('join_confirmation', activity_id=1) }}?title=Morning Yoga&cat=Outdoor&date=17 Dec 2025&time=7:30 AM – 9:00 AM&loc=Studio 1, Community Hall&desc=Start your day with gentle stretches and mindfulness.&instructions=Bring your own yoga mat and water bottle."
-                        class="join-btn" style="text-decoration:none; text-align:center;">Join</a>
-                    <a href="{{ url_for('activity_details', activity_id=1, title='Morning Yoga', cat='Outdoor', date='17 Dec 2025', time='7:30 AM – 9:00 AM', loc='Studio 1, Community Hall', img='https://loremflickr.com/800/400/yoga', desc='Start your day with gentle stretches and mindfulness.') }}&instructions=Bring your own yoga mat and water bottle."
-                        class="details-btn">View Details</a>
-                </div>
-            </div>
 
-            <div class="activity-card" data-category="Outdoor">
-                <div class="activity-details">
-                    <div class="category">Outdoor</div>
-                    <h5>Badminton Fun</h5>
-                    <div class="meta">
-                        <div class="meta-item"><i class="bi bi-calendar3"></i> 28 Dec 2025</div>
-                        <div class="meta-item"><i class="bi bi-clock"></i> 10:00 AM – 12:00 PM</div>
-                        <div class="meta-item"><i class="bi bi-geo-alt"></i> Community Sports Hall</div>
-                    </div>
-                    <div class="description">"Friendly matches for youth and seniors to stay active."</div>
-                </div>
-                <div class="actions">
-                    <a href="{{ url_for('join_confirmation', activity_id=2) }}?title=Badminton Fun&cat=Outdoor&date=28 Dec 2025&time=10:00 AM – 12:00 PM&loc=Community Sports Hall&desc=Friendly matches for youth and seniors to stay active.&instructions=Rackets are provided, but feel free to bring your own."
-                        class="join-btn" style="text-decoration:none; text-align:center;">Join</a>
-                    <a href="{{ url_for('activity_details', activity_id=2, title='Badminton Fun', cat='Outdoor', date='28 Dec 2025', time='10:00 AM – 12:00 PM', loc='Community Sports Hall', img='https://loremflickr.com/800/400/badminton', desc='Friendly matches for youth and seniors to stay active.') }}&instructions=Rackets are provided, but feel free to bring your own."
-                        class="details-btn">View Details</a>
-                </div>
-            </div>
-
-            <div class="activity-card" data-category="Hobbies">
-                <div class="activity-details">
-                    <div class="category">Hobbies</div>
-                    <h5>Arts & Crafts Workshop</h5>
-                    <div class="meta">
-                        <div class="meta-item"><i class="bi bi-calendar3"></i> 30 Dec 2025</div>
-                        <div class="meta-item"><i class="bi bi-clock"></i> 2:00 PM – 4:00 PM</div>
-                        <div class="meta-item"><i class="bi bi-geo-alt"></i> Community Hall Room</div>
-                    </div>
-                    <div class="description">"Express your creativity with guided craft projects."</div>
-                </div>
-                <div class="actions">
-                    <div class="actions">
-                        <a href="{{ url_for('join_confirmation', activity_id=3) }}?title=Arts %26 Crafts Workshop&cat=Hobbies&date=30 Dec 2025&time=2:00 PM – 4:00 PM&loc=Community Hall Room&desc=Express your creativity with guided craft projects.&instructions=All materials are included. Wear clothes you don't mind getting dirty!"
-                            class="join-btn" style="text-decoration:none; text-align:center;">Join</a>
-                        <a href="{{ url_for('activity_details', activity_id=3) }}?title=Arts %26 Crafts Workshop&cat=Hobbies&date=30 Dec 2025&time=2:00 PM – 4:00 PM&loc=Community Hall Room&img=https://loremflickr.com/800/400/art&desc=Express your creativity with guided craft projects.&instructions=All materials are included. Wear clothes you don't mind getting dirty!"
-                            class="details-btn">View Details</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="activity-card" data-category="Hobbies">
-                <div class="activity-details">
-                    <div class="category">Hobbies</div>
-                    <h5>Advanced Origami</h5>
-                    <div class="meta">
-                        <div class="meta-item"><i class="bi bi-calendar3"></i> 25 Feb 2026</div>
-                        <div class="meta-item"><i class="bi bi-clock"></i> 3:00 PM – 5:00 PM</div>
-                        <div class="meta-item"><i class="bi bi-geo-alt"></i> Art Studio, Level 1</div>
-                    </div>
-                    <div class="description">"Master complex paper folding techniques. Previous experience recommended."
-                    </div>
-                </div>
-                <div class="actions">
-                    <a href="{{ url_for('join_confirmation', activity_id=12) }}?title=Advanced Origami&cat=Hobbies&date=25 Feb 2026&time=3:00 PM – 5:00 PM&loc=Art Studio, Level 1&desc=Master complex paper folding techniques. Previous experience recommended.&instructions=Paper provided."
-                        class="join-btn" style="text-decoration:none; text-align:center;">Join</a>
-                    <a href="{{ url_for('activity_details', activity_id=12, title='Advanced Origami', cat='Hobbies', date='25 Feb 2026', time='3:00 PM – 5:00 PM', loc='Art Studio, Level 1', img='https://loremflickr.com/800/400/origami', desc='Master complex paper folding techniques. Previous experience recommended.') }}&instructions=Paper provided."
-                        class="details-btn">View Details</a>
-                </div>
-            </div>
-
-            <div class="activity-card hidden-card" data-category="Volunteer">
-                <div class="activity-details">
-                    <div class="category">Volunteer</div>
-                    <h5>Library Book Sorting</h5>
-                    <div class="meta">
-                        <div class="meta-item"><i class="bi bi-calendar3"></i> 24 Jan 2026</div>
-                        <div class="meta-item"><i class="bi bi-clock"></i> 10:00 AM – 1:00 PM</div>
-                        <div class="meta-item"><i class="bi bi-geo-alt"></i> Central Library</div>
-                    </div>
-                    <div class="description">"Assist in organizing and sorting books for the community library."</div>
-                </div>
-                <div class="actions">
-                    <a href="{{ url_for('join_confirmation', activity_id=14) }}?title=Library Book Sorting&cat=Volunteer&date=24 Jan 2026&time=10:00 AM – 1:00 PM&loc=Central Library&desc=Assist in organizing and sorting books for the community library.&instructions=No heavy lifting required."
-                        class="join-btn" style="text-decoration:none; text-align:center;">Join</a>
-                    <a href="{{ url_for('activity_details', activity_id=14, title='Library Book Sorting', cat='Volunteer', date='24 Jan 2026', time='10:00 AM – 1:00 PM', loc='Central Library', img='https://loremflickr.com/800/400/library', desc='Assist in organizing and sorting books for the community library.') }}&instructions=No heavy lifting required."
-                        class="details-btn">View Details</a>
-                </div>
-            </div>
-
-            <div class="activity-card hidden-card" data-category="Volunteer">
-                <div class="activity-details">
-                    <div class="category">Volunteer</div>
-                    <h5>Park Tree Planting</h5>
-                    <div class="meta">
-                        <div class="meta-item"><i class="bi bi-calendar3"></i> 28 Jan 2026</div>
-                        <div class="meta-item"><i class="bi bi-clock"></i> 9:00 AM – 12:00 PM</div>
-                        <div class="meta-item"><i class="bi bi-geo-alt"></i> Green Meadows Park</div>
-                    </div>
-                    <div class="description">"Join us in planting new trees to beautify our local park."</div>
-                </div>
-                <div class="actions">
-                    <a href="{{ url_for('join_confirmation', activity_id=15) }}?title=Park Tree Planting&cat=Volunteer&date=28 Jan 2026&time=9:00 AM – 12:00 PM&loc=Green Meadows Park&desc=Join us in planting new trees to beautify our local park.&instructions=Gardening gloves provided."
-                        class="join-btn" style="text-decoration:none; text-align:center;">Join</a>
-                    <a href="{{ url_for('activity_details', activity_id=15, title='Park Tree Planting', cat='Volunteer', date='28 Jan 2026', time='9:00 AM – 12:00 PM', loc='Green Meadows Park', img='https://loremflickr.com/800/400/park', desc='Join us in planting new trees to beautify our local park.') }}&instructions=Gardening gloves provided."
-                        class="details-btn">View Details</a>
-                </div>
-            </div>
-
-            <div class="activity-card hidden-card" data-category="Tech Help">
-                <div class="activity-details">
-                    <div class="category">Tech Help</div>
-                    <h5>Smartphone Basics</h5>
-                    <div class="meta">
-                        <div class="meta-item"><i class="bi bi-calendar3"></i> 05 Jan 2026</div>
-                        <div class="meta-item"><i class="bi bi-clock"></i> 11:00 AM – 12:30 PM</div>
-                        <div class="meta-item"><i class="bi bi-geo-alt"></i> Learning Hub, Level 2</div>
-                    </div>
-                    <div class="description">"Master your phone with simple, step-by-step guidance."</div>
-                </div>
-                <div class="actions">
-                    <a href="{{ url_for('join_confirmation', activity_id=4) }}?title=Smartphone Basics&cat=Tech Help&date=05 Jan 2026&time=11:00 AM – 12:30 PM&loc=Learning Hub, Level 2&desc=Master your phone with simple, step-by-step guidance.&instructions=Please bring your smartphone fully charged."
-                        class="join-btn" style="text-decoration:none; text-align:center;">Join</a>
-                    <a href="{{ url_for('activity_details', activity_id=4, title='Smartphone Basics', cat='Tech Help', date='05 Jan 2026', time='11:00 AM – 12:30 PM', loc='Learning Hub, Level 2', img='https://loremflickr.com/800/400/phone', desc='Master your phone with simple, step-by-step guidance.') }}&instructions=Please bring your smartphone fully charged."
-                        class="details-btn">View Details</a>
-                </div>
-            </div>
-
-            <!-- Partial file content continued... -->
         </div>
 
         <div id="noResultsMessage">
@@ -777,109 +663,46 @@
 
 {% block extra_js %}
 <script>
-    function loadCustomActivities() {
-        const custom = JSON.parse(localStorage.getItem('myCreatedActivities')) || [];
-        const parkingSpot = document.getElementById('custom-activities-parking');
+    function joinActivity(id, btn) {
+        const originalText = btn.textContent;
+        btn.textContent = 'Joining...';
+        btn.disabled = true;
 
-        // Base URLs for activities
-        const joinBase = "{{ url_for('join_confirmation', activity_id=999) }}".replace('999', '100');
-        const detailsBase = "{{ url_for('activity_details', activity_id=999) }}".replace('999', '100');
-
-        custom.forEach((act, i) => {
-            const card = document.createElement('div');
-            card.className = 'activity-card';
-            // Added gap for consistency with CSS change
-            card.style.gap = '25px';
-
-            // Robust Parsing: Handle both "🎨 Hobbies" and plain "Hobbies"
-            let catName = act.cat;
-            if (act.cat.includes(' ')) {
-                // If there's a space, assume format is "Emoji Name" and take the name part
-                catName = act.cat.split(' ').slice(1).join(' ');
+        fetch(`/activities/join/${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
             }
-            card.setAttribute('data-category', catName);
-
-            // Construct URLs with query parameters
-            const params = new URLSearchParams({
-                title: act.title,
-                date: act.date,
-                time: act.time,
-                loc: act.loc,
-                cat: catName,
-                desc: act.desc,
-                cat: catName,
-                desc: act.desc,
-                quota: act.quota || 20,
-                instructions: act.instructions || '',
-                img: `https://loremflickr.com/800/400/${catName.toLowerCase().replace(' ', '')}`
-            }).toString();
-
-            const fullJoinUrl = `${joinBase}?${params}`;
-            const fullDetailsUrl = `${detailsBase}?${params}`;
-
-            const activityStatus = JSON.parse(localStorage.getItem('activityStatus')) || {};
-            const activityKey = `${act.title}-${act.date}`;
-            if (!activityStatus[activityKey]) {
-                activityStatus[activityKey] = { participants: 0, quota: act.quota || 20 };
-                localStorage.setItem('activityStatus', JSON.stringify(activityStatus));
-            }
-            const status = activityStatus[activityKey];
-
-            const ratio = (status.participants / status.quota) * 100;
-            let barColor = 'progress-green';
-            let statusLabel = '';
-
-            if (ratio >= 90) {
-                barColor = 'progress-red';
-                statusLabel = '<span class="status-label label-almost">Almost Full!</span>';
-            } else if (ratio >= 60) {
-                barColor = 'progress-yellow';
-                statusLabel = '<span class="status-label label-fast">Filling Fast!</span>';
-            } else if (status.participants > 0) {
-                statusLabel = '<span class="status-label label-trending">Popular Choice!</span>';
-            }
-
-            // Check if user has already joined this custom activity
-            let joinBtnHtml = `<a href="${fullJoinUrl}" class="join-btn" style="text-decoration:none; text-align:center;">Join</a>`;
-            const joinedActivities = JSON.parse(localStorage.getItem('joinedActivities')) || [];
-            const isJoined = joinedActivities.some(a => a.title === act.title && a.date === act.date);
-
-            if (isJoined) {
-                joinBtnHtml = `<a href="#" class="join-btn btn-joined-locked" style="text-decoration:none; text-align:center;">Already Joined</a>`;
-            }
-
-            card.innerHTML = `
-            <div class="activity-details">
-                <div class="category">${catName}</div>
-                <h5>${act.title}</h5>
-                <div class="meta">
-                    <div class="meta-item"><i class="bi bi-calendar3"></i> ${act.date}</div>
-                    <div class="meta-item"><i class="bi bi-clock"></i> ${act.time}</div>
-                    <div class="meta-item"><i class="bi bi-geo-alt"></i> ${act.loc}</div>
-                </div>
-                <div class="quota-info">
-                    <div class="quota-text">
-                        <span><i class="bi bi-people-fill"></i> Slots Available</span>
-                        <span class="social-proof">${status.participants} / ${status.quota} Joined</span>
-                    </div>
-                    ${statusLabel}
-                    <div class="quota-progress-container">
-                        <div class="quota-progress-bar ${barColor}" style="width: ${ratio}%"></div>
-                    </div>
-                </div>
-                <div class="description" style="margin-top: 10px;">"${act.desc}"</div>
-            </div>
-            <div class="actions">
-                <div class="managed-tag">Managed by You</div>
-                <a href="${fullDetailsUrl}" class="details-btn">View Details</a>
-            </div>
-            `;
-            parkingSpot.appendChild(card);
-        });
-        // Re-run filter after loading custom activities to ensure correct initial state
-        const activeBtn = document.querySelector('.filters button.active');
-        if (activeBtn) filterActivities(activeBtn.textContent, activeBtn);
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Redirect to confirmation page
+                    window.location.href = `/activities/${id}/join/confirmation`;
+                } else {
+                    alert(data.message || 'Failed to join activity.');
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+                btn.textContent = originalText;
+                btn.disabled = false;
+            });
     }
+
+
+    // Legacy function kept but empty to prevent errors if called
+    function loadCustomActivities() {
+        console.log("Custom activities are now loaded from DB.");
+    }
+
+    // ... rest of scripts
+
+
+
 
     function searchActivities() {
         const input = document.getElementById('searchInput');
@@ -943,7 +766,7 @@
 
             // Show first 3, hide rest
             cards.forEach((card, index) => {
-                if (index < 3) {
+                if (index < 9) {
                     card.style.display = 'flex';
                     visibleCount++;
                 } else {
@@ -952,7 +775,7 @@
             });
 
             // Optional: Hide toggle if fewer than 3 items
-            if (cards.length <= 3) {
+            if (cards.length <= 9) {
                 toggleSection.style.display = 'none';
                 toggleSection.classList.add('d-none');
             }
@@ -991,7 +814,7 @@
         const cards = document.querySelectorAll('.activity-card');
         // Reset to first 3 Only if we are in "All" mode (which we should be if this button is visible)
         cards.forEach((card, index) => {
-            if (index < 3) {
+            if (index < 9) {
                 card.style.display = 'flex';
             } else {
                 card.style.display = 'none';
@@ -1286,44 +1109,46 @@
         }
     }
 
-    window.onload = function () {
-        // --- REMINDER LOGIC ---
-        // 1. Auto-join "Tablet Basics" (11 Feb 2026) for demo purposes if not already joined
-        const demoActivity = {
-            title: "Tablet Basics",
-            date: "11 Feb 2026", // Tomorrow relative to 10 Feb
-            time: "2:00 PM – 4:00 PM",
-            loc: "Learning Center"
-        };
+    function joinActivity(id, btn) {
+        const originalText = btn.textContent;
+        btn.textContent = 'Joining...';
+        btn.disabled = true;
 
-        let joinedActivities = JSON.parse(localStorage.getItem('joinedActivities')) || [];
-        const alreadyHas = joinedActivities.some(a => a.title === demoActivity.title && a.date === demoActivity.date);
-
-        if (!alreadyHas) {
-            joinedActivities.push(demoActivity);
-            localStorage.setItem('joinedActivities', JSON.stringify(joinedActivities));
-        }
-
-        // 2. Check for "Tomorrow" activities to trigger reminder
-        // Assuming "Today" is 10 Feb 2026 based on prompt
-        const tomorrowStr = "11 Feb 2026";
-
-        const upcoming = joinedActivities.find(a => a.date.trim() === tomorrowStr);
-
-        if (upcoming) {
-            const bar = document.getElementById('reminder-bar');
-            const nameSpan = document.getElementById('reminder-activity-name');
-            if (bar && nameSpan) {
-                nameSpan.textContent = upcoming.title;
-                bar.style.display = 'flex';
-                // Optional: Scroll to top to make sure they see it
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+        fetch(`/activities/join/${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
             }
-        }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Redirect to confirmation page
+                    window.location.href = `/activities/${id}/join/confirmation`;
+                } else {
+                    alert(data.message || 'Failed to join activity.');
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+                btn.textContent = originalText;
+                btn.disabled = false;
+            });
+    }
 
+    // Legacy logic cleanup: We are using server-side logic now.
+    // Kept only search/filter logic if needed.
+    window.onload = function () {
         loadCustomActivities();
-        renderStaticQuotas();
-        updateJoinedStatus(); // Run last to ensure it overrides 'Quota Full' if already joined
+        // Initialize view: Collapse to first 9 items
+        const allBtn = document.querySelector('.filters button.active');
+        if (allBtn) {
+            filterActivities('All', allBtn);
+        }
     };
+
 </script>
 {% endblock %}

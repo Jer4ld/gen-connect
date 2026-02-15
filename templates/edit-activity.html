@@ -250,114 +250,56 @@
             Activities</a>
         <div class="card-box">
             <h2 class="fw-bold mb-4">Edit Activity</h2>
-            <div class="row">
-                <div class="col-12 form-group">
-                    <label>Activity Title</label>
-                    <input type="text" id="editTitle">
+            <form action="{{ url_for('update_activity', activity_id=activity.id) }}" method="POST">
+                <div class="row">
+                    <div class="col-12 form-group">
+                        <label>Activity Title</label>
+                        <input type="text" name="title" id="editTitle" value="{{ activity.title }}" required>
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>Category</label>
+                        <select name="category" id="editCat" required>
+                            <option value="">-- Select Category --</option>
+                            <option value="Hobbies" {% if 'Hobbies' in activity.category %}selected{% endif %}>🎨
+                                Hobbies</option>
+                            <option value="Tech Help" {% if 'Tech Help' in activity.category %}selected{% endif %}>💻
+                                Tech Help</option>
+                            <option value="Outdoor" {% if 'Outdoor' in activity.category %}selected{% endif %}>🏞️
+                                Outdoor</option>
+                            <option value="Volunteer" {% if 'Volunteer' in activity.category %}selected{% endif %}>🤝
+                                Volunteer</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 form-group"><label>Location</label><input type="text" name="location"
+                            id="editLoc" value="{{ activity.location }}" required></div>
+                    <div class="col-md-6 form-group"><label>Date</label><input type="date" name="date" id="editDate"
+                            value="{{ activity.date }}" required></div>
+                    <div class="col-md-6 form-group"><label>Time</label><input type="text" name="time" id="editTime"
+                            value="{{ activity.time }}" required></div>
+                    <div class="col-md-6 form-group"><label>Quota Limit (Max Participants)</label><input type="number"
+                            name="quota" id="editQuota" min="1" value="{{ activity.quota }}"></div>
+                    <div class="col-12 form-group"><label>Description</label><textarea name="description" id="editDesc"
+                            rows="4">{{ activity.description }}</textarea>
+                    </div>
+                    <div class="col-12 form-group">
+                        <label>Special Instructions / Things to Note</label>
+                        <textarea name="instructions" id="editInstructions" rows="3"
+                            placeholder="E.g., Bring your own mat, heavy rain cancels, etc.">{{ activity.instructions }}</textarea>
+                    </div>
                 </div>
-                <div class="col-md-6 form-group">
-                    <label>Category</label>
-                    <select id="editCat">
-                        <option value="">-- Select Category --</option>
-                        <option value="Hobbies">🎨 Hobbies</option>
-                        <option value="Tech Help">💻 Tech Help</option>
-                        <option value="Outdoor">🏞️ Outdoor</option>
-                        <option value="Volunteer">🤝 Volunteer</option>
-                    </select>
+                <div class="action-btns">
+                    <a href="{{ url_for('delete_confirmation', activity_id=activity.id) }}"
+                        class="btn-custom btn-delete"
+                        style="text-decoration:none; text-align:center; display:flex; align-items:center; justify-content:center;">Delete
+                        Activity</a>
+                    <button type="submit" class="btn-custom btn-update">Update Activity</button>
                 </div>
-                <div class="col-md-6 form-group"><label>Location</label><input type="text" id="editLoc"></div>
-                <div class="col-md-6 form-group"><label>Date</label><input type="date" id="editDate"></div>
-                <div class="col-md-6 form-group"><label>Time</label><input type="text" id="editTime"></div>
-                <div class="col-md-6 form-group"><label>Quota Limit (Max Participants)</label><input type="number"
-                        id="editQuota" min="1"></div>
-                <div class="col-12 form-group"><label>Description</label><textarea id="editDesc" rows="4"></textarea>
-                </div>
-                <div class="col-12 form-group">
-                    <label>Special Instructions / Things to Note</label>
-                    <textarea id="editInstructions" rows="3"
-                        placeholder="E.g., Bring your own mat, heavy rain cancels, etc."></textarea>
-                </div>
-            </div>
-            <div class="action-btns">
-                <button class="btn-custom btn-delete" onclick="goToDelete()">Delete Activity</button>
-                <button class="btn-custom btn-update" onclick="saveChanges()">Update Activity</button>
-            </div>
+            </form>
         </div>
     </main>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-    const params = new URLSearchParams(window.location.search);
-    const index = params.get('index');
-    let activities = JSON.parse(localStorage.getItem('myCreatedActivities')) || [];
-
-    window.onload = function () {
-        if (index !== null && activities[index]) {
-            const a = activities[index];
-            document.getElementById('editTitle').value = a.title;
-            // Extract just the name if it has an emoji (e.g., "🎨 Hobbies" -> "Hobbies")
-            const catName = a.cat.includes(' ') ? a.cat.split(' ').slice(1).join(' ') : a.cat;
-            document.getElementById('editCat').value = catName;
-            document.getElementById('editLoc').value = a.loc;
-            document.getElementById('editDate').value = a.date;
-            document.getElementById('editTime').value = a.time;
-            document.getElementById('editQuota').value = a.quota || 20;
-            document.getElementById('editDesc').value = a.desc || "";
-            document.getElementById('editInstructions').value = a.instructions || "";
-        } else {
-            alert("No activity selected!");
-            window.location.href = "{{ url_for('my_activities') }}";
-        }
-    };
-
-    function saveChanges() {
-        const selectedCategory = document.getElementById('editCat').value;
-        if (!selectedCategory) { alert("Please select a category"); return; }
-
-        const title = document.getElementById('editTitle').value;
-        const date = document.getElementById('editDate').value;
-        const quota = parseInt(document.getElementById('editQuota').value) || 20;
-
-        const emojiMap = { "Hobbies": "🎨", "Tech Help": "💻", "Outdoor": "🏞️", "Volunteer": "🤝" };
-        const categoryWithEmoji = `${emojiMap[selectedCategory]} ${selectedCategory}`;
-
-        // Sync with activityStatus if title/date stays the same
-        const oldTitle = activities[index].title;
-        const oldDate = activities[index].date;
-        const activityStatus = JSON.parse(localStorage.getItem('activityStatus')) || {};
-        const oldKey = `${oldTitle}-${oldDate}`;
-        const newKey = `${title}-${date}`;
-
-        if (activityStatus[oldKey]) {
-            const status = activityStatus[oldKey];
-            status.quota = quota;
-            if (oldKey !== newKey) {
-                activityStatus[newKey] = status;
-                delete activityStatus[oldKey];
-            }
-            localStorage.setItem('activityStatus', JSON.stringify(activityStatus));
-        }
-
-        activities[index] = {
-            title: title,
-            cat: categoryWithEmoji,
-            loc: document.getElementById('editLoc').value,
-            date: date,
-            time: document.getElementById('editTime').value,
-            quota: quota,
-            desc: document.getElementById('editDesc').value,
-            instructions: document.getElementById('editInstructions').value
-        };
-        localStorage.setItem('myCreatedActivities', JSON.stringify(activities));
-        // Redirecting to your group's confirmation route
-        window.location.href = "{{ url_for('update_confirmation_page') }}?index=" + index;
-    }
-
-    function goToDelete() {
-        // Redirecting to your delete confirmation page
-        window.location.href = "{{ url_for('delete_confirmation_page') }}?index=" + index;
-    }
-</script>
+<!-- No extra JS needed for basic form submission -->
 {% endblock %}

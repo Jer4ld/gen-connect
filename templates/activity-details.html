@@ -394,7 +394,9 @@
     </div>
 
     <div class="details-container">
-      <img id="detailHero" src="" class="hero-image" alt="Activity Banner">
+      <img id="detailHero"
+        src="{{ activity.image or 'https://loremflickr.com/800/400/activity?random=' ~ activity.id }}"
+        class="hero-image" alt="Activity Banner">
       <h1 id="act-title">Loading...</h1>
 
       <div class="info-grid">
@@ -427,27 +429,33 @@
 {% block extra_js %}
 
 <script>
-  const urlParams = new URLSearchParams(window.location.search);
-  const title = urlParams.get('title');
-  const date = urlParams.get('date');
-  const time = urlParams.get('time');
-  const loc = urlParams.get('loc');
-  const img = urlParams.get('img');
-  const cat = urlParams.get('cat');
-  const desc = urlParams.get('desc');
-  const instructions = urlParams.get('instructions');
+  // Server-side data injection
+  const activityId = {{ activity.id }};
+  const title = {{ activity.title | tojson }};
+  const date = {{ activity.date | tojson }};
+  const time = {{ activity.time | tojson }};
+  const locationText = {{ activity.location | tojson }}; // renamed to avoid conflict with window.location
+  const quota = {{ activity.quota }};
+  const participantCount = {{ activity.get_participant_count() }};
+  const isCreator = {{ (activity.creator_id == session.get('user_id')) | tojson }};
+  const hasJoined = {{ activity.has_user_joined(session.get('user_id')) | tojson }};
 
-  function checkJoinStatus() {
-    const joinBtn = document.getElementById('join-now-btn');
-    const joinedActivities = JSON.parse(localStorage.getItem('joinedActivities')) || [];
-    const activityStatus = JSON.parse(localStorage.getItem('activityStatus')) || {};
-    const key = `${title}-${date}`;
+  // Update DOM immediately
+  document.getElementById('act-title').innerText = title;
+  document.getElementById('act-date').innerText = date;
+  document.getElementById('act-time').innerText = time;
+  document.getElementById('act-loc').innerText = locationText;
 
-    // Get status - if missing (e.g. direct link), use defaults
-    const status = activityStatus[key] || { participants: 0, quota: parseInt(urlParams.get('quota')) || 20 };
+  // Image handling is now done directly in the HTML via Jinja2
 
-    // UI Logic for Bar and Labels
-    const ratio = (status.participants / status.quota) * 100;
+  const instructions = {{ activity.instructions | tojson }};
+  if (instructions) {
+    document.getElementById('special-instructions-box').style.display = 'block';
+    document.getElementById('act-instructions').innerText = instructions;
+  }
+
+  function updateQuotaUI() {
+    const ratio = (participantCount / quota) * 100;
     let barColor = 'progress-green';
     let statusLabelText = '';
 
@@ -457,73 +465,75 @@
     } else if (ratio >= 60) {
       barColor = 'progress-yellow';
       statusLabelText = '<span class="status-label label-fast">Filling Fast!</span>';
-    } else if (status.participants > 0) {
+    } else if (participantCount > 0) {
       statusLabelText = '<span class="status-label label-trending">Popular Choice!</span>';
     }
 
     document.getElementById('act-quota-container').innerHTML = `
       <div class="quota-text">
         <span><i class="bi bi-people-fill"></i> Slots Available</span>
-        <span class="social-proof">${status.participants} / ${status.quota} neighbors joined</span>
+        <span class="social-proof">${participantCount} / ${quota} neighbors joined</span>
       </div>
       ${statusLabelText}
       <div class="quota-progress-container">
         <div class="quota-progress-bar ${barColor}" style="width: ${ratio}%"></div>
       </div>
     `;
+  }
 
-    const isAlreadyJoined = joinedActivities.some(act => act.title === title && act.date === date);
-    const createdActivities = JSON.parse(localStorage.getItem('myCreatedActivities')) || [];
-    const isOwner = createdActivities.some(act => (act.title === title || act.title.replace('&', '%26') === title) && act.date.trim() === date);
-    const isFull = status.participants >= status.quota;
+  function updateJoinButton() {
+    const joinBtn = document.getElementById('join-now-btn');
 
-    if (isOwner) {
+    if (isCreator) {
       joinBtn.innerText = "Managed by You";
       joinBtn.classList.add('btn-joined-locked');
-      joinBtn.style.background = "#4b5563"; // Specific color for managed
-      joinBtn.onclick = null;
-      // Replace button with a span to be semantically correct or just disable it entirely
-      return true;
-    } else if (isAlreadyJoined) {
+      joinBtn.style.background = "#4b5563";
+      joinBtn.onclick = () => window.location.href = "{{ url_for('edit_activity', activity_id=activity.id) }}";
+      joinBtn.style.cursor = "pointer";
+      joinBtn.classList.remove('btn-joined-locked'); // Actually allow clicking to edit
+      joinBtn.innerText = "Edit Activity";
+    } else if (hasJoined) {
       joinBtn.innerText = "Already Joined";
       joinBtn.classList.add('btn-joined-locked');
       joinBtn.onclick = null;
-      return true;
-    } else if (isFull) {
+    } else if (participantCount >= quota) {
       joinBtn.innerText = "Join is now Closed (Quota Full)";
       joinBtn.classList.add('btn-joined-locked');
-      joinBtn.style.background = "#ef4444"; // Red for full
+      joinBtn.style.background = "#ef4444";
       joinBtn.onclick = null;
-      return true;
-    }
-    return false;
-  }
+    } else {
+      // Join Logic
+      joinBtn.onclick = function () {
+        const originalText = joinBtn.innerText;
+        joinBtn.innerText = "Joining...";
+        joinBtn.disabled = true;
 
-  if (title) {
-    document.getElementById('act-title').innerText = title;
-    document.getElementById('act-date').innerText = date || "TBD";
-    document.getElementById('act-time').innerText = time || "TBD";
-    document.getElementById('act-loc').innerText = loc || "Location";
-    document.getElementById('detailHero').src = img || `https://loremflickr.com/800/400/hobby`;
-
-    if (instructions) {
-      document.getElementById('special-instructions-box').style.display = 'block';
-      document.getElementById('act-instructions').innerText = instructions;
-    }
-
-    const joined = checkJoinStatus();
-
-    if (!joined) {
-      document.getElementById('join-now-btn').onclick = function () {
-        if (checkJoinStatus()) {
-          alert("You have already joined this activity!");
-          return;
-        }
-        location.href =
-          "{{ url_for('join_confirmation', activity_id=activity_id) }}?title=" + encodeURIComponent(title) + "&time=" + encodeURIComponent(time) + "&loc=" + encodeURIComponent(loc) + "&date=" + encodeURIComponent(date) + "&cat=" + encodeURIComponent(cat || 'General') + "&desc=" + encodeURIComponent(desc || '');
+        fetch(`/activities/join/${activityId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              window.location.href = `/activities/${activityId}/join/confirmation`;
+            } else {
+              alert(data.message || "Failed to join.");
+              joinBtn.innerText = originalText;
+              joinBtn.disabled = false;
+            }
+          })
+          .catch(err => {
+            console.error(err);
+            alert("Error joining activity.");
+            joinBtn.innerText = originalText;
+            joinBtn.disabled = false;
+          });
       };
     }
   }
+
+  updateQuotaUI();
+  updateJoinButton();
 </script>
 
 {% endblock %}

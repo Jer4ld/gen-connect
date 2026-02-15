@@ -19,8 +19,11 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 # Initialize Flask app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-change-in-production'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///genconnect.db'
+basedir = os.path.abspath(os.path.dirname(__file__))
+db_path = os.path.join(basedir, 'instance', 'genconnect.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_path
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+print(f" * Database used: {db_path}")
 
 # ================= EMAIL CONFIGURATION =================
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
@@ -299,7 +302,29 @@ class Activity(db.Model):
     date = db.Column(db.String(50), nullable=False)
     time = db.Column(db.String(50), nullable=False)
     description = db.Column(db.Text, nullable=True)
+    
+    # New Fields
+    creator_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, default=1)
+    quota = db.Column(db.Integer, default=20)
+    image = db.Column(db.String(255), nullable=True)
+    instructions = db.Column(db.Text, nullable=True)
+    
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    participants = db.relationship('ActivityParticipant', backref='activity', lazy=True, cascade='all, delete-orphan')
+
+    def get_participant_count(self):
+        return ActivityParticipant.query.filter_by(activity_id=self.id).count()
+
+    def has_user_joined(self, user_id):
+        return ActivityParticipant.query.filter_by(activity_id=self.id, user_id=user_id).first() is not None
+
+class ActivityParticipant(db.Model):
+    __tablename__ = 'activity_participants'
+    id = db.Column(db.Integer, primary_key=True)
+    activity_id = db.Column(db.Integer, db.ForeignKey('activities.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    joined_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 # --- NEW: Reported/Blocked Users Table ---
 class ReportedUsers(db.Model):
@@ -1767,32 +1792,125 @@ def update_settings():
 
 @app.route('/activities')
 def activities_home():
+    if 'user_id' not in session: return redirect(url_for('login'))
+    current_user = User.query.get(session['user_id'])
+    
     # This grabs every activity stored in the 'activities' table
-    all_activities = Activity.query.all() 
-    return render_template('activities-home.html', activities=all_activities)
+    all_activities = Activity.query.order_by(Activity.created_at.desc()).all() 
+    return render_template('activities-home.html', activities=all_activities, current_user=current_user)
 
 @app.route("/activities/<int:activity_id>")
 def activity_details(activity_id):
     if 'user_id' not in session: return redirect(url_for('login'))
-    return render_template("activity-details.html", activity_id=activity_id)
+    activity = Activity.query.get_or_404(activity_id)
+    return render_template("activity-details.html", activity=activity)
 
 @app.route("/activities/create", methods=["GET", "POST"])
 def create_activity():
     if 'user_id' not in session: return redirect(url_for('login'))
+    
+    if request.method == "POST":
+        try:
+            new_activity = Activity(
+                title=request.form.get('title'),
+                category=request.form.get('category'),
+                location=request.form.get('location'),
+                date=request.form.get('date'),
+                time=request.form.get('time'),
+                description=request.form.get('description'),
+                instructions=request.form.get('instructions'),
+                quota=int(request.form.get('quota', 20)),
+                creator_id=session['user_id']
+            )
+            # Default images map
+            emoji_map = {"Hobbies": "art", "Tech Help": "tech", "Outdoor": "outdoor", "Volunteer": "volunteer"}
+            cat_key = request.form.get('category').replace("🎨 ", "").replace("💻 ", "").replace("🏞️ ", "").replace("🤝 ", "")
+            img_suffix = emoji_map.get(cat_key, "activity")
+            new_activity.image = f"https://loremflickr.com/800/400/{img_suffix}"
+
+            db.session.add(new_activity)
+            db.session.flush() # Get ID
+
+            # Auto-join creator? Maybe not, usually creator manages it. 
+            # But "Managed by you" button replaces "Join", so they effectively "own" it.
+            
+            db.session.commit()
+            
+            return redirect(url_for('activity_created', activity_id=new_activity.id))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error creating activity: {e}", "error")
+            return redirect(url_for('create_activity'))
+
     return render_template("create-activity.html")
 
 @app.route("/activities/create/confirmation")
 def create_confirmation():
     return render_template("create-confirmation.html")
 
-@app.route("/activities/created")
-def activity_created():
-    return render_template("activity-created.html")
+@app.route("/activities/<int:activity_id>/created")
+def activity_created(activity_id):
+    if 'user_id' not in session: return redirect(url_for('login'))
+    activity = Activity.query.get_or_404(activity_id)
+    return render_template("activity-created.html", activity=activity)
 
 @app.route("/activities/<int:activity_id>/edit", methods=["GET", "POST"])
 def edit_activity(activity_id):
     if 'user_id' not in session: return redirect(url_for('login'))
-    return render_template("edit-activity.html", activity_id=activity_id)
+    activity = Activity.query.get_or_404(activity_id)
+    # Ensure only creator can edit
+    if activity.creator_id != session['user_id']:
+        flash("You are not authorized to edit this activity.", "error")
+        return redirect(url_for('my_activities'))
+        
+    return render_template("edit-activity.html", activity=activity)
+
+@app.route("/activities/<int:activity_id>/update", methods=["POST"])
+def update_activity(activity_id):
+    if 'user_id' not in session: return redirect(url_for('login'))
+    activity = Activity.query.get_or_404(activity_id)
+    
+    if activity.creator_id != session['user_id']:
+        return "Unauthorized", 403
+
+    try:
+        activity.title = request.form.get('title')
+        # Handle category emoji logic if needed or just save raw
+        activity.category = request.form.get('category') 
+        activity.location = request.form.get('location')
+        activity.date = request.form.get('date')
+        activity.time = request.form.get('time')
+        activity.description = request.form.get('description')
+        activity.instructions = request.form.get('instructions')
+        activity.quota = int(request.form.get('quota', 20))
+        
+        db.session.commit()
+        return redirect(url_for('update_confirmation', activity_id=activity.id))
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error updating activity: {e}", "error")
+        return redirect(url_for('edit_activity', activity_id=activity_id))
+
+@app.route("/activities/<int:activity_id>/delete", methods=["POST"])
+def delete_activity(activity_id):
+    if 'user_id' not in session: return redirect(url_for('login'))
+    activity = Activity.query.get_or_404(activity_id)
+    
+    if activity.creator_id != session['user_id']:
+        return "Unauthorized", 403
+
+    try:
+        db.session.delete(activity)
+        db.session.commit()
+        return redirect(url_for('delete_success', activity_id=activity.id)) # Passing ID might be weird if deleted, but maybe for template text? 
+        # Actually delete-success usually just says "deleted". 
+        # But wait, if we delete it, we can't show its name in success page unless we pass it as arg.
+        # Let's verify delete_success template.
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error deleting activity: {e}", "error")
+        return redirect(url_for('my_activities'))
+
 
 @app.route("/activities/<int:activity_id>/update/confirmation")
 def update_confirmation(activity_id):
@@ -1800,7 +1918,13 @@ def update_confirmation(activity_id):
 
 @app.route("/activities/<int:activity_id>/delete/confirmation")
 def delete_confirmation(activity_id):
-    return render_template("delete-confirmation.html", activity_id=activity_id)
+    if 'user_id' not in session: return redirect(url_for('login'))
+    activity = Activity.query.get_or_404(activity_id)
+    # Ensure only creator can delete
+    if activity.creator_id != session['user_id']:
+        flash("You are not authorized to delete this activity.", "error")
+        return redirect(url_for('my_activities'))
+    return render_template("delete-confirmation.html", activity=activity)
 
 @app.route("/activities/<int:activity_id>/deleted")
 def delete_success(activity_id):
@@ -1808,12 +1932,64 @@ def delete_success(activity_id):
 
 @app.route("/activities/<int:activity_id>/join/confirmation")
 def join_confirmation(activity_id):
-    return render_template("join-confirmation.html", activity_id=activity_id)
+    if 'user_id' not in session: return redirect(url_for('login'))
+    activity = Activity.query.get_or_404(activity_id)
+    return render_template("join-confirmation.html", activity=activity)
+
+
+@app.route("/activities/join/<int:activity_id>", methods=['POST'])
+def join_activity(activity_id):
+    if 'user_id' not in session: return jsonify({'success': False}), 401
+    
+    activity = Activity.query.get_or_404(activity_id)
+    user_id = session['user_id']
+    
+    # Check if already joined
+    existing = ActivityParticipant.query.filter_by(activity_id=activity_id, user_id=user_id).first()
+    if existing:
+        return jsonify({'success': False, 'message': 'Already joined'})
+        
+    # Check quota
+    if activity.get_participant_count() >= activity.quota:
+        return jsonify({'success': False, 'message': 'Activity is full'})
+    
+    new_participant = ActivityParticipant(activity_id=activity_id, user_id=user_id)
+    db.session.add(new_participant)
+    db.session.commit()
+    
+    return jsonify({'success': True, 'message': 'Successfully joined!'})
+
+@app.route("/activities/leave/<int:activity_id>", methods=['POST'])
+def leave_activity(activity_id):
+    if 'user_id' not in session: return jsonify({'success': False}), 401
+    
+    activity = Activity.query.get_or_404(activity_id)
+    user_id = session['user_id']
+    
+    participant = ActivityParticipant.query.filter_by(activity_id=activity_id, user_id=user_id).first()
+    if participant:
+        db.session.delete(participant)
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Successfully withdrawn.'})
+    
+    return jsonify({'success': False, 'message': 'You have not joined this activity.'})
 
 @app.route("/activities/my")
 def my_activities():
     if 'user_id' not in session: return redirect(url_for('login'))
-    return render_template("myactivities.html")
+    
+    current_user_id = session['user_id']
+    
+    # 1. Created Activities
+    created_activities = Activity.query.filter_by(creator_id=current_user_id).order_by(Activity.created_at.desc()).all()
+    
+    # 2. Joined Activities
+    # Join ActivityParticipant table to get activities user has joined
+    joined_entries = ActivityParticipant.query.filter_by(user_id=current_user_id).all()
+    joined_activity_ids = [entry.activity_id for entry in joined_entries]
+    joined_activities = Activity.query.filter(Activity.id.in_(joined_activity_ids)).order_by(Activity.date.asc()).all()
+    
+    return render_template("myactivities.html", created_activities=created_activities, joined_activities=joined_activities)
 
 @app.errorhandler(404)
 def not_found(error): 

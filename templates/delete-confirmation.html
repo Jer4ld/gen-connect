@@ -337,10 +337,10 @@
                     <h3><i class="bi bi-shield-fill-exclamation"></i> Permanent Deletion?</h3>
 
                     <div class="activity-preview">
-                        <span id="display-title">Activity Name</span>
-                        <p id="display-date"></p>
-                        <p id="display-time"></p>
-                        <p id="display-loc"></p>
+                        <span id="display-title">{{ activity.title }}</span>
+                        <p id="display-date">📅 {{ activity.date }}</p>
+                        <p id="display-time">⏰ {{ activity.time }}</p>
+                        <p id="display-loc">📍 {{ activity.location }}</p>
                     </div>
                 </div>
 
@@ -350,8 +350,12 @@
             </div>
 
             <div class="button-column">
-                <button type="button" class="btn-action btn-red" onclick="executeDeletion()">Delete Now</button>
-                <a href="{{ url_for('my_activities') }}" class="btn-action btn-gray">Keep Activity</a>
+                <form action="{{ url_for('delete_activity', activity_id=activity.id) }}" method="POST"
+                    style="display:contents;">
+                    <button type="submit" class="btn-action btn-red">Delete Now</button>
+                </form>
+                <a href="{{ url_for('edit_activity', activity_id=activity.id) }}" class="btn-action btn-gray">Keep
+                    Activity</a>
             </div>
         </div>
     </main>
@@ -359,29 +363,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const activityIndex = urlParams.get('index');
-    const storageData = JSON.parse(localStorage.getItem('myCreatedActivities')) || [];
-    const targetActivity = storageData[activityIndex];
-
-    if (targetActivity) {
-        document.getElementById('display-title').innerText = targetActivity.title;
-        document.getElementById('display-date').innerText = `📅 ${targetActivity.date}`;
-        document.getElementById('display-time').innerText = `⏰ ${targetActivity.time}`;
-        document.getElementById('display-loc').innerText = `📍 ${targetActivity.loc}`;
-    } else {
-        window.location.href = "{{ url_for('my_activities') }}";
-    }
-
-    function executeDeletion() {
-        if (targetActivity) {
-            const deletedTitle = targetActivity.title;
-            storageData.splice(activityIndex, 1);
-            localStorage.setItem('myCreatedActivities', JSON.stringify(storageData));
-            // Redirect to success page with title
-            window.location.href = `{{ url_for('delete_success_page') }}?title=${encodeURIComponent(deletedTitle)}`;
-        }
-    }
-</script>
+<!-- No extra JS needed -->
 {% endblock %}
